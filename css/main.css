@@ -843,6 +843,7 @@ button:focus {
   -webkit-background-size: cover;
   -moz-background-size: cover;
   -o-background-size: cover;
+  opacity: 0.5;
   background-size: cover; }
   #testimonial .right-position {
     position: relative; }
