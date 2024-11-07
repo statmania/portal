@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html>
+<head>
+<link rel="stylesheet" href="assets/style.css">
+    <title>Countdown Timer with Warning</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            height: 100vh;
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+        }
+    </style>
+</head>
+<body>
+    <h2>Countdown Timer with Warning</h2>
+    <div class="input-group">
+        <input type="number" id="timeInput" placeholder="Enter time" min="1">
+        <select id="timeUnit">
+            <option value="s">Seconds</option>
+            <option value="min">Minutes</option>
+            <option value="hr">Hours</option>
+        </select>
+    </div>
+    <div class="input-group">
+        <input type="number" id="warningTimeInput" placeholder="Enter warning time" min="1">
+        <select id="warningTimeUnit">
+            <option value="s">Seconds</option>
+            <option value="min">Minutes</option>
+            <option value="hr">Hours</option>
+        </select>
+    </div>
+    <div class="button-group">
+        <button onclick="startTimer()">Start</button>
+        <button onclick="pauseTimer()">Pause</button>
+        <button onclick="resetTimer()">Reset</button>
+    </div>
+    <p id="timerDisplay">00:00:00</p>
+
+    <audio id="alarmSound" src="assets/bell.mp3"></audio>
+    <audio id="beepSound" src="assets/beep.mp3"></audio>
+
+    <script>
+        let countdownInterval;
+        let totalSeconds = 0;
+        let remainingTime = 0;
+        let warningTimeInSeconds = 0;
+        let warningTriggered = false;
+
+        function convertToSeconds(time, unit) {
+            switch (unit) {
+                case 's':
+                    return time;
+                case 'min':
+                    return time * 60;
+                case 'hr':
+                    return time * 3600;
+                default:
+                    return 0;
+            }
+        }
+
+        function startTimer() {
+            if (!countdownInterval) {
+                const inputTime = parseInt(document.getElementById('timeInput').value);
+                const timeUnit = document.getElementById('timeUnit').value;
+                const warningTime = parseInt(document.getElementById('warningTimeInput').value);
+                const warningTimeUnit = document.getElementById('warningTimeUnit').value;
+
+                if (!remainingTime) {
+                    totalSeconds = convertToSeconds(inputTime, timeUnit);
+                    remainingTime = totalSeconds;
+                    warningTimeInSeconds = convertToSeconds(warningTime, warningTimeUnit);
+                    warningTriggered = false;
+                }
+
+                countdownInterval = setInterval(() => {
+                    if (remainingTime > 0) {
+                        remainingTime--;
+
+                        // Play beep sound for each second
+                        const beepSound = document.getElementById('beepSound');
+                        beepSound.currentTime = 0; // Reset to ensure it plays from the start
+                        beepSound.play().catch((error) => {
+                            console.log("Beep playback prevented by the browser:", error);
+                        });
+
+                        // Check for warning time
+                        if (remainingTime === warningTimeInSeconds && !warningTriggered) {
+                            document.getElementById('alarmSound').play();
+                            warningTriggered = true;
+                        }
+
+                        displayTime(remainingTime);
+                    } else {
+                        clearInterval(countdownInterval);
+                        countdownInterval = null;
+
+                        // Play the alarm 5 times when time is up
+                        playAlarm(5);
+                    }
+                }, 1000);
+            }
+        }
+
+        function pauseTimer() {
+            clearInterval(countdownInterval);
+            countdownInterval = null;
+        }
+
+        function resetTimer() {
+            clearInterval(countdownInterval);
+            countdownInterval = null;
+            totalSeconds = 0;
+            remainingTime = 0;
+            warningTriggered = false;
+            document.getElementById('timerDisplay').textContent = '00:00:00';
+            document.getElementById('timeInput').value = '';
+            document.getElementById('warningTimeInput').value = '';
+        }
+
+        function displayTime(seconds) {
+            const hrs = Math.floor(seconds / 3600);
+            const mins = Math.floor((seconds % 3600) / 60);
+            const secs = seconds % 60;
+
+            document.getElementById('timerDisplay').textContent =
+                `${String(hrs).padStart(2, '0')}:${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+        }
+
+        function playAlarm(times) {
+            let count = 0;
+            const alarmSound = document.getElementById('alarmSound');
+
+            function playSound() {
+                if (count < times) {
+                    alarmSound.currentTime = 0; // Reset audio to the start
+                    alarmSound.play().then(() => {
+                        count++;
+                        setTimeout(playSound, 1000); // 1-second gap between sounds
+                    }).catch(error => console.log("Playback error:", error));
+                }
+            }
+            playSound();
+        }
+    </script>
+</body>
+</html>

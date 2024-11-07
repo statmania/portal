@@ -1,0 +1,49 @@
+        h2 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+        .input-group {
+            display: flex;
+            align-items: center;
+            margin: 10px;
+        }
+        input, select, button {
+            margin: 10px;
+            padding: 10px;
+            font-size: 16px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            background-color: #fff;
+        }
+        /* Smaller input field and larger dropdown */
+        #timeInput {
+            width: 100px; /* Smaller input width */
+        }
+        #timeUnit {
+            width: 150px; /* Larger dropdown */
+            appearance: none;
+            background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 20 20"><polygon points="0,0 10,10 20,0" fill="gray"/></svg>');
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+            background-size: 10px;
+        }
+        .button-group {
+            display: flex;
+            gap: 10px;
+        }
+        button {
+            background-color: blue;
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #timerDisplay {
+            font-size: 3rem;
+            font-weight: bold;
+            color: orange;
+            margin-top: 20px;
+        }
