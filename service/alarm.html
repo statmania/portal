@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Responsive Multi-Alarm Clock</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #e6f7ff;
+            height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+            margin: 10px 0;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            max-width: 500px;
+            gap: 15px;
+        }
+        .time-picker {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            background: #ffffff;
+            padding: 5px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        .time-picker label {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 1rem;
+        }
+        input[type="time"], input[type="text"], input[type="number"] {
+            border: 1px solid #007acc;
+            border-radius: 5px;
+            padding: 5px;
+            font-size: 1rem;
+            margin: 5px;
+            width: calc(100% - 20px);
+        }
+        button {
+            padding: 10px 15px;
+            border-radius: 5px;
+            font-size: 0.9rem;
+            border: none;
+            margin: 2px;
+            cursor: pointer;
+            transition: background 0.3s, transform 0.2s;
+        }
+        .set-btn {
+            background-color: #28a745;
+            color: white;
+        }
+        .control-btn {
+            background-color: #007bff;
+            color: white;
+        }
+        .stop-btn {
+            background-color: #dc3545;
+            color: white;
+        }
+        .snooze-btn {
+            background-color: #ffc107;
+            color: black;
+        }
+        button:hover {
+            transform: scale(1.05);
+            filter: brightness(90%);
+        }
+        .alarm-list {
+            margin-top: 20px;
+            width: 100%;
+        }
+        .alarm-item {
+            background-color: #f9f9f9;
+            padding: 10px;
+            border: 1px solid #007acc;
+            border-radius: 5px;
+            margin-bottom: 5px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        .alarm-controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-top: 5px;
+        }
+        .snooze-input {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 5px;
+        }
+        input[type="number"] {
+            width: 50px;
+        }
+        @media (max-width: 480px) {
+            .alarm-controls button, input[type="number"] {
+                flex: 1;
+                width: 100%;
+                font-size: 0.8rem;
+            }
+            .snooze-input {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>Responsive Multi-Alarm Clock</h1>
+    <div class="container">
+        <div class="time-picker">
+            <label for="alarmName">⏱️ Name:</label>
+            <input type="text" id="alarmName" placeholder="Alarm name" required>
+            <input type="time" id="timeSelector" required>
+        </div>
+        <button class="control-btn" onclick="addAlarm()">Add Alarm</button>
+        <div class="alarm-list" id="alarmList"></div>
+    </div>
+
+    <audio id="alarmSound" src="assets/alarm.mp3" preload="auto"></audio>
+
+    <script>
+        let alarms = [];
+
+        function addAlarm() {
+            const name = document.getElementById("alarmName").value;
+            const time = document.getElementById("timeSelector").value;
+
+            if (!name || !time) {
+                alert("Please enter a name and time for the alarm.");
+                return;
+            }
+
+            const alarmTime = new Date();
+            const [hours, minutes] = time.split(':').map(Number);
+            alarmTime.setHours(hours, minutes, 0, 0);
+
+            if (alarmTime <= new Date()) {
+                alarmTime.setDate(alarmTime.getDate() + 1);
+            }
+
+            const alarm = { name, time: alarmTime, id: Date.now(), ringing: false, nextRing: '' };
+            alarms.push(alarm);
+            alarms.sort((a, b) => a.time - b.time);
+            displayAlarms();
+            document.getElementById("alarmName").value = "";
+            document.getElementById("timeSelector").value = "";
+
+            setTimeout(() => ringAlarm(alarm.id), alarm.time - new Date());
+        }
+
+        function ringAlarm(alarmId) {
+            const alarm = alarms.find(a => a.id === alarmId);
+            if (alarm && !alarm.ringing) {
+                document.getElementById("alarmSound").play();
+                alarm.ringing = true;
+                displayAlarms();
+            }
+        }
+
+        function stopAlarm(alarmId) {
+            const alarm = alarms.find(a => a.id === alarmId);
+            if (alarm) {
+                alarm.ringing = false;
+                document.getElementById("alarmSound").pause();
+                document.getElementById("alarmSound").currentTime = 0;
+                displayAlarms();
+            }
+        }
+
+        function snoozeAlarm(alarmId, minutes) {
+            const alarm = alarms.find(a => a.id === alarmId);
+            if (alarm) {
+                stopAlarm(alarmId);
+                alarm.time.setMinutes(alarm.time.getMinutes() + parseInt(minutes, 10));
+                alarm.ringing = false;
+                alarm.nextRing = alarm.time.toLocaleTimeString();
+                setTimeout(() => ringAlarm(alarm.id), alarm.time - new Date());
+                displayAlarms();
+            }
+        }
+
+        function removeAlarm(alarmId) {
+            alarms = alarms.filter(a => a.id !== alarmId);
+            displayAlarms();
+        }
+
+        function displayAlarms() {
+            const alarmList = document.getElementById("alarmList");
+            alarmList.innerHTML = "";
+
+            alarms.forEach(alarm => {
+                const alarmItem = document.createElement("div");
+                alarmItem.classList.add("alarm-item");
+                alarmItem.innerHTML = `
+                    <span>${alarm.name} - ${alarm.time.toLocaleTimeString()} ${alarm.nextRing ? `(Next ring at ${alarm.nextRing})` : ''}</span>
+                    <div class="alarm-controls">
+                        ${alarm.ringing ? `
+                            <button class="stop-btn" onclick="stopAlarm(${alarm.id})">Stop</button>
+                            <button class="snooze-btn" onclick="snoozeAlarm(${alarm.id}, 5)">Snooze 5 min</button>
+                            <button class="snooze-btn" onclick="snoozeAlarm(${alarm.id}, 10)">Snooze 10 min</button>
+                            <div class="snooze-input">
+                                <label>Custom:</label>
+                                <input type="number" id="customSnooze-${alarm.id}" placeholder="Min" min="1">
+                                <button class="snooze-btn" onclick="snoozeAlarm(${alarm.id}, document.getElementById('customSnooze-${alarm.id}').value)">Set</button>
+                            </div>
+                        ` : ''}
+                        <button class="control-btn" onclick="removeAlarm(${alarm.id})">Remove</button>
+                    </div>
+                `;
+                alarmList.appendChild(alarmItem);
+            });
+        }
+
+        window.onbeforeunload = function() {
+            return "Are you sure you want to close the tab? Any set alarms will be lost.";
+        };
+    </script>
+</body>
+</html>
