@@ -58,13 +58,19 @@
 
                 <div class="mb-4">
                     <label for="valuesInput" class="block text-sm font-medium text-gray-700 mb-1">Values (comma-separated numbers):</label>
-                    <input type="text" id="valuesInput" value="50,70,30,90,60" placeholder="e.g., 10,20,30">
+                    <div class="flex items-center space-x-2">
+                        <input type="text" id="valuesInput" value="50,70,30,90,60" placeholder="e.g., 10,20,30">
+                        <span id="valuesCountDisplay" class="text-sm text-gray-600 flex-shrink-0"></span>
+                    </div>
                     <p class="text-xs text-gray-500 mt-1">Example: 50,70,30,90,60</p>
                 </div>
 
                 <div class="mb-4">
                     <label for="categoriesInput" class="block text-sm font-medium text-gray-700 mb-1">Categories (comma-separated text):</label>
-                    <input type="text" id="categoriesInput" value="A,B,C,D,E" placeholder="e.g., Apples,Oranges,Bananas">
+                    <div class="flex items-center space-x-2">
+                        <input type="text" id="categoriesInput" value="A,B,C,D,E" placeholder="e.g., Apples,Oranges,Bananas">
+                        <span id="categoriesHintDisplay" class="text-sm text-gray-600 flex-shrink-0"></span>
+                    </div>
                     <p class="text-xs text-gray-500 mt-1">Example: A,B,C,D,E</p>
                 </div>
 
@@ -134,6 +140,10 @@
         const sortAscendingBtn = document.getElementById('sortAscendingBtn');
         const barChartCanvas = document.getElementById('barChartCanvas');
         const ctx = barChartCanvas.getContext('2d');
+
+        // New display elements
+        const valuesCountDisplay = document.getElementById('valuesCountDisplay');
+        const categoriesHintDisplay = document.getElementById('categoriesHintDisplay');
 
         // Message Box elements
         const messageBox = document.getElementById('messageBox');
@@ -402,6 +412,35 @@
         }
 
         /**
+         * Updates the display for value count and category hints.
+         * @param {number[]} values - The parsed array of values.
+         * @param {string[]} categories - The parsed array of categories.
+         */
+        function updateInputHints(values, categories) {
+            valuesCountDisplay.textContent = `Values: ${values.length}`;
+
+            const valuesCount = values.length;
+            const categoriesCount = categories.length;
+
+            if (valuesCount === categoriesCount) {
+                if (valuesCount > 0) {
+                    categoriesHintDisplay.textContent = 'Categories match values.';
+                    categoriesHintDisplay.style.color = '#10B981'; // Green
+                } else {
+                    categoriesHintDisplay.textContent = ''; // No message if both are empty
+                }
+            } else if (categoriesCount < valuesCount) {
+                const needed = valuesCount - categoriesCount;
+                categoriesHintDisplay.textContent = `Need ${needed} more categorie(s).`;
+                categoriesHintDisplay.style.color = '#EF4444'; // Red
+            } else { // categoriesCount > valuesCount
+                const extra = categoriesCount - valuesCount;
+                categoriesHintDisplay.textContent = `${extra} extra categorie(s).`;
+                categoriesHintDisplay.style.color = '#F59E0B'; // Amber
+            }
+        }
+
+        /**
          * Generates and draws the plot based on user input.
          * @param {string} [source='input'] - Indicates what triggered the plot generation (e.g., 'input', 'generateButton', 'sortButton').
          */
@@ -413,6 +452,9 @@
             const plotTitle = plotTitleInput.value;
             const xAxisLabel = xAxisLabelInput.value;
             const yAxisLabel = yAxisLabelInput.value;
+
+            // Update hints immediately when inputs change
+            updateInputHints(values, categories);
 
             // --- Validation ---
             const hasEnoughData = values.length > 0 && categories.length > 0 && values.length === categories.length;
