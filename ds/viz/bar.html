@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bar Plot Generator</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom styles for a cleaner look */
+        body {
+            font-family: 'Inter', sans-serif;
+            @apply bg-gray-50 text-gray-800;
+        }
+        canvas {
+            display: block; /* Remove extra space below canvas */
+            width: 100%;
+            height: 100%;
+        }
+        input[type="text"], textarea {
+            @apply w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500;
+        }
+        button {
+            @apply bg-indigo-600 text-white py-2 px-4 rounded-lg shadow-md hover:bg-indigo-700 transition duration-200 ease-in-out;
+        }
+        /* Style for the message box */
+        #messageBox {
+            @apply fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-75 z-50 hidden;
+        }
+        #messageBoxContent {
+            @apply bg-white p-6 rounded-lg shadow-xl max-w-sm w-full text-center;
+        }
+        #messageBoxButton {
+            @apply mt-4 bg-indigo-600 text-white py-2 px-4 rounded-lg hover:bg-indigo-700;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <h1 class="text-3xl font-bold text-center mb-6 md:mb-8 text-indigo-700">Custom Bar Plot Generator</h1>
+
+    <!-- Main Container -->
+    <div class="flex flex-col md:flex-row gap-6 md:gap-8 max-w-7xl mx-auto">
+
+        <!-- Options Panel (Left/Top) -->
+        <!-- Added max-h and overflow-y-auto for scrollability -->
+        <div class="flex-shrink-0 w-full md:w-1/3 bg-white p-6 rounded-xl shadow-lg border border-gray-100 max-h-[calc(100vh-8rem)] overflow-y-auto">
+            <h2 class="text-xl font-semibold mb-4 text-gray-700">Plot Settings</h2>
+
+            <div class="mb-4">
+                <label for="valuesInput" class="block text-sm font-medium text-gray-700 mb-1">Values (comma-separated numbers):</label>
+                <input type="text" id="valuesInput" value="50,70,30,90,60" placeholder="e.g., 10,20,30">
+                <p class="text-xs text-gray-500 mt-1">Example: 50,70,30,90,60</p>
+            </div>
+
+            <div class="mb-4">
+                <label for="categoriesInput" class="block text-sm font-medium text-gray-700 mb-1">Categories (comma-separated text):</label>
+                <input type="text" id="categoriesInput" value="A,B,C,D,E" placeholder="e.g., Apples,Oranges,Bananas">
+                <p class="text-xs text-gray-500 mt-1">Example: A,B,C,D,E</p>
+            </div>
+
+            <!-- New Input fields for Plot Title, X-Axis Label, Y-Axis Label -->
+            <div class="mb-4">
+                <label for="plotTitleInput" class="block text-sm font-medium text-gray-700 mb-1">Plot Title:</label>
+                <input type="text" id="plotTitleInput" value="Sample Bar Chart" placeholder="e.g., Sales by Region">
+            </div>
+
+            <div class="mb-4">
+                <label for="xAxisLabelInput" class="block text-sm font-medium text-gray-700 mb-1">X-Axis Label:</label>
+                <input type="text" id="xAxisLabelInput" value="Categories" placeholder="e.g., Product Types">
+            </div>
+
+            <div class="mb-4">
+                <label for="yAxisLabelInput" class="block text-sm font-medium text-gray-700 mb-1">Y-Axis Label:</label>
+                <input type="text" id="yAxisLabelInput" value="Values" placeholder="e.g., Quantity Sold">
+            </div>
+            <!-- End of New Input fields -->
+
+            <div class="mb-4">
+                <label for="colorsInput" class="block text-sm font-medium text-gray-700 mb-1">Colors (optional, comma-separated, accepts hex/named colors):</label>
+                <input type="text" id="colorsInput" value="#6366F1,#8B5CF6,#EC4899,#F59E0B,#10B981" placeholder="e.g., red,blue,#FFC0CB">
+                <p class="text-xs text-gray-500 mt-1">Example: #6366F1,#8B5CF6,#EC4899,#F59E0B,#10B981</p>
+            </div>
+
+            <div class="mb-6">
+                <label for="widthsInput" class="block text-sm font-medium text-gray-700 mb-1">Bar Widths (optional, comma-separated percentages 0-100):</label>
+                <input type="text" id="widthsInput" value="80,70,90,75,85" placeholder="e.g., 70,80,90">
+                <p class="text-xs text-gray-500 mt-1">Example: 80,70,90,75,85 (0-100%)</p>
+            </div>
+
+            <button id="generatePlotBtn" class="w-full">Generate Plot</button>
+        </div>
+
+        <!-- Chart Container (Right/Bottom) -->
+        <div class="flex-grow bg-white p-4 rounded-xl shadow-lg border border-gray-100 flex items-center justify-center min-h-[300px] md:min-h-[500px]">
+            <canvas id="barChartCanvas"></canvas>
+        </div>
+    </div>
+
+    <!-- Message Box for alerts -->
+    <div id="messageBox">
+        <div id="messageBoxContent">
+            <p id="messageBoxText" class="text-lg font-medium mb-4"></p>
+            <button id="messageBoxButton">OK</button>
+        </div>
+    </div>
+
+    <script>
+        // Get references to DOM elements
+        const valuesInput = document.getElementById('valuesInput');
+        const categoriesInput = document.getElementById('categoriesInput');
+        const plotTitleInput = document.getElementById('plotTitleInput'); // New
+        const xAxisLabelInput = document.getElementById('xAxisLabelInput'); // New
+        const yAxisLabelInput = document.getElementById('yAxisLabelInput'); // New
+        const colorsInput = document.getElementById('colorsInput');
+        const widthsInput = document.getElementById('widthsInput');
+        const generatePlotBtn = document.getElementById('generatePlotBtn');
+        const barChartCanvas = document.getElementById('barChartCanvas');
+        const ctx = barChartCanvas.getContext('2d');
+
+        // Message Box elements
+        const messageBox = document.getElementById('messageBox');
+        const messageBoxText = document.getElementById('messageBoxText');
+        const messageBoxButton = document.getElementById('messageBoxButton');
+
+        // Function to show custom message box
+        function showMessageBox(message) {
+            messageBoxText.textContent = message;
+            messageBox.classList.remove('hidden');
+        }
+
+        // Event listener for message box button
+        messageBoxButton.addEventListener('click', () => {
+            messageBox.classList.add('hidden');
+        });
+
+        // Default colors for the bars
+        const defaultColors = [
+            '#6366F1', // Indigo
+            '#8B5CF6', // Violet
+            '#EC4899', // Pink
+            '#F59E0B', // Amber
+            '#10B981', // Emerald
+            '#3B82F6', // Blue
+            '#EF4444', // Red
+            '#06B6D4', // Cyan
+            '#6B7280'  // Gray
+        ];
+
+        /**
+         * Draws a bar chart on the canvas.
+         * @param {HTMLCanvasElement} canvas - The canvas element to draw on.
+         * @param {CanvasRenderingContext2D} ctx - The 2D rendering context of the canvas.
+         * @param {number[]} values - Array of numerical values for the bars.
+         * @param {string[]} categories - Array of category labels for the bars.
+         * @param {string} plotTitle - Title of the plot.
+         * @param {string} xAxisLabel - Label for the X-axis.
+         * @param {string} yAxisLabel - Label for the Y-axis.
+         * @param {string[]} colors - Array of colors for each bar.
+         * @param {number[]} widths - Array of widths (0-100%) for each bar relative to available space.
+         */
+        function drawBarChart(canvas, ctx, values, categories, plotTitle, xAxisLabel, yAxisLabel, colors, widths) {
+            // Clear the canvas before drawing
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Get canvas dimensions
+            const canvasWidth = canvas.width;
+            const canvasHeight = canvas.height;
+
+            // Define padding and margins for the chart
+            // Adjusted padding to account for title and axis labels
+            const topPadding = 50;
+            const bottomPadding = 40; // For X-axis label
+            const leftPadding = 60; // For Y-axis label
+            const rightPadding = 20;
+
+            const chartAreaWidth = canvasWidth - leftPadding - rightPadding;
+            const chartAreaHeight = canvasHeight - topPadding - bottomPadding;
+            const barSpacing = 15; // Spacing between bars
+
+            // Calculate the maximum value for scaling the bars
+            const maxValue = Math.max(...values);
+            // If all values are non-positive or no values, clear canvas and return
+            if (values.length === 0 || maxValue <= 0) {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                return;
+            }
+
+            // Calculate bar width based on number of bars and spacing
+            const numBars = values.length;
+            const availableBarWidthSpace = chartAreaWidth - (numBars - 1) * barSpacing;
+            const baseBarWidth = availableBarWidthSpace / numBars;
+
+            // Draw Plot Title
+            ctx.fillStyle = '#1F2937'; // Dark gray
+            ctx.font = 'bold 18px Inter';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'top';
+            ctx.fillText(plotTitle, canvasWidth / 2, 15);
+
+            // Draw Y-axis (values)
+            ctx.beginPath();
+            ctx.moveTo(leftPadding, topPadding);
+            ctx.lineTo(leftPadding, canvasHeight - bottomPadding);
+            ctx.strokeStyle = '#374151'; // Dark gray for axis
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            // Draw X-axis (categories)
+            ctx.beginPath();
+            ctx.moveTo(leftPadding, canvasHeight - bottomPadding);
+            ctx.lineTo(canvasWidth - rightPadding, canvasHeight - bottomPadding);
+            ctx.strokeStyle = '#374151';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            // Draw Y-axis labels and tick marks
+            const numYLabels = 5; // Number of labels on Y-axis
+            for (let i = 0; i <= numYLabels; i++) {
+                const value = (maxValue / numYLabels) * i;
+                const y = canvasHeight - bottomPadding - (value / maxValue) * chartAreaHeight;
+
+                ctx.fillStyle = '#4B5563'; // Gray for text
+                ctx.font = '12px Inter';
+                ctx.textAlign = 'right';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(Math.round(value), leftPadding - 5, y); // Label
+
+                // Tick mark
+                ctx.beginPath();
+                ctx.moveTo(leftPadding, y);
+                ctx.lineTo(leftPadding + 5, y);
+                ctx.strokeStyle = '#9CA3AF'; // Light gray for tick marks
+                ctx.lineWidth = 1;
+                ctx.stroke();
+            }
+
+            // Draw Y-axis Label
+            ctx.save(); // Save the current canvas state
+            ctx.translate(leftPadding - 40, canvasHeight / 2); // Move origin to desired text position
+            ctx.rotate(-Math.PI / 2); // Rotate 90 degrees counter-clockwise
+            ctx.fillStyle = '#1F2937'; // Dark gray
+            ctx.font = '14px Inter';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(yAxisLabel, 0, 0);
+            ctx.restore(); // Restore the canvas state
+
+            // Draw X-axis Label
+            ctx.fillStyle = '#1F2937'; // Dark gray
+            ctx.font = '14px Inter';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'top';
+            ctx.fillText(xAxisLabel, leftPadding + chartAreaWidth / 2, canvasHeight - bottomPadding + 25);
+
+
+            // Draw bars
+            let currentX = leftPadding; // Starting X position for the first bar
+            for (let i = 0; i < numBars; i++) {
+                const value = values[i];
+                const category = categories[i] || `Category ${i + 1}`;
+                const color = colors[i] || defaultColors[i % defaultColors.length]; // Use default colors if not provided
+                const barPercentageWidth = widths[i] !== undefined ? widths[i] / 100 : 0.8; // Default 80% if not provided
+
+                // Calculate bar height based on value
+                const barHeight = (value / maxValue) * chartAreaHeight;
+
+                // Calculate actual bar width
+                const barActualWidth = baseBarWidth * barPercentageWidth;
+
+                // Center the bar within its allocated space
+                const x = currentX + (baseBarWidth - barActualWidth) / 2;
+                const y = canvasHeight - bottomPadding - barHeight;
+
+                // Draw the bar
+                ctx.fillStyle = color;
+                ctx.fillRect(x, y, barActualWidth, barHeight);
+                ctx.strokeStyle = color; // Border same color
+                ctx.lineWidth = 1;
+                ctx.strokeRect(x, y, barActualWidth, barHeight); // Add a subtle border
+
+                // Draw category label below the bar
+                ctx.fillStyle = '#4B5563'; // Gray for text
+                ctx.font = '12px Inter';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'top';
+                ctx.fillText(category, x + barActualWidth / 2, canvasHeight - bottomPadding + 5);
+
+                // Draw value label above the bar
+                ctx.fillStyle = '#1F2937'; // Darker gray for value text
+                ctx.font = '12px Inter';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'bottom';
+                ctx.fillText(value, x + barActualWidth / 2, y - 5);
+
+                // Move to the next bar's starting position
+                currentX += baseBarWidth + barSpacing;
+            }
+        }
+
+        /**
+         * Parses a comma-separated string into an array of numbers.
+         * @param {string} inputString - The input string.
+         * @returns {number[]} Array of numbers.
+         */
+        function parseNumbers(inputString) {
+            return inputString.split(',').map(s => parseFloat(s.trim())).filter(n => !isNaN(n));
+        }
+
+        /**
+         * Parses a comma-separated string into an array of strings.
+         * @param {string} inputString - The input string.
+         * @returns {string[]} Array of strings.
+         */
+        function parseStrings(inputString) {
+            return inputString.split(',').map(s => s.trim()).filter(s => s.length > 0);
+        }
+
+        /**
+         * Generates and draws the plot based on user input.
+         */
+        function generatePlot() {
+            const values = parseNumbers(valuesInput.value);
+            const categories = parseStrings(categoriesInput.value);
+            const plotTitle = plotTitleInput.value; // Get new input
+            const xAxisLabel = xAxisLabelInput.value; // Get new input
+            const yAxisLabel = yAxisLabelInput.value; // Get new input
+            const colors = parseStrings(colorsInput.value);
+            const widths = parseNumbers(widthsInput.value); // These should be percentages (0-100)
+
+            // Basic validation for plot generation (can be relaxed for live input)
+            // If values become empty or invalid during typing, clear the plot.
+            // Only show message box if the generate button is clicked, not on every input change
+            const isManualClick = event && event.type === 'click';
+
+            if (values.length === 0) {
+                if (isManualClick) showMessageBox("Please enter at least one value.");
+                ctx.clearRect(0, 0, barChartCanvas.width, barChartCanvas.height);
+                return;
+            }
+            if (categories.length === 0) {
+                if (isManualClick) showMessageBox("Please enter at least one category.");
+                ctx.clearRect(0, 0, barChartCanvas.width, barChartCanvas.height);
+                return;
+            }
+            if (values.length !== categories.length) {
+                if (isManualClick) showMessageBox("Number of values must match the number of categories.");
+                ctx.clearRect(0, 0, barChartCanvas.width, barChartCanvas.height);
+                return;
+            }
+            if (widths.some(w => w < 0 || w > 100)) {
+                if (isManualClick) showMessageBox("Bar widths must be between 0 and 100.");
+                ctx.clearRect(0, 0, barChartCanvas.width, barChartCanvas.height);
+                return;
+            }
+
+            // Ensure canvas size is set to its CSS size
+            const rect = barChartCanvas.parentElement.getBoundingClientRect();
+            barChartCanvas.width = rect.width;
+            barChartCanvas.height = rect.height;
+
+            drawBarChart(barChartCanvas, ctx, values, categories, plotTitle, xAxisLabel, yAxisLabel, colors, widths);
+        }
+
+        // Event listener for the generate button
+        generatePlotBtn.addEventListener('click', generatePlot);
+
+        // Add input event listeners to all relevant input fields for live updates
+        valuesInput.addEventListener('input', generatePlot);
+        categoriesInput.addEventListener('input', generatePlot);
+        plotTitleInput.addEventListener('input', generatePlot); // New
+        xAxisLabelInput.addEventListener('input', generatePlot); // New
+        yAxisLabelInput.addEventListener('input', generatePlot); // New
+        colorsInput.addEventListener('input', generatePlot);
+        widthsInput.addEventListener('input', generatePlot);
+
+
+        // Function to resize canvas and redraw chart on window resize
+        function resizeCanvasAndRedraw() {
+            // Only redraw if there's data to draw
+            const values = parseNumbers(valuesInput.value);
+            if (values.length > 0) {
+                const rect = barChartCanvas.parentElement.getBoundingClientRect();
+                barChartCanvas.width = rect.width;
+                barChartCanvas.height = rect.height;
+                generatePlot(); // Redraw with current settings
+            } else {
+                 // If no data, just adjust canvas size
+                 const rect = barChartCanvas.parentElement.getBoundingClientRect();
+                 barChartCanvas.width = rect.width;
+                 barChartCanvas.height = rect.height;
+                 ctx.clearRect(0,0,barChartCanvas.width, barChartCanvas.height); // Clear if no data
+            }
+        }
+
+        // Initial plot generation when the page loads
+        window.onload = function() {
+            resizeCanvasAndRedraw(); // Ensure canvas is sized correctly and initial plot is drawn
+        };
+
+        // Add event listener for window resize
+        window.addEventListener('resize', resizeCanvasAndRedraw);
+
+    </script>
+</body>
+</html>

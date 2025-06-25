@@ -1,0 +1,32 @@
+1. User can select chart type from dropdown
+2. Separate js for each type (activate bassed on selection)
+3. User pastes data (no csv for now)
+4. Draws the chart of choice
+5. User can change chart type
+6. Can export chart as png or pdf
+
+
+A js based webpage to allow user input a set of values and categories for a bar plot. The user can optionally set color and width of bars. Make the default good looking. put the options to the left of page and chart to the right. Make it responsive. On mobile (chart below the options)
+
+allow changes in values be visible live (bar goes up or down as user types)
+make options title and x and y axes names. Put them below Categories. If all options don't fit in one window page, make it scroll.
+
+
+
+
+Let's retsrat.
+1. User can select chart type from dropdown
+2. Gives categories separated by commas
+3. Gives values separated by commas
+4. We check if the lengths are equal; if not, give warning immediately
+5. We already have
+chart.js
+|- main.js         → Handles user input, UI events, type switching
+|- barChart.js     → Function: drawBarChart(data, config)
+|- lineChart.js    → Function: drawLineChart(data, config)
+|- pieChart.js     → Function: drawPieChart(data, config)
+|- utils.js        → Data parsing, download functions
+
+Based on user's choice we draw chart.
+6. User can change chart type
+7. Can export chart as png or pdf
