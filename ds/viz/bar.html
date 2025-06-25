@@ -92,8 +92,8 @@
 
                 <div class="mb-6">
                     <label for="widthsInput" class="block text-sm font-medium text-gray-700 mb-1">Bar Widths (optional, comma-separated percentages 0-100):</label>
-                    <input type="text" id="widthsInput" value="80,70,90,75,85" placeholder="e.g., 70,80,90">
-                    <p class="text-xs text-gray-500 mt-1">Example: 80,70,90,75,85 (0-100%)</p>
+                    <input type="text" id="widthsInput" value="80" placeholder="e.g., 70,80,90">
+                    <p class="text-xs text-gray-500 mt-1">Example: 80 (for equal width), or 70,80,90 for custom widths</p>
                 </div>
 
                 <button id="generatePlotBtn" class="w-full">Generate Plot</button>
@@ -200,6 +200,9 @@
 
             // Calculate the maximum value for scaling the bars
             const maxValue = Math.max(...values);
+            // Add a buffer to the maxValue to make the y-axis taller than the highest bar
+            const displayMaxValue = maxValue * 1.1; // 10% buffer
+
             // If all values are non-positive or no values, clear canvas and return
             if (values.length === 0 || maxValue <= 0) {
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -212,15 +215,15 @@
             const baseBarWidth = availableBarWidthSpace / numBars;
 
             // Draw Plot Area Background (ggplot2 style) for the entire canvas area
-            ctx.fillStyle = '#f8f8f8'; // Light gray background
+            ctx.fillStyle = '#e6e6e6'; // Gray background
             ctx.fillRect(0, 0, canvasWidth, canvasHeight); // Fill entire canvas
 
             // Draw horizontal grid lines (ggplot2 style)
-            ctx.strokeStyle = '#e0e0e0'; // Lighter gray for grid lines
+            ctx.strokeStyle = '#ffffff'; // White for grid lines
             ctx.lineWidth = 1;
-            const numYLabels = 5; // Number of labels on Y-axis (already defined)
-            for (let i = 0; i <= numYLabels; i++) {
-                const y = canvasHeight - bottomPadding - ((maxValue / numYLabels) * i / maxValue) * chartAreaHeight;
+            const numYGridLines = 10; // Increased number of horizontal grid lines
+            for (let i = 0; i <= numYGridLines; i++) {
+                const y = topPadding + (chartAreaHeight / numYGridLines) * i;
                 ctx.beginPath();
                 ctx.moveTo(leftPadding, y);
                 ctx.lineTo(leftPadding + chartAreaWidth, y);
@@ -228,22 +231,14 @@
             }
 
             // Draw vertical grid lines (ggplot2 style)
-            // Use the position of the bars for vertical grid lines
-            let currentXForGrid = leftPadding;
-            for (let i = 0; i < numBars; i++) {
-                // Adjust for centering of the grid line within the bar's allocated space,
-                // or just space them evenly across the chart area
-                const xGrid = leftPadding + (i / numBars) * chartAreaWidth; // Evenly spaced vertical lines
+            const numXGridLines = 10; // Increased number of vertical grid lines
+            for (let i = 0; i <= numXGridLines; i++) {
+                const xGrid = leftPadding + (chartAreaWidth / numXGridLines) * i;
                 ctx.beginPath();
                 ctx.moveTo(xGrid, topPadding);
                 ctx.lineTo(xGrid, canvasHeight - bottomPadding);
                 ctx.stroke();
             }
-            // Also draw a line at the far right of the plot area for completeness
-            ctx.beginPath();
-            ctx.moveTo(leftPadding + chartAreaWidth, topPadding);
-            ctx.lineTo(leftPadding + chartAreaWidth, canvasHeight - bottomPadding);
-            ctx.stroke();
 
 
             // Draw Plot Title
@@ -270,9 +265,9 @@
             ctx.stroke();
 
             // Draw Y-axis labels and tick marks
-            for (let i = 0; i <= numYLabels; i++) {
-                const value = (maxValue / numYLabels) * i;
-                const y = canvasHeight - bottomPadding - (value / maxValue) * chartAreaHeight;
+            for (let i = 0; i <= numYGridLines; i++) { // Use numYGridLines for labels
+                const value = (displayMaxValue / numYGridLines) * i; // Use displayMaxValue for label scaling
+                const y = canvasHeight - bottomPadding - (value / displayMaxValue) * chartAreaHeight; // Use displayMaxValue for y-position
 
                 ctx.fillStyle = '#4B5563'; // Gray for text
                 ctx.font = '12px Inter';
@@ -314,10 +309,11 @@
                 const value = values[i];
                 const category = categories[i] || `Category ${i + 1}`;
                 const color = colors[i] || defaultColors[i % defaultColors.length]; // Use default colors if not provided
-                const barPercentageWidth = widths[i] !== undefined ? widths[i] / 100 : 0.8; // Default 80% if not provided
+                // Ensure all bars are equal width by default (0.8 or 80%)
+                const barPercentageWidth = (widths.length > 0 && widths[i] !== undefined) ? widths[i] / 100 : 0.8;
 
-                // Calculate bar height based on value
-                const barHeight = (value / maxValue) * chartAreaHeight;
+                // Calculate bar height based on value (using displayMaxValue for consistent scaling)
+                const barHeight = (value / displayMaxValue) * chartAreaHeight;
 
                 // Calculate actual bar width
                 const barActualWidth = baseBarWidth * barPercentageWidth;
