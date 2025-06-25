@@ -14,15 +14,22 @@
         }
         canvas {
             display: block; /* Remove extra space below canvas */
-            /* Removed height: calc(100% - 60px); to allow flex-grow to manage height */
             width: 100%;
+            /* Height will be set by JavaScript to match width for square aspect ratio */
+            /* Adjusted max-width and max-height for a slightly smaller plot */
+            max-width: 500px; /* Reduced from 600px */
+            max-height: 500px; /* Reduced from 600px */
         }
         input[type="text"], textarea {
             @apply w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500;
         }
-        /* Updated button styling */
-        button {
+        /* Updated button styling for generatePlotBtn */
+        #generatePlotBtn {
             @apply bg-gradient-to-r from-indigo-500 to-purple-600 text-white py-2 px-6 rounded-lg shadow-lg hover:from-indigo-600 hover:to-purple-700 transition transform duration-200 ease-in-out hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50 border border-indigo-700;
+        }
+        /* Updated button styling for sortAscendingBtn to be a darker gray */
+        #sortAscendingBtn {
+            @apply bg-gray-700 text-white py-2 px-6 rounded-lg shadow-md hover:bg-gray-800 transition transform duration-200 ease-in-out hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-gray-600 focus:ring-opacity-50 border border-gray-600;
         }
         /* Style for the message box */
         #messageBox {
@@ -37,57 +44,60 @@
     </style>
 </head>
 <body class="p-4 md:p-8">
-    <h1 class="text-3xl font-bold text-center mb-6 md:mb-8 text-indigo-700">Custom Bar Plot Generator</h1>
+    <!-- Main Title is now inside the Options Panel, above the scrollable content -->
 
     <!-- Main Container -->
     <div class="flex flex-col md:flex-row gap-6 md:gap-8 max-w-7xl mx-auto">
 
         <!-- Options Panel (Left/Top) -->
-        <!-- Added max-h and overflow-y-auto for scrollability -->
-        <div class="flex-shrink-0 w-full md:w-1/3 bg-white p-6 rounded-xl shadow-lg border border-gray-100 max-h-[calc(100vh-8rem)] overflow-y-auto">
-            <h2 class="text-xl font-semibold mb-4 text-gray-700">Plot Settings</h2>
+        <div class="flex-shrink-0 w-full md:w-1/3 bg-white p-6 rounded-xl shadow-lg border border-gray-100">
+            <h1 class="text-3xl font-bold text-center mb-6 md:mb-8 text-indigo-700">Bar Plot Generator</h1>
+            <!-- The scrollable content starts below this title -->
+            <div class="max-h-[calc(100vh-8rem-6rem)] overflow-y-auto"> <!-- Adjusted calc to account for h1 height -->
+                <h2 class="text-xl font-semibold mb-4 text-gray-700">Plot Settings</h2>
 
-            <div class="mb-4">
-                <label for="valuesInput" class="block text-sm font-medium text-gray-700 mb-1">Values (comma-separated numbers):</label>
-                <input type="text" id="valuesInput" value="50,70,30,90,60" placeholder="e.g., 10,20,30">
-                <p class="text-xs text-gray-500 mt-1">Example: 50,70,30,90,60</p>
+                <div class="mb-4">
+                    <label for="valuesInput" class="block text-sm font-medium text-gray-700 mb-1">Values (comma-separated numbers):</label>
+                    <input type="text" id="valuesInput" value="50,70,30,90,60" placeholder="e.g., 10,20,30">
+                    <p class="text-xs text-gray-500 mt-1">Example: 50,70,30,90,60</p>
+                </div>
+
+                <div class="mb-4">
+                    <label for="categoriesInput" class="block text-sm font-medium text-gray-700 mb-1">Categories (comma-separated text):</label>
+                    <input type="text" id="categoriesInput" value="A,B,C,D,E" placeholder="e.g., Apples,Oranges,Bananas">
+                    <p class="text-xs text-gray-500 mt-1">Example: A,B,C,D,E</p>
+                </div>
+
+                <!-- Input fields for Plot Title, X-Axis Label, Y-Axis Label -->
+                <div class="mb-4">
+                    <label for="plotTitleInput" class="block text-sm font-medium text-gray-700 mb-1">Plot Title:</label>
+                    <input type="text" id="plotTitleInput" value="Sample Bar Chart" placeholder="e.g., Sales by Region">
+                </div>
+
+                <div class="mb-4">
+                    <label for="xAxisLabelInput" class="block text-sm font-medium text-gray-700 mb-1">X-Axis Label:</label>
+                    <input type="text" id="xAxisLabelInput" value="Categories" placeholder="e.g., Product Types">
+                </div>
+
+                <div class="mb-4">
+                    <label for="yAxisLabelInput" class="block text-sm font-medium text-gray-700 mb-1">Y-Axis Label:</label>
+                    <input type="text" id="yAxisLabelInput" value="Values" placeholder="e.g., Quantity Sold">
+                </div>
+
+                <div class="mb-4">
+                    <label for="colorsInput" class="block text-sm font-medium text-gray-700 mb-1">Colors (optional, comma-separated, accepts hex/named colors):</label>
+                    <input type="text" id="colorsInput" value="#6366F1,#8B5CF6,#EC4899,#F59E0B,#10B981" placeholder="e.g., red,blue,#FFC0CB">
+                    <p class="text-xs text-gray-500 mt-1">Example: #6366F1,#8B5CF6,#EC4899,#F59E0B,#10B981</p>
+                </div>
+
+                <div class="mb-6">
+                    <label for="widthsInput" class="block text-sm font-medium text-gray-700 mb-1">Bar Widths (optional, comma-separated percentages 0-100):</label>
+                    <input type="text" id="widthsInput" value="80,70,90,75,85" placeholder="e.g., 70,80,90">
+                    <p class="text-xs text-gray-500 mt-1">Example: 80,70,90,75,85 (0-100%)</p>
+                </div>
+
+                <button id="generatePlotBtn" class="w-full">Generate Plot</button>
             </div>
-
-            <div class="mb-4">
-                <label for="categoriesInput" class="block text-sm font-medium text-gray-700 mb-1">Categories (comma-separated text):</label>
-                <input type="text" id="categoriesInput" value="A,B,C,D,E" placeholder="e.g., Apples,Oranges,Bananas">
-                <p class="text-xs text-gray-500 mt-1">Example: A,B,C,D,E</p>
-            </div>
-
-            <!-- Input fields for Plot Title, X-Axis Label, Y-Axis Label -->
-            <div class="mb-4">
-                <label for="plotTitleInput" class="block text-sm font-medium text-gray-700 mb-1">Plot Title:</label>
-                <input type="text" id="plotTitleInput" value="Sample Bar Chart" placeholder="e.g., Sales by Region">
-            </div>
-
-            <div class="mb-4">
-                <label for="xAxisLabelInput" class="block text-sm font-medium text-gray-700 mb-1">X-Axis Label:</label>
-                <input type="text" id="xAxisLabelInput" value="Categories" placeholder="e.g., Product Types">
-            </div>
-
-            <div class="mb-4">
-                <label for="yAxisLabelInput" class="block text-sm font-medium text-gray-700 mb-1">Y-Axis Label:</label>
-                <input type="text" id="yAxisLabelInput" value="Values" placeholder="e.g., Quantity Sold">
-            </div>
-
-            <div class="mb-4">
-                <label for="colorsInput" class="block text-sm font-medium text-gray-700 mb-1">Colors (optional, comma-separated, accepts hex/named colors):</label>
-                <input type="text" id="colorsInput" value="#6366F1,#8B5CF6,#EC4899,#F59E0B,#10B981" placeholder="e.g., red,blue,#FFC0CB">
-                <p class="text-xs text-gray-500 mt-1">Example: #6366F1,#8B5CF6,#EC4899,#F59E0B,#10B981</p>
-            </div>
-
-            <div class="mb-6">
-                <label for="widthsInput" class="block text-sm font-medium text-gray-700 mb-1">Bar Widths (optional, comma-separated percentages 0-100):</label>
-                <input type="text" id="widthsInput" value="80,70,90,75,85" placeholder="e.g., 70,80,90">
-                <p class="text-xs text-gray-500 mt-1">Example: 80,70,90,75,85 (0-100%)</p>
-            </div>
-
-            <button id="generatePlotBtn" class="w-full">Generate Plot</button>
         </div>
 
         <!-- Chart Container (Right/Bottom) -->
@@ -98,7 +108,7 @@
             <!-- Moved button for sorting below the canvas -->
             <!-- Added w-fit and mx-auto for centering and content-based width -->
             <div class="mt-4 w-full flex justify-center px-4">
-                <button id="sortAscendingBtn" class="bg-blue-500 hover:bg-blue-600">Sort Ascending</button>
+                <button id="sortAscendingBtn">Sort Ascending</button>
             </div>
         </div>
     </div>
@@ -201,6 +211,41 @@
             const availableBarWidthSpace = chartAreaWidth - (numBars - 1) * barSpacing;
             const baseBarWidth = availableBarWidthSpace / numBars;
 
+            // Draw Plot Area Background (ggplot2 style) for the entire canvas area
+            ctx.fillStyle = '#f8f8f8'; // Light gray background
+            ctx.fillRect(0, 0, canvasWidth, canvasHeight); // Fill entire canvas
+
+            // Draw horizontal grid lines (ggplot2 style)
+            ctx.strokeStyle = '#e0e0e0'; // Lighter gray for grid lines
+            ctx.lineWidth = 1;
+            const numYLabels = 5; // Number of labels on Y-axis (already defined)
+            for (let i = 0; i <= numYLabels; i++) {
+                const y = canvasHeight - bottomPadding - ((maxValue / numYLabels) * i / maxValue) * chartAreaHeight;
+                ctx.beginPath();
+                ctx.moveTo(leftPadding, y);
+                ctx.lineTo(leftPadding + chartAreaWidth, y);
+                ctx.stroke();
+            }
+
+            // Draw vertical grid lines (ggplot2 style)
+            // Use the position of the bars for vertical grid lines
+            let currentXForGrid = leftPadding;
+            for (let i = 0; i < numBars; i++) {
+                // Adjust for centering of the grid line within the bar's allocated space,
+                // or just space them evenly across the chart area
+                const xGrid = leftPadding + (i / numBars) * chartAreaWidth; // Evenly spaced vertical lines
+                ctx.beginPath();
+                ctx.moveTo(xGrid, topPadding);
+                ctx.lineTo(xGrid, canvasHeight - bottomPadding);
+                ctx.stroke();
+            }
+            // Also draw a line at the far right of the plot area for completeness
+            ctx.beginPath();
+            ctx.moveTo(leftPadding + chartAreaWidth, topPadding);
+            ctx.lineTo(leftPadding + chartAreaWidth, canvasHeight - bottomPadding);
+            ctx.stroke();
+
+
             // Draw Plot Title
             ctx.fillStyle = '#1F2937'; // Dark gray
             ctx.font = 'bold 18px Inter';
@@ -225,7 +270,6 @@
             ctx.stroke();
 
             // Draw Y-axis labels and tick marks
-            const numYLabels = 5; // Number of labels on Y-axis
             for (let i = 0; i <= numYLabels; i++) {
                 const value = (maxValue / numYLabels) * i;
                 const y = canvasHeight - bottomPadding - (value / maxValue) * chartAreaHeight;
@@ -417,7 +461,7 @@
             // Use computed style to get accurate rendered dimensions
             const computedStyle = getComputedStyle(barChartCanvas);
             barChartCanvas.width = parseFloat(computedStyle.width);
-            barChartCanvas.height = parseFloat(computedStyle.height);
+            barChartCanvas.height = barChartCanvas.width; // Make it square based on width
 
             drawBarChart(barChartCanvas, ctx, values, categories, plotTitle, xAxisLabel, yAxisLabel, colors, widths);
         }
@@ -443,11 +487,9 @@
             // Get the computed dimensions after layout
             const computedStyle = getComputedStyle(barChartCanvas);
             const displayWidth = parseFloat(computedStyle.width);
-            const displayHeight = parseFloat(computedStyle.height);
-
-            // Set the canvas drawing buffer resolution
+            // Set the canvas drawing buffer resolution to be square
             barChartCanvas.width = displayWidth;
-            barChartCanvas.height = displayHeight;
+            barChartCanvas.height = displayWidth;
 
             // Call generatePlot with 'resize' source to redraw, keeping current sort state
             // This ensures the chart redraws correctly on resize while preserving the sort state
