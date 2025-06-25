@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Plot Generator</title>
-    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <style>
         /* Custom styles for a cleaner look */
         body {
@@ -30,7 +30,7 @@
         }
         /* Updated button styling for sortAscendingBtn to be a darker gray */
         #sortAscendingBtn {
-            @apply bg-gray-700 text-white py-2 px-6 rounded-lg shadow-md hover:bg-gray-800 transition transform duration-200 ease-in-out hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-gray-600 focus:ring-opacity-50 border border-gray-600;
+            @apply bg-gray-700 text-white py-2 px-6 rounded-lg shadow-md hover:bg-gray-800 transition transform duration-200 ease-in-out hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-gray-600 focus:ring-opacity-50 border border-gray-600 flex items-center justify-center gap-2; /* Added flex and gap for icon */
         }
         /* Style for the message box */
         #messageBox {
@@ -48,14 +48,37 @@
             @apply w-full border-collapse;
         }
         .input-table th, .input-table td {
-            @apply border border-gray-300 p-2 text-sm;
+            /* Reduced padding for smaller cells */
+            @apply border border-gray-300 px-1 py-0.5 text-sm;
         }
         .input-table th {
             @apply bg-gray-100 font-semibold text-gray-700;
+            white-space: nowrap; /* Prevent wrapping of column headers */
+            width: 90px; /* Set fixed width for headers */
+            min-width: 90px;
+            max-width: 90px;
         }
+        /* Specific widths for table headers */
+        /* These rules are now redundant if all th have width: 90px, but kept for clarity if specific widths are needed later */
+        .input-table th:nth-child(1) { /* Category */
+            width: 90px;
+        }
+        .input-table th:nth-child(2) { /* Value */
+            width: 90px;
+        }
+        .input-table th:nth-child(3) { /* Color */
+            width: 90px;
+        }
+        .input-table th:nth-child(4) { /* Width (%) */
+            width: 90px;
+        }
+
         .input-table input[type="text"] {
             /* Changed border-gray-200 to border-gray-900 for black border */
-            @apply w-full p-1 border border-gray-900 rounded-sm focus:ring-blue-300 focus:border-blue-300;
+            @apply w-full p-1 border border-gray-900 rounded-sm shadow-sm focus:ring-blue-300 focus:border-blue-300;
+            box-sizing: border-box; /* Include padding and border in the element's total width and height */
+            min-width: 0; /* Allow inputs to shrink */
+            width: 80px; /* Adjusted input width to fit within 90px cell, considering padding/border */
         }
         .input-table .delete-row-btn {
             @apply bg-red-500 text-white p-1 rounded hover:bg-red-600 transition duration-150 ease-in-out;
@@ -71,7 +94,7 @@
         }
         /* Styling for the download button */
         #downloadPlotBtn {
-            @apply bg-blue-600 text-white py-2 px-6 rounded-lg shadow-md hover:bg-blue-700 transition transform duration-200 ease-in-out hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 border border-blue-700;
+            @apply bg-blue-600 text-white py-2 px-6 rounded-lg shadow-md hover:bg-blue-700 transition transform duration-200 ease-in-out hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 border border-blue-700 flex items-center justify-center gap-2; /* Added flex and gap for icon */
         }
         /* Styling for the More Options button */
         #moreOptionsBtn {
@@ -84,35 +107,34 @@
     </style>
 </head>
 <body class="p-4 md:p-8">
-    <!-- Main Container -->
     <div class="flex flex-col md:flex-row gap-6 md:gap-8 max-w-7xl mx-auto">
 
-        <!-- Options Panel (Left/Top) -->
         <div class="flex-shrink-0 w-full md:w-1/3 bg-white p-6 rounded-xl shadow-lg border border-gray-100">
             <h1 class="text-3xl font-bold text-center mb-6 md:mb-8 text-indigo-700 flex items-center justify-center">
                 Plot Generator
             </h1>
-            <!-- The scrollable content starts below this title -->
-            <div class="max-h-[calc(100vh-8rem-6rem)] overflow-y-auto pb-4"> <!-- Added pb-4 for spacing before button -->
-                <h2 class="text-xl font-semibold mb-4 text-gray-700">Plot Settings</h2>
+            <div class="max-h-[calc(100vh-8rem-6rem)] overflow-y-auto pb-4"> <h2 class="text-xl font-semibold mb-4 text-gray-700">Plot Settings</h2>
 
-                <!-- Input Method Selection -->
+                <div class="mb-4">
+                    <label for="plotTitleInput" class="block text-sm font-medium text-gray-700 mb-1">Plot Title:</label>
+                    <input type="text" id="plotTitleInput" value="Sample Plot" placeholder="e.g., Sales by Region">
+                </div>
+
                 <div class="mb-4">
                     <label class="block text-sm font-medium text-gray-700 mb-2">Input Method:</label>
                     <div class="flex space-x-4">
                         <label class="inline-flex items-center">
-                            <input type="radio" name="inputMethod" value="commaSeparated" class="form-radio" checked>
+                            <input type="radio" name="inputMethod" value="commaSeparated" class="form-radio">
                             <span class="ml-2 text-gray-700">Comma Separated</span>
                         </label>
                         <label class="inline-flex items-center">
-                            <input type="radio" name="inputMethod" value="tableInput" class="form-radio">
+                            <input type="radio" name="inputMethod" value="tableInput" class="form-radio" checked>
                             <span class="ml-2 text-gray-700">Table Input</span>
                         </label>
                     </div>
                 </div>
 
-                <!-- Comma Separated Input Fields -->
-                <div id="commaSeparatedInput" class="input-section">
+                <div id="commaSeparatedInput" class="input-section hidden">
                     <div class="mb-4">
                         <label for="categoriesInput" class="block text-sm font-medium text-gray-700 mb-1">Categories (comma-separated text):</label>
                         <div class="flex items-center space-x-2">
@@ -132,41 +154,30 @@
                     </div>
                 </div>
 
-                <!-- Table Input Fields -->
-                <div id="tableInput" class="input-section hidden">
+                <div id="tableInput" class="input-section">
                     <h3 class="text-lg font-semibold mb-2 text-gray-700">Data Table</h3>
                     <table class="input-table mb-2">
                         <thead>
                             <tr>
-                                <th>Category</th>
-                                <th>Value</th>
-                                <th class="table-column-options hidden-options">Color</th>
-                                <th class="table-column-options hidden-options">Width (%)</th>
-                                <th></th> <!-- For delete button -->
-                            </tr>
+                                <th class="category-header">Category</th>
+                                <th class="value-header">Value</th>
+                                <th class="table-column-options color-header hidden-options">Color</th>
+                                <th class="table-column-options width-header hidden-options">Width (%)</th>
+                                <th></th> </tr>
                         </thead>
                         <tbody id="dataTableBody">
-                            <!-- Rows will be added here by JavaScript -->
-                        </tbody>
+                            </tbody>
                     </table>
                     <button type="button" id="addRowBtn" class="add-row-btn">Add Row</button>
                     <p class="text-xs text-gray-500 mt-2">You can paste data from Excel (Ctrl+V or Cmd+V) into any cell.</p>
                 </div>
 
 
-                <!-- Input fields for Plot Title, X-Axis Label, Y-Axis Label -->
-                <div class="mb-4">
-                    <label for="plotTitleInput" class="block text-sm font-medium text-gray-700 mb-1">Plot Title:</label>
-                    <input type="text" id="plotTitleInput" value="Sample Plot" placeholder="e.g., Sales by Region">
-                </div>
-
-                <!-- More Options Section -->
                 <div class="mb-4 flex justify-center">
                     <button id="moreOptionsBtn">More Options</button>
                 </div>
 
-                <div id="moreOptionsSection" class="hidden-options">
-                    <div class="mb-4" id="xAxisLabelDiv">
+                <div id="moreOptionsSection" class="hidden-options"> <div class="mb-4" id="xAxisLabelDiv">
                         <label for="xAxisLabelInput" class="block text-sm font-medium text-gray-700 mb-1">X-Axis Label:</label>
                         <input type="text" id="xAxisLabelInput" value="Categories" placeholder="e.g., Product Types">
                     </div>
@@ -176,28 +187,23 @@
                         <input type="text" id="yAxisLabelInput" value="Values" placeholder="e.g., Quantity Sold">
                     </div>
 
-                    <div class="mb-4">
-                        <label for="colorsInput" class="block text-sm font-medium text-gray-700 mb-1">Colors (optional, comma-separated, accepts hex/named colors):</label>
+                    <div class="mb-4" id="colorsInputContainer"> <label for="colorsInput" class="block text-sm font-medium text-gray-700 mb-1">Colors (optional, comma-separated, accepts hex/named colors):</label>
                         <input type="text" id="colorsInput" value="#6366F1,#8B5CF6,#EC4899,#F59E0B,#10B981" placeholder="e.g., red,blue,#FFC0CB">
                         <p class="text-xs text-gray-500 mt-1">Example: #6366F1,#8B5CF6,#EC4899,#F59E0B,#10B981</p>
                     </div>
 
                     <div class="mb-6" id="widthsInputDiv">
                         <label for="widthsInput" class="block text-sm font-medium text-gray-700 mb-1">Bar Widths (optional, comma-separated percentages 0-100):</label>
-                        <input type="text" id="widthsInput" value="50" placeholder="e.g., 50,70,90"> <!-- Changed default value to 50 -->
-                        <p class="text-xs text-gray-500 mt-1">Example: 50 (for equal width), or 70,80,90 for custom widths</p>
+                        <input type="text" id="widthsInput" value="50" placeholder="e.g., 50,70,90"> <p class="text-xs text-gray-500 mt-1">Example: 50 (for equal width), or 70,80,90 for custom widths</p>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Chart Container (Right/Bottom) -->
-        <!-- Added flex-col to stack canvas and button -->
         <div class="flex-grow bg-white p-4 rounded-xl shadow-lg border border-gray-100 flex flex-col items-center justify-center min-h-[300px] md:min-h-[500px]">
 
             <canvas id="barChartCanvas" class="flex-grow"></canvas>
 
-            <!-- Moved Chart Type Selection here -->
             <div class="mt-4 w-full flex flex-wrap justify-center gap-4 px-4">
                 <div class="flex items-center space-x-4">
                     <label class="inline-flex items-center">
@@ -213,13 +219,11 @@
                         <span class="ml-2 text-gray-700">Donut Chart</span>
                     </label>
                 </div>
-                <button id="sortAscendingBtn">Sort Ascending</button>
-                <button id="downloadPlotBtn">Download</button> <!-- Added Download button -->
-            </div>
+                <button id="sortAscendingBtn"><i class="fas fa-sort-amount-up-alt"></i> Sort Ascending</button>
+                <button id="downloadPlotBtn"><i class="fas fa-download"></i> Download</button> </div>
         </div>
     </div>
 
-    <!-- Message Box for alerts -->
     <div id="messageBox">
         <div id="messageBoxContent">
             <p id="messageBoxText" class="text-lg font-medium mb-4"></p>
@@ -253,7 +257,7 @@
          */
         function convertEnglishToBanglaNumerals(inputString) {
             const englishDigits = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
-            const banglaDigits = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
+            const banglaDigits = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '８', '৯'];
 
             let convertedString = inputString.toString(); // Ensure it's a string
             for (let i = 0; i < englishDigits.length; i++) {
@@ -269,7 +273,7 @@
          * @returns {boolean} True if the string contains any Bangla numeral, false otherwise.
          */
         function containsBanglaNumerals(str) {
-            const banglaDigits = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
+            const banglaDigits = ['০', '১', '২', '৩', '৪', '৫', '６', '７', '８', '９'];
             for (let i = 0; i < banglaDigits.length; i++) {
                 if (str.includes(banglaDigits[i])) {
                     return true;
@@ -345,10 +349,11 @@
         // Specific divs for axis labels and widths that might be hidden for pie chart
         const xAxisLabelDiv = document.getElementById('xAxisLabelDiv');
         const yAxisLabelDiv = document.getElementById('yAxisLabelDiv');
+        const colorsInputContainer = document.getElementById('colorsInputContainer'); // New ID for colors parent
         const widthsInputDiv = document.getElementById('widthsInputDiv');
         const moreOptionsBtn = document.getElementById('moreOptionsBtn');
         const moreOptionsSection = document.getElementById('moreOptionsSection');
-        const tableColumnOptions = document.querySelectorAll('.table-column-options');
+        const tableColumnOptionsHeaders = document.querySelectorAll('.table-column-options');
 
 
         // Message Box elements
@@ -834,7 +839,7 @@
             widthCell.innerHTML = `<input type="text" value="${width}" class="table-width" placeholder="Width (optional)">`;
 
             const deleteCell = row.insertCell();
-            deleteCell.innerHTML = `<button type="button" class="delete-row-btn">X</button>`;
+            deleteCell.innerHTML = `<button type="button" class="delete-row-btn"><i class="fas fa-trash-alt"></i></button>`; // Changed to Font Awesome icon
             deleteCell.className = 'text-center'; // Center the delete button
 
             // Add event listener for the delete button
@@ -968,9 +973,9 @@
                 }
                 // If no initial data, add a few empty rows for convenience
                 if (maxLen === 0) {
-                    addTableRow();
-                    addTableRow();
-                    addTableRow();
+                    addTableRow('A', '50'); // Default starting rows
+                    addTableRow('B', '70');
+                    addTableRow('C', '30');
                 }
             }
             // Trigger plot generation to reflect the change
@@ -980,28 +985,13 @@
 
         /**
          * Toggles the visibility of plot-specific input fields based on chart type.
+         * This function now only triggers an update to visibility,
+         * rather than directly manipulating 'hidden' classes, to avoid conflicts.
          */
         function toggleChartTypeInputs() {
-            const selectedChartType = document.querySelector('input[name="chartType"]:checked').value;
-            // Only hide/show if moreOptionsSection is visible
-            if (moreOptionsVisible) {
-                if (selectedChartType === 'bar') {
-                    xAxisLabelDiv.classList.remove('hidden');
-                    yAxisLabelDiv.classList.remove('hidden');
-                    widthsInputDiv.classList.remove('hidden');
-                } else { // pie or donut
-                    xAxisLabelDiv.classList.add('hidden');
-                    yAxisLabelDiv.classList.add('hidden');
-                    widthsInputDiv.classList.add('hidden');
-                }
-            } else {
-                // If more options are hidden, ensure these are also hidden
-                xAxisLabelDiv.classList.add('hidden');
-                yAxisLabelDiv.classList.add('hidden');
-                widthsInputDiv.classList.add('hidden');
-            }
-            // Trigger plot generation to reflect the change
-            generatePlot('chartTypeChange'); // Use a distinct source for chart type change
+            // All visibility changes are now handled by updateMoreOptionsVisibility().
+            generatePlot('chartTypeChange'); // Trigger plot generation to reflect the change
+            updateMoreOptionsVisibility(); // This will handle all visibility based on current states
         }
 
         /**
@@ -1022,34 +1012,38 @@
 
         /**
          * Updates the visibility of elements that depend on `moreOptionsVisible` and `chartType`.
+         * This function now consistently uses 'hidden-options' class for all visibility control.
          */
         function updateMoreOptionsVisibility() {
             const selectedChartType = document.querySelector('input[name="chartType"]:checked').value;
             const selectedInputMethod = document.querySelector('input[name="inputMethod"]:checked').value;
 
-            // Update visibility of the option fields (axis labels, widths, colors)
+            // Update visibility of the option fields (axis labels, widths, colors) in the left panel
             if (moreOptionsVisible) {
-                colorsInput.closest('.mb-4').classList.remove('hidden-options'); // Ensure colors are visible if More Options is open
+                colorsInputContainer.classList.remove('hidden-options'); // Ensure colors are visible if More Options is open
                 if (selectedChartType === 'bar') {
                     xAxisLabelDiv.classList.remove('hidden-options');
                     yAxisLabelDiv.classList.remove('hidden-options');
                     widthsInputDiv.classList.remove('hidden-options');
                 } else {
+                    // For pie/donut, these are always hidden even if More Options is visible
                     xAxisLabelDiv.classList.add('hidden-options');
                     yAxisLabelDiv.classList.add('hidden-options');
                     widthsInputDiv.classList.add('hidden-options');
                 }
             } else {
+                // If more options are hidden, all these should be hidden
                 xAxisLabelDiv.classList.add('hidden-options');
                 yAxisLabelDiv.classList.add('hidden-options');
-                colorsInput.closest('.mb-4').classList.add('hidden-options'); // Hide colors too
+                colorsInputContainer.classList.add('hidden-options');
                 widthsInputDiv.classList.add('hidden-options');
             }
 
-            // Update visibility of table columns
+            // Update visibility of table column headers and cells
             if (selectedInputMethod === 'tableInput') {
                 const tableHeaders = document.querySelectorAll('#tableInput thead th');
-                // Adjusting indices based on Category, Value, Color, Width
+
+                // Update headers (index 2 for Color, 3 for Width)
                 if (tableHeaders[2]) { // Color header
                     if (moreOptionsVisible) {
                         tableHeaders[2].classList.remove('hidden-options');
@@ -1065,8 +1059,9 @@
                     }
                 }
 
-                const tableRows = dataTableBody.querySelectorAll('tr');
-                tableRows.forEach(row => {
+                // Update cells within rows
+                const rows = dataTableBody.querySelectorAll('tr');
+                rows.forEach(row => {
                     const cells = row.querySelectorAll('td');
                     if (cells[2]) { // Color cell
                         if (moreOptionsVisible) {
@@ -1153,7 +1148,8 @@
                 ctx.clearRect(0, 0, barChartCanvas.width, barChartCanvas.height);
                 // Ensure sort button state is reset if data becomes invalid
                 currentChartIsSorted = false;
-                sortAscendingBtn.textContent = 'Sort Ascending';
+                // Update sort button content
+                sortAscendingBtn.innerHTML = '<i class="fas fa-sort-amount-up-alt"></i> Sort Ascending';
 
                 if (source !== 'resize' && source !== 'inputMethodChange' && source !== 'chartTypeChange' && source !== 'moreOptionsToggle') {
                     // Only show specific messages for direct user input interactions
@@ -1174,11 +1170,11 @@
             // If input changes or chart type changes, we reset the sorted state
             if (source === 'input' || source === 'tableInput' || source === 'chartTypeChange' || source === 'inputMethodChange' || source === 'moreOptionsToggle') {
                 currentChartIsSorted = false;
-                sortAscendingBtn.textContent = 'Sort Ascending'; // Reset button text
+                sortAscendingBtn.innerHTML = '<i class="fas fa-sort-amount-up-alt"></i> Sort Ascending'; // Reset button text and icon
             } else if (source === 'sortButton') {
                 // Toggle the sorted state when the sort button is pressed
                 currentChartIsSorted = !currentChartIsSorted;
-                sortAscendingBtn.textContent = currentChartIsSorted ? 'Unsort' : 'Sort Ascending';
+                sortAscendingBtn.innerHTML = currentChartIsSorted ? '<i class="fas fa-random"></i> Unsort' : '<i class="fas fa-sort-amount-up-alt"></i> Sort Ascending'; // Toggle icon and text
             }
 
             // Apply sorting if the chart should currently be sorted
@@ -1297,8 +1293,8 @@
 
         // Initial plot generation and input method setup when the page loads
         window.onload = function() {
-            // Set initial table data based on comma-separated values
-            toggleInputMethod(); // This will also call generatePlot for the initial render
+            // Set initial table data and show table input by triggering the change event on the checked radio
+            document.querySelector('input[name="inputMethod"]:checked').dispatchEvent(new Event('change'));
             toggleChartTypeInputs(); // Also initialize chart type specific inputs
             updateMoreOptionsVisibility(); // Ensure initial visibility is correct
             resizeCanvasAndRedraw(); // Ensure canvas is sized correctly and initial plot is drawn
