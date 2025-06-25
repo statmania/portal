@@ -14,14 +14,15 @@
         }
         canvas {
             display: block; /* Remove extra space below canvas */
+            /* Removed height: calc(100% - 60px); to allow flex-grow to manage height */
             width: 100%;
-            height: 100%;
         }
         input[type="text"], textarea {
             @apply w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500;
         }
+        /* Updated button styling */
         button {
-            @apply bg-indigo-600 text-white py-2 px-4 rounded-lg shadow-md hover:bg-indigo-700 transition duration-200 ease-in-out;
+            @apply bg-gradient-to-r from-indigo-500 to-purple-600 text-white py-2 px-6 rounded-lg shadow-lg hover:from-indigo-600 hover:to-purple-700 transition transform duration-200 ease-in-out hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50 border border-indigo-700;
         }
         /* Style for the message box */
         #messageBox {
@@ -58,7 +59,7 @@
                 <p class="text-xs text-gray-500 mt-1">Example: A,B,C,D,E</p>
             </div>
 
-            <!-- New Input fields for Plot Title, X-Axis Label, Y-Axis Label -->
+            <!-- Input fields for Plot Title, X-Axis Label, Y-Axis Label -->
             <div class="mb-4">
                 <label for="plotTitleInput" class="block text-sm font-medium text-gray-700 mb-1">Plot Title:</label>
                 <input type="text" id="plotTitleInput" value="Sample Bar Chart" placeholder="e.g., Sales by Region">
@@ -73,7 +74,6 @@
                 <label for="yAxisLabelInput" class="block text-sm font-medium text-gray-700 mb-1">Y-Axis Label:</label>
                 <input type="text" id="yAxisLabelInput" value="Values" placeholder="e.g., Quantity Sold">
             </div>
-            <!-- End of New Input fields -->
 
             <div class="mb-4">
                 <label for="colorsInput" class="block text-sm font-medium text-gray-700 mb-1">Colors (optional, comma-separated, accepts hex/named colors):</label>
@@ -91,8 +91,15 @@
         </div>
 
         <!-- Chart Container (Right/Bottom) -->
-        <div class="flex-grow bg-white p-4 rounded-xl shadow-lg border border-gray-100 flex items-center justify-center min-h-[300px] md:min-h-[500px]">
-            <canvas id="barChartCanvas"></canvas>
+        <!-- Added flex-col to stack canvas and button -->
+        <div class="flex-grow bg-white p-4 rounded-xl shadow-lg border border-gray-100 flex flex-col items-center justify-center min-h-[300px] md:min-h-[500px]">
+
+            <canvas id="barChartCanvas" class="flex-grow"></canvas>
+            <!-- Moved button for sorting below the canvas -->
+            <!-- Added w-fit and mx-auto for centering and content-based width -->
+            <div class="mt-4 w-full flex justify-center px-4">
+                <button id="sortAscendingBtn" class="bg-blue-500 hover:bg-blue-600">Sort Ascending</button>
+            </div>
         </div>
     </div>
 
@@ -108,12 +115,13 @@
         // Get references to DOM elements
         const valuesInput = document.getElementById('valuesInput');
         const categoriesInput = document.getElementById('categoriesInput');
-        const plotTitleInput = document.getElementById('plotTitleInput'); // New
-        const xAxisLabelInput = document.getElementById('xAxisLabelInput'); // New
-        const yAxisLabelInput = document.getElementById('yAxisLabelInput'); // New
+        const plotTitleInput = document.getElementById('plotTitleInput');
+        const xAxisLabelInput = document.getElementById('xAxisLabelInput');
+        const yAxisLabelInput = document.getElementById('yAxisLabelInput');
         const colorsInput = document.getElementById('colorsInput');
         const widthsInput = document.getElementById('widthsInput');
         const generatePlotBtn = document.getElementById('generatePlotBtn');
+        const sortAscendingBtn = document.getElementById('sortAscendingBtn');
         const barChartCanvas = document.getElementById('barChartCanvas');
         const ctx = barChartCanvas.getContext('2d');
 
@@ -121,6 +129,9 @@
         const messageBox = document.getElementById('messageBox');
         const messageBoxText = document.getElementById('messageBoxText');
         const messageBoxButton = document.getElementById('messageBoxButton');
+
+        // Flag to indicate if the currently displayed chart is sorted
+        let currentChartIsSorted = false;
 
         // Function to show custom message box
         function showMessageBox(message) {
@@ -316,80 +327,131 @@
         }
 
         /**
-         * Generates and draws the plot based on user input.
+         * Sorts the bar data (values, categories, colors, widths) in ascending order based on values.
+         * Maintains correspondence between elements.
+         * @param {number[]} values - Original array of values.
+         * @param {string[]} categories - Original array of categories.
+         * @param {string[]} colors - Original array of colors.
+         * @param {number[]} widths - Original array of widths.
+         * @returns {object} An object containing the sorted arrays.
          */
-        function generatePlot() {
-            const values = parseNumbers(valuesInput.value);
-            const categories = parseStrings(categoriesInput.value);
-            const plotTitle = plotTitleInput.value; // Get new input
-            const xAxisLabel = xAxisLabelInput.value; // Get new input
-            const yAxisLabel = yAxisLabelInput.value; // Get new input
-            const colors = parseStrings(colorsInput.value);
-            const widths = parseNumbers(widthsInput.value); // These should be percentages (0-100)
+        function sortDataAscending(values, categories, colors, widths) {
+            // Create an array of objects to keep data linked during sorting
+            const data = values.map((value, index) => ({
+                value: value,
+                category: categories[index],
+                color: colors[index],
+                width: widths[index]
+            }));
 
-            // Basic validation for plot generation (can be relaxed for live input)
-            // If values become empty or invalid during typing, clear the plot.
-            // Only show message box if the generate button is clicked, not on every input change
-            const isManualClick = event && event.type === 'click';
+            // Sort the data array based on the 'value' property in ascending order
+            data.sort((a, b) => a.value - b.value);
 
-            if (values.length === 0) {
-                if (isManualClick) showMessageBox("Please enter at least one value.");
+            // Extract the sorted arrays
+            const sortedValues = data.map(item => item.value);
+            const sortedCategories = data.map(item => item.category);
+            const sortedColors = data.map(item => item.color);
+            const sortedWidths = data.map(item => item.width);
+
+            return {
+                values: sortedValues,
+                categories: sortedCategories,
+                colors: sortedColors,
+                widths: sortedWidths
+            };
+        }
+
+        /**
+         * Generates and draws the plot based on user input.
+         * @param {string} [source='input'] - Indicates what triggered the plot generation (e.g., 'input', 'generateButton', 'sortButton').
+         */
+        function generatePlot(source = 'input') {
+            let values = parseNumbers(valuesInput.value);
+            let categories = parseStrings(categoriesInput.value);
+            let colors = parseStrings(colorsInput.value);
+            let widths = parseNumbers(widthsInput.value); // These should be percentages (0-100)
+            const plotTitle = plotTitleInput.value;
+            const xAxisLabel = xAxisLabelInput.value;
+            const yAxisLabel = yAxisLabelInput.value;
+
+            // --- Validation ---
+            const hasEnoughData = values.length > 0 && categories.length > 0 && values.length === categories.length;
+            const hasValidWidths = !widths.some(w => w < 0 || w > 100);
+
+            if (!hasEnoughData || !hasValidWidths) {
+                // Clear plot if invalid data, but only show message box for explicit clicks
+                if (source === 'generateButton') { // Only show message for manual generate click
+                    if (values.length === 0) showMessageBox("Please enter at least one value.");
+                    else if (categories.length === 0) showMessageBox("Please enter at least one category.");
+                    else if (values.length !== categories.length) showMessageBox("Number of values must match the number of categories.");
+                    else if (!hasValidWidths) showMessageBox("Bar widths must be between 0 and 100.");
+                }
                 ctx.clearRect(0, 0, barChartCanvas.width, barChartCanvas.height);
-                return;
+                // Ensure sort button state is reset if data becomes invalid
+                currentChartIsSorted = false;
+                sortAscendingBtn.textContent = 'Sort Ascending';
+                return; // Stop execution if data is invalid
             }
-            if (categories.length === 0) {
-                if (isManualClick) showMessageBox("Please enter at least one category.");
-                ctx.clearRect(0, 0, barChartCanvas.width, barChartCanvas.height);
-                return;
+
+            // --- Sorting Logic ---
+            // If any input changes, or generate button is clicked, we reset the sorted state
+            if (source === 'input' || source === 'generateButton') {
+                currentChartIsSorted = false;
+                sortAscendingBtn.textContent = 'Sort Ascending'; // Reset button text
+            } else if (source === 'sortButton') {
+                // Toggle the sorted state when the sort button is pressed
+                currentChartIsSorted = !currentChartIsSorted;
+                sortAscendingBtn.textContent = currentChartIsSorted ? 'Unsort' : 'Sort Ascending';
             }
-            if (values.length !== categories.length) {
-                if (isManualClick) showMessageBox("Number of values must match the number of categories.");
-                ctx.clearRect(0, 0, barChartCanvas.width, barChartCanvas.height);
-                return;
-            }
-            if (widths.some(w => w < 0 || w > 100)) {
-                if (isManualClick) showMessageBox("Bar widths must be between 0 and 100.");
-                ctx.clearRect(0, 0, barChartCanvas.width, barChartCanvas.height);
-                return;
+
+            // Apply sorting if the chart should currently be sorted
+            if (currentChartIsSorted) {
+                const sortedData = sortDataAscending(values, categories, colors, widths);
+                values = sortedData.values;
+                categories = sortedData.categories;
+                colors = sortedData.colors;
+                widths = sortedData.widths;
             }
 
             // Ensure canvas size is set to its CSS size
-            const rect = barChartCanvas.parentElement.getBoundingClientRect();
-            barChartCanvas.width = rect.width;
-            barChartCanvas.height = rect.height;
+            // Use computed style to get accurate rendered dimensions
+            const computedStyle = getComputedStyle(barChartCanvas);
+            barChartCanvas.width = parseFloat(computedStyle.width);
+            barChartCanvas.height = parseFloat(computedStyle.height);
 
             drawBarChart(barChartCanvas, ctx, values, categories, plotTitle, xAxisLabel, yAxisLabel, colors, widths);
         }
 
         // Event listener for the generate button
-        generatePlotBtn.addEventListener('click', generatePlot);
+        generatePlotBtn.addEventListener('click', () => generatePlot('generateButton'));
+
+        // Event listener for the sort ascending/unsort button
+        sortAscendingBtn.addEventListener('click', () => generatePlot('sortButton'));
 
         // Add input event listeners to all relevant input fields for live updates
-        valuesInput.addEventListener('input', generatePlot);
-        categoriesInput.addEventListener('input', generatePlot);
-        plotTitleInput.addEventListener('input', generatePlot); // New
-        xAxisLabelInput.addEventListener('input', generatePlot); // New
-        yAxisLabelInput.addEventListener('input', generatePlot); // New
-        colorsInput.addEventListener('input', generatePlot);
-        widthsInput.addEventListener('input', generatePlot);
+        valuesInput.addEventListener('input', () => generatePlot('input'));
+        categoriesInput.addEventListener('input', () => generatePlot('input'));
+        plotTitleInput.addEventListener('input', () => generatePlot('input'));
+        xAxisLabelInput.addEventListener('input', () => generatePlot('input'));
+        yAxisLabelInput.addEventListener('input', () => generatePlot('input'));
+        colorsInput.addEventListener('input', () => generatePlot('input'));
+        widthsInput.addEventListener('input', () => generatePlot('input'));
 
 
         // Function to resize canvas and redraw chart on window resize
         function resizeCanvasAndRedraw() {
-            // Only redraw if there's data to draw
-            const values = parseNumbers(valuesInput.value);
-            if (values.length > 0) {
-                const rect = barChartCanvas.parentElement.getBoundingClientRect();
-                barChartCanvas.width = rect.width;
-                barChartCanvas.height = rect.height;
-                generatePlot(); // Redraw with current settings
-            } else {
-                 // If no data, just adjust canvas size
-                 const rect = barChartCanvas.parentElement.getBoundingClientRect();
-                 barChartCanvas.width = rect.width;
-                 barChartCanvas.height = rect.height;
-                 ctx.clearRect(0,0,barChartCanvas.width, barChartCanvas.height); // Clear if no data
-            }
+            // Get the computed dimensions after layout
+            const computedStyle = getComputedStyle(barChartCanvas);
+            const displayWidth = parseFloat(computedStyle.width);
+            const displayHeight = parseFloat(computedStyle.height);
+
+            // Set the canvas drawing buffer resolution
+            barChartCanvas.width = displayWidth;
+            barChartCanvas.height = displayHeight;
+
+            // Call generatePlot with 'resize' source to redraw, keeping current sort state
+            // This ensures the chart redraws correctly on resize while preserving the sort state
+            generatePlot('resize');
         }
 
         // Initial plot generation when the page loads
