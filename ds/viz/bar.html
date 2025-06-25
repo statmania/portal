@@ -41,11 +41,35 @@
         #messageBoxButton {
             @apply mt-4 bg-indigo-600 text-white py-2 px-4 rounded-lg hover:bg-indigo-700;
         }
+
+        /* Table styling for input */
+        .input-table {
+            @apply w-full border-collapse;
+        }
+        .input-table th, .input-table td {
+            @apply border border-gray-300 p-2 text-sm;
+        }
+        .input-table th {
+            @apply bg-gray-100 font-semibold text-gray-700;
+        }
+        .input-table input[type="text"] {
+            @apply w-full p-1 border border-gray-200 rounded-sm focus:ring-blue-300 focus:border-blue-300;
+        }
+        .input-table .delete-row-btn {
+            @apply bg-red-500 text-white p-1 rounded hover:bg-red-600 transition duration-150 ease-in-out;
+            width: 28px; /* Fixed width for consistent button size */
+            height: 28px; /* Fixed height for consistent button size */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9em;
+        }
+        .add-row-btn {
+            @apply bg-green-500 text-white py-1 px-3 rounded hover:bg-green-600 transition duration-150 ease-in-out mt-2;
+        }
     </style>
 </head>
 <body class="p-4 md:p-8">
-    <!-- Main Title is now inside the Options Panel, above the scrollable content -->
-
     <!-- Main Container -->
     <div class="flex flex-col md:flex-row gap-6 md:gap-8 max-w-7xl mx-auto">
 
@@ -56,23 +80,62 @@
             <div class="max-h-[calc(100vh-8rem-6rem)] overflow-y-auto"> <!-- Adjusted calc to account for h1 height -->
                 <h2 class="text-xl font-semibold mb-4 text-gray-700">Plot Settings</h2>
 
+                <!-- Input Method Selection -->
                 <div class="mb-4">
-                    <label for="valuesInput" class="block text-sm font-medium text-gray-700 mb-1">Values (comma-separated numbers):</label>
-                    <div class="flex items-center space-x-2">
-                        <input type="text" id="valuesInput" value="50,70,30,90,60" placeholder="e.g., 10,20,30">
-                        <span id="valuesCountDisplay" class="text-sm text-gray-600 flex-shrink-0"></span>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Input Method:</label>
+                    <div class="flex space-x-4">
+                        <label class="inline-flex items-center">
+                            <input type="radio" name="inputMethod" value="commaSeparated" class="form-radio" checked>
+                            <span class="ml-2 text-gray-700">Comma Separated</span>
+                        </label>
+                        <label class="inline-flex items-center">
+                            <input type="radio" name="inputMethod" value="tableInput" class="form-radio">
+                            <span class="ml-2 text-gray-700">Table Input</span>
+                        </label>
                     </div>
-                    <p class="text-xs text-gray-500 mt-1">Example: 50,70,30,90,60</p>
                 </div>
 
-                <div class="mb-4">
-                    <label for="categoriesInput" class="block text-sm font-medium text-gray-700 mb-1">Categories (comma-separated text):</label>
-                    <div class="flex items-center space-x-2">
-                        <input type="text" id="categoriesInput" value="A,B,C,D,E" placeholder="e.g., Apples,Oranges,Bananas">
-                        <span id="categoriesHintDisplay" class="text-sm text-gray-600 flex-shrink-0"></span>
+                <!-- Comma Separated Input Fields -->
+                <div id="commaSeparatedInput" class="input-section">
+                    <div class="mb-4">
+                        <label for="valuesInput" class="block text-sm font-medium text-gray-700 mb-1">Values (comma-separated numbers):</label>
+                        <div class="flex items-center space-x-2">
+                            <input type="text" id="valuesInput" value="50,70,30,90,60" placeholder="e.g., 10,20,30">
+                            <span id="valuesCountDisplay" class="text-sm text-gray-600 flex-shrink-0"></span>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-1">Example: 50,70,30,90,60</p>
                     </div>
-                    <p class="text-xs text-gray-500 mt-1">Example: A,B,C,D,E</p>
+
+                    <div class="mb-4">
+                        <label for="categoriesInput" class="block text-sm font-medium text-gray-700 mb-1">Categories (comma-separated text):</label>
+                        <div class="flex items-center space-x-2">
+                            <input type="text" id="categoriesInput" value="A,B,C,D,E" placeholder="e.g., Apples,Oranges,Bananas">
+                            <span id="categoriesHintDisplay" class="text-sm text-gray-600 flex-shrink-0"></span>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-1">Example: A,B,C,D,E</p>
+                    </div>
                 </div>
+
+                <!-- Table Input Fields -->
+                <div id="tableInput" class="input-section hidden">
+                    <h3 class="text-lg font-semibold mb-2 text-gray-700">Data Table</h3>
+                    <table class="input-table mb-2">
+                        <thead>
+                            <tr>
+                                <th>Value</th>
+                                <th>Category</th>
+                                <th>Color</th>
+                                <th>Width (%)</th>
+                                <th></th> <!-- For delete button -->
+                            </tr>
+                        </thead>
+                        <tbody id="dataTableBody">
+                            <!-- Rows will be added here by JavaScript -->
+                        </tbody>
+                    </table>
+                    <button type="button" id="addRowBtn" class="add-row-btn">Add Row</button>
+                </div>
+
 
                 <!-- Input fields for Plot Title, X-Axis Label, Y-Axis Label -->
                 <div class="mb-4">
@@ -144,6 +207,12 @@
         // New display elements
         const valuesCountDisplay = document.getElementById('valuesCountDisplay');
         const categoriesHintDisplay = document.getElementById('categoriesHintDisplay');
+        const commaSeparatedInput = document.getElementById('commaSeparatedInput');
+        const tableInput = document.getElementById('tableInput');
+        const inputMethodRadios = document.querySelectorAll('input[name="inputMethod"]');
+        const dataTableBody = document.getElementById('dataTableBody');
+        const addRowBtn = document.getElementById('addRowBtn');
+
 
         // Message Box elements
         const messageBox = document.getElementById('messageBox');
@@ -209,20 +278,21 @@
             const barSpacing = 15; // Spacing between bars
 
             // Calculate the maximum value for scaling the bars
-            const maxValue = Math.max(...values);
+            const maxValue = values.length > 0 ? Math.max(...values) : 0; // Handle empty values array
             // Add a buffer to the maxValue to make the y-axis taller than the highest bar
-            const displayMaxValue = maxValue * 1.1; // 10% buffer
+            const displayMaxValue = (maxValue > 0) ? maxValue * 1.1 : 100; // Default to 100 if no values
 
             // If all values are non-positive or no values, clear canvas and return
-            if (values.length === 0 || maxValue <= 0) {
+            if (values.length === 0 || displayMaxValue <= 0) { // Check displayMaxValue
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
                 return;
             }
 
             // Calculate bar width based on number of bars and spacing
             const numBars = values.length;
-            const availableBarWidthSpace = chartAreaWidth - (numBars - 1) * barSpacing;
-            const baseBarWidth = availableBarWidthSpace / numBars;
+            const availableBarWidthSpace = chartAreaWidth - (numBars > 0 ? (numBars - 1) * barSpacing : 0);
+            const baseBarWidth = numBars > 0 ? availableBarWidthSpace / numBars : 0;
+
 
             // Draw Plot Area Background (ggplot2 style) for the entire canvas area
             ctx.fillStyle = '#e6e6e6'; // Gray background
@@ -241,8 +311,9 @@
             }
 
             // Draw vertical grid lines (ggplot2 style)
-            const numXGridLines = 10; // Increased number of vertical grid lines
+            const numXGridLines = numBars > 0 ? numBars : 10; // Base on numBars, or 10 if no bars
             for (let i = 0; i <= numXGridLines; i++) {
+                 // Ensure grid lines are within the chart area boundaries
                 const xGrid = leftPadding + (chartAreaWidth / numXGridLines) * i;
                 ctx.beginPath();
                 ctx.moveTo(xGrid, topPadding);
@@ -441,20 +512,158 @@
         }
 
         /**
+         * Adds a new row to the data table.
+         * @param {number|string} value - Initial value for the new row.
+         * @param {string} category - Initial category for the new row.
+         * @param {string} color - Initial color for the new row.
+         * @param {number|string} width - Initial width for the new row.
+         */
+        function addTableRow(value = '', category = '', color = '', width = '') {
+            const row = dataTableBody.insertRow();
+            row.className = 'hover:bg-gray-50'; // Add hover effect
+
+            const valueCell = row.insertCell();
+            valueCell.innerHTML = `<input type="text" value="${value}" class="table-value" placeholder="Value">`;
+
+            const categoryCell = row.insertCell();
+            categoryCell.innerHTML = `<input type="text" value="${category}" class="table-category" placeholder="Category">`;
+
+            const colorCell = row.insertCell();
+            colorCell.innerHTML = `<input type="text" value="${color}" class="table-color" placeholder="Color (optional)">`;
+
+            const widthCell = row.insertCell();
+            widthCell.innerHTML = `<input type="text" value="${width}" class="table-width" placeholder="Width (optional)">`;
+
+            const deleteCell = row.insertCell();
+            deleteCell.innerHTML = `<button type="button" class="delete-row-btn">X</button>`;
+            deleteCell.className = 'text-center'; // Center the delete button
+
+            // Add event listener for the delete button
+            deleteCell.querySelector('.delete-row-btn').addEventListener('click', (event) => {
+                event.target.closest('tr').remove();
+                generatePlot('tableInput'); // Regenerate plot after deletion
+            });
+
+            // Add input listeners for live updates
+            valueCell.querySelector('.table-value').addEventListener('input', () => generatePlot('tableInput'));
+            categoryCell.querySelector('.table-category').addEventListener('input', () => generatePlot('tableInput'));
+            colorCell.querySelector('.table-color').addEventListener('input', () => generatePlot('tableInput'));
+            widthCell.querySelector('.table-width').addEventListener('input', () => generatePlot('tableInput'));
+        }
+
+        /**
+         * Parses data from the HTML table.
+         * @returns {object} An object containing values, categories, colors, and widths arrays.
+         */
+        function parseTableData() {
+            const values = [];
+            const categories = [];
+            const colors = [];
+            const widths = [];
+
+            const rows = dataTableBody.querySelectorAll('tr');
+            rows.forEach(row => {
+                const value = parseFloat(row.querySelector('.table-value').value);
+                const category = row.querySelector('.table-category').value.trim();
+                const color = row.querySelector('.table-color').value.trim();
+                const width = parseFloat(row.querySelector('.table-width').value);
+
+                if (!isNaN(value)) {
+                    values.push(value);
+                } else {
+                    values.push(0); // Push a default or handle error
+                }
+
+                categories.push(category);
+                colors.push(color);
+                widths.push(isNaN(width) ? undefined : width); // Use undefined if width is not a valid number
+            });
+            return { values, categories, colors, widths };
+        }
+
+        /**
+         * Toggles the visibility of input sections based on radio button selection.
+         */
+        function toggleInputMethod() {
+            const selectedMethod = document.querySelector('input[name="inputMethod"]:checked').value;
+            if (selectedMethod === 'commaSeparated') {
+                commaSeparatedInput.classList.remove('hidden');
+                tableInput.classList.add('hidden');
+                // When switching back to comma separated, try to populate based on table data if available
+                const tableData = parseTableData();
+                if (tableData.values.length > 0) {
+                    valuesInput.value = tableData.values.join(',');
+                    categoriesInput.value = tableData.categories.join(',');
+                    colorsInput.value = tableData.colors.filter(c => c).join(','); // Filter out empty colors
+                    widthsInput.value = tableData.widths.filter(w => w !== undefined).join(','); // Filter out undefined widths
+                }
+            } else {
+                commaSeparatedInput.classList.add('hidden');
+                tableInput.classList.remove('hidden');
+                // When switching to table, populate table based on comma-separated input if available
+                const currentValues = parseNumbers(valuesInput.value);
+                const currentCategories = parseStrings(categoriesInput.value);
+                const currentColors = parseStrings(colorsInput.value);
+                const currentWidths = parseNumbers(widthsInput.value);
+
+                // Clear existing table rows
+                dataTableBody.innerHTML = '';
+
+                // Populate table with existing data
+                const maxLen = Math.max(currentValues.length, currentCategories.length, currentColors.length, currentWidths.length);
+                for (let i = 0; i < maxLen; i++) {
+                    addTableRow(
+                        currentValues[i] !== undefined ? currentValues[i] : '',
+                        currentCategories[i] !== undefined ? currentCategories[i] : '',
+                        currentColors[i] !== undefined ? currentColors[i] : '',
+                        currentWidths[i] !== undefined ? currentWidths[i] : ''
+                    );
+                }
+                // If no initial data, add a few empty rows for convenience
+                if (maxLen === 0) {
+                    addTableRow();
+                    addTableRow();
+                    addTableRow();
+                }
+            }
+            // Trigger plot generation to reflect the change
+            generatePlot(selectedMethod);
+        }
+
+
+        /**
          * Generates and draws the plot based on user input.
-         * @param {string} [source='input'] - Indicates what triggered the plot generation (e.g., 'input', 'generateButton', 'sortButton').
+         * @param {string} [source='input'] - Indicates what triggered the plot generation (e.g., 'input', 'generateButton', 'sortButton', 'tableInput').
          */
         function generatePlot(source = 'input') {
-            let values = parseNumbers(valuesInput.value);
-            let categories = parseStrings(categoriesInput.value);
-            let colors = parseStrings(colorsInput.value);
-            let widths = parseNumbers(widthsInput.value); // These should be percentages (0-100)
+            let values, categories, colors, widths;
+            const selectedMethod = document.querySelector('input[name="inputMethod"]:checked').value;
+
+            if (selectedMethod === 'commaSeparated') {
+                values = parseNumbers(valuesInput.value);
+                categories = parseStrings(categoriesInput.value);
+                colors = parseStrings(colorsInput.value);
+                widths = parseNumbers(widthsInput.value); // These should be percentages (0-100)
+            } else { // tableInput
+                const tableData = parseTableData();
+                values = tableData.values;
+                categories = tableData.categories;
+                colors = tableData.colors;
+                widths = tableData.widths;
+            }
+
             const plotTitle = plotTitleInput.value;
             const xAxisLabel = xAxisLabelInput.value;
             const yAxisLabel = yAxisLabelInput.value;
 
-            // Update hints immediately when inputs change
-            updateInputHints(values, categories);
+            // Update hints only for comma-separated input, as table input provides immediate visual feedback
+            if (selectedMethod === 'commaSeparated') {
+                updateInputHints(values, categories);
+            } else {
+                // Clear hints if table input is active
+                valuesCountDisplay.textContent = '';
+                categoriesHintDisplay.textContent = '';
+            }
 
             // --- Validation ---
             const hasEnoughData = values.length > 0 && categories.length > 0 && values.length === categories.length;
@@ -477,7 +686,7 @@
 
             // --- Sorting Logic ---
             // If any input changes, or generate button is clicked, we reset the sorted state
-            if (source === 'input' || source === 'generateButton') {
+            if (source === 'input' || source === 'generateButton' || source === 'tableInput') {
                 currentChartIsSorted = false;
                 sortAscendingBtn.textContent = 'Sort Ascending'; // Reset button text
             } else if (source === 'sortButton') {
@@ -519,6 +728,19 @@
         colorsInput.addEventListener('input', () => generatePlot('input'));
         widthsInput.addEventListener('input', () => generatePlot('input'));
 
+        // Add event listeners for input method radio buttons
+        inputMethodRadios.forEach(radio => {
+            radio.addEventListener('change', toggleInputMethod);
+        });
+
+        // Add event listener for "Add Row" button
+        addRowBtn.addEventListener('click', () => {
+            addTableRow();
+            // Automatically scroll to the new row if it's off-screen
+            dataTableBody.lastChild.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            generatePlot('tableInput'); // Trigger plot update after adding row
+        });
+
 
         // Function to resize canvas and redraw chart on window resize
         function resizeCanvasAndRedraw() {
@@ -534,8 +756,10 @@
             generatePlot('resize');
         }
 
-        // Initial plot generation when the page loads
+        // Initial plot generation and input method setup when the page loads
         window.onload = function() {
+            // Set initial table data based on comma-separated values
+            toggleInputMethod(); // This will also call generatePlot for the initial render
             resizeCanvasAndRedraw(); // Ensure canvas is sized correctly and initial plot is drawn
         };
 
