@@ -30,3 +30,19 @@ chart.js
 Based on user's choice we draw chart.
 6. User can change chart type
 7. Can export chart as png or pdf
+
+
+Data Analysis
+1. Takes a csv input
+2. Gives no. of variables
+3. No. of variables by type (quan, quali)
+4. No of rows
+5. A table showing mean and sd of quants (omitting NA) and median of quant
+
+pieChart
+
+https://cdn.educba.com/academy/wp-content/uploads/2023/03/Pie-Chart-in-R.jpg
+Can you make a js based pie chart just like this using user-input data? The web page would have 3 columns. In the left the user can input values in a table: column name and values (show 5 rows by default with some sample values.
+
+The 2nd column shows the plot with download option under it.
+The 3rd column in page layout allows user to choose color pallette.

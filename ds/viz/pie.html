@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customizable Pie Chart</title>
+    <!-- Tailwind CSS CDN for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom styles for the Inter font and overall aesthetics */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f2f5; /* Light grey background */
+        }
+        /* Style for the canvas to ensure it's responsive */
+        canvas {
+            display: block;
+            background-color: #ffffff;
+            border-radius: 0.75rem; /* rounded-xl */
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06); /* shadow-lg */
+        }
+        /* Style for input fields */
+        input[type="text"], input[type="number"] {
+            border: 1px solid #d1d5db; /* border-gray-300 */
+            border-radius: 0.5rem; /* rounded-md */
+            padding: 0.5rem 0.75rem;
+            transition: all 0.15s ease-in-out;
+        }
+        input[type="text"]:focus, input[type="number"]:focus {
+            outline: none;
+            border-color: #3B82F6; /* blue-500 */
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.25); /* ring-2 ring-blue-200 */
+        }
+        /* Style for buttons */
+        button {
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem; /* rounded-lg */
+            font-weight: 600; /* font-semibold */
+            transition: all 0.2s ease-in-out;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+        .btn-primary {
+            background-color: #3B82F6; /* blue-500 */
+            color: #ffffff;
+        }
+        .btn-primary:hover {
+            background-color: #2563EB; /* blue-600 */
+        }
+        .btn-secondary {
+            background-color: #6B7280; /* gray-500 */
+            color: #ffffff;
+        }
+        .btn-secondary:hover {
+            background-color: #4B5563; /* gray-600 */
+        }
+        /* Table specific styles */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb; /* border-gray-200 */
+        }
+        th {
+            background-color: #f9fafb; /* gray-50 */
+            font-weight: 700;
+        }
+        /* Custom scrollbar for better aesthetics */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+    </style>
+</head>
+<body class="p-6">
+    <div class="container mx-auto p-4 bg-white rounded-xl shadow-lg flex flex-col lg:flex-row gap-8 min-h-[85vh]">
+        <!-- Left Column: Input Data -->
+        <div class="w-full lg:w-1/3 p-4 bg-gray-50 rounded-lg shadow-md overflow-y-auto max-h-[80vh]">
+            <h2 class="text-2xl font-bold mb-6 text-gray-800">Input Data</h2>
+            <div class="mb-4">
+                <table id="dataTable" class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-100">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Value</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200" id="dataRows">
+                        <!-- Sample rows will be inserted here by JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+            <div class="flex flex-col space-y-4">
+                <button id="addRowBtn" class="btn-secondary w-full">Add Row</button>
+                <button id="generateChartBtn" class="btn-primary w-full">Generate Chart</button>
+            </div>
+        </div>
+
+        <!-- Middle Column: Pie Chart -->
+        <div class="w-full lg:w-1/2 p-4 flex flex-col items-center justify-center bg-gray-50 rounded-lg shadow-md">
+            <h2 class="text-2xl font-bold mb-6 text-gray-800">Pie Chart</h2>
+            <div class="relative w-full max-w-xl aspect-square flex items-center justify-center">
+                <canvas id="pieChartCanvas" class="w-full h-full"></canvas>
+            </div>
+            <button id="downloadChartBtn" class="btn-primary mt-6">Download Chart</button>
+        </div>
+
+        <!-- Right Column: Color Palette -->
+        <div class="w-full lg:w-1/6 p-4 bg-gray-50 rounded-lg shadow-md">
+            <h2 class="text-2xl font-bold mb-6 text-gray-800">Color Palette</h2>
+            <div id="colorPaletteOptions" class="flex flex-col space-y-4">
+                <!-- Color palette options will be inserted here by JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Ensure the global variables are defined, falling back to a default if not
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+        // Get references to HTML elements
+        const dataRows = document.getElementById('dataRows');
+        const addRowBtn = document.getElementById('addRowBtn');
+        const generateChartBtn = document.getElementById('generateChartBtn');
+        const pieChartCanvas = document.getElementById('pieChartCanvas');
+        const downloadChartBtn = document.getElementById('downloadChartBtn');
+        const colorPaletteOptions = document.getElementById('colorPaletteOptions');
+        const ctx = pieChartCanvas.getContext('2d');
+
+        // Define color palettes
+        const colorPalettes = {
+            'default': ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40', '#E7E9ED', '#7B7B7B', '#C9CBCC'],
+            'pastel': ['#AEC6CF', '#FFADAD', '#FFD1DC', '#B0E0E6', '#F0E68C', '#98FB98', '#ADD8E6', '#FAFAD2', '#D8BFD8'],
+            'vibrant': ['#007bff', '#28a745', '#dc3545', '#ffc107', '#17a2b8', '#6c757d', '#f8f9fa', '#343a40', '#000000'],
+            'earthy': ['#A0522D', '#D2B48C', '#8B4513', '#CD853F', '#F5DEB3', '#DAA520', '#BDB76B', '#6B8E23', '#808000']
+        };
+        let currentPalette = colorPalettes['default']; // Default palette
+
+        // Sample initial data
+        const initialData = [
+            { name: 'Sales', value: 300 },
+            { name: 'Marketing', value: 150 },
+            { name: 'Development', value: 200 },
+            { name: 'Support', value: 100 },
+            { name: 'Admin', value: 50 }
+        ];
+
+        /**
+         * Adds a new row to the data input table.
+         * @param {string} category - The initial category name for the new row.
+         * @param {number} value - The initial value for the new row.
+         */
+        function addDataRow(category = '', value = '') {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td class="p-3"><input type="text" class="w-full" value="${category}" placeholder="Category Name"></td>
+                <td class="p-3"><input type="number" class="w-full" value="${value}" placeholder="Value"></td>
+            `;
+            dataRows.appendChild(row);
+        }
+
+        /**
+         * Reads data from the input table and returns it as an array of objects.
+         * Each object has 'name' and 'value' properties.
+         * Invalid or empty values are filtered out.
+         * @returns {Array<Object>} An array of data objects.
+         */
+        function readData() {
+            const data = [];
+            dataRows.querySelectorAll('tr').forEach(row => {
+                const categoryInput = row.querySelector('input[type="text"]');
+                const valueInput = row.querySelector('input[type="number"]');
+                const name = categoryInput ? categoryInput.value.trim() : '';
+                const value = valueInput ? parseFloat(valueInput.value) : NaN;
+
+                if (name && !isNaN(value) && value > 0) {
+                    data.push({ name, value });
+                }
+            });
+            return data;
+        }
+
+        /**
+         * Draws the pie chart on the canvas.
+         * @param {Array<Object>} data - The data to plot, each object having 'name' and 'value'.
+         * @param {Array<string>} colors - An array of hex color strings for the slices.
+         */
+        function drawPieChart(data, colors) {
+            const canvasWidth = pieChartCanvas.width;
+            const canvasHeight = pieChartCanvas.height;
+
+            ctx.clearRect(0, 0, canvasWidth, canvasHeight); // Clear canvas
+
+            const total = data.reduce((sum, item) => sum + item.value, 0);
+            const centerX = canvasWidth / 2;
+            const centerY = canvasHeight / 2;
+            const radius = Math.min(centerX, centerY) * 0.7; // Radius for the pie chart
+            const labelRadius = radius * 1.1; // Distance for labels
+            const lineLength = radius * 0.15; // Length of the line extending from the slice
+
+            let currentAngle = 0;
+
+            // Sort data by value in descending order for better visual organization
+            const sortedData = [...data].sort((a, b) => b.value - a.value);
+
+            sortedData.forEach((item, index) => {
+                const sliceAngle = (item.value / total) * Math.PI * 2;
+                const color = colors[index % colors.length];
+
+                // Draw pie slice
+                ctx.beginPath();
+                ctx.moveTo(centerX, centerY);
+                ctx.arc(centerX, centerY, radius, currentAngle, currentAngle + sliceAngle);
+                ctx.closePath();
+                ctx.fillStyle = color;
+                ctx.fill();
+
+                // Calculate midpoint of the slice for label positioning
+                const midAngle = currentAngle + sliceAngle / 2;
+                const labelX = centerX + labelRadius * Math.cos(midAngle);
+                const labelY = centerY + labelRadius * Math.sin(midAngle);
+
+                // Determine label alignment based on position
+                let textAnchor = 'left';
+                if (labelX < centerX) {
+                    textAnchor = 'right';
+                }
+
+                // Draw line from slice to label
+                ctx.beginPath();
+                ctx.moveTo(centerX + radius * Math.cos(midAngle), centerY + radius * Math.sin(midAngle)); // Start from edge of pie
+                ctx.lineTo(centerX + (radius + lineLength) * Math.cos(midAngle), centerY + (radius + lineLength) * Math.sin(midAngle)); // First bend
+                ctx.strokeStyle = '#333';
+                ctx.lineWidth = 1;
+                ctx.stroke();
+
+                // Second part of the line (horizontal)
+                const horizontalLineX = (textAnchor === 'left') ? labelX : labelX; // Start from labelX
+                const horizontalLineEnd = (textAnchor === 'left') ? labelX + lineLength * 0.5 : labelX - lineLength * 0.5;
+
+                ctx.lineTo(horizontalLineEnd, centerY + (radius + lineLength) * Math.sin(midAngle)); // Horizontal line segment
+                ctx.stroke();
+
+
+                // Draw text labels (category and percentage)
+                ctx.fillStyle = '#333';
+                ctx.font = 'bold 14px Inter';
+                ctx.textAlign = textAnchor;
+                ctx.textBaseline = 'middle';
+
+                const percentage = ((item.value / total) * 100).toFixed(1);
+                const categoryText = item.name;
+                const percentageText = `${percentage}%`;
+
+                // Adjust label positions slightly for better readability
+                const textX = (textAnchor === 'left') ? horizontalLineEnd + 5 : horizontalLineEnd - 5;
+                const textYCategory = centerY + (radius + lineLength) * Math.sin(midAngle) - 8; // Category slightly above
+                const textYPercentage = centerY + (radius + lineLength) * Math.sin(midAngle) + 8; // Percentage slightly below
+
+                ctx.fillText(categoryText, textX, textYCategory);
+                ctx.font = '12px Inter'; // Smaller font for percentage
+                ctx.fillText(percentageText, textX, textYPercentage);
+
+                currentAngle += sliceAngle;
+            });
+
+            // If there's no data, display a message
+            if (data.length === 0) {
+                ctx.fillStyle = '#666';
+                ctx.font = 'italic 20px Inter';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText('No data to display. Add values on the left.', centerX, centerY);
+            }
+        }
+
+        /**
+         * Handles the download functionality for the chart.
+         */
+        function downloadChart() {
+            // Get data URL from the canvas
+            const imageURL = pieChartCanvas.toDataURL('image/png');
+
+            // Create a temporary link element
+            const link = document.createElement('a');
+            link.href = imageURL;
+            link.download = 'pie_chart.png'; // Set the download filename
+            document.body.appendChild(link); // Append to body (required for Firefox)
+            link.click(); // Programmatically click the link to trigger download
+            document.body.removeChild(link); // Clean up the temporary link
+        }
+
+        /**
+         * Initializes color palette options with radio buttons.
+         */
+        function initializeColorPalettes() {
+            for (const paletteName in colorPalettes) {
+                const div = document.createElement('div');
+                div.className = 'flex items-center space-x-2';
+
+                const input = document.createElement('input');
+                input.type = 'radio';
+                input.name = 'colorPalette';
+                input.value = paletteName;
+                input.id = `palette-${paletteName}`;
+                input.className = 'form-radio h-4 w-4 text-blue-600 border-gray-300 focus:ring-blue-500';
+
+                // Check the default palette
+                if (paletteName === 'default') {
+                    input.checked = true;
+                }
+
+                const label = document.createElement('label');
+                label.htmlFor = `palette-${paletteName}`;
+                label.className = 'ml-2 text-gray-700 font-medium capitalize cursor-pointer';
+                label.textContent = paletteName;
+
+                // Display color swatches
+                const swatchesDiv = document.createElement('div');
+                swatchesDiv.className = 'flex ml-2';
+                colorPalettes[paletteName].slice(0, 5).forEach(color => { // Show first 5 colors
+                    const swatch = document.createElement('span');
+                    swatch.className = 'w-4 h-4 rounded-sm border border-gray-300';
+                    swatch.style.backgroundColor = color;
+                    swatchesDiv.appendChild(swatch);
+                });
+
+
+                div.appendChild(input);
+                div.appendChild(label);
+                div.appendChild(swatchesDiv);
+                colorPaletteOptions.appendChild(div);
+
+                input.addEventListener('change', (event) => {
+                    currentPalette = colorPalettes[event.target.value];
+                    const data = readData();
+                    drawPieChart(data, currentPalette);
+                });
+            }
+        }
+
+        /**
+         * Resizes the canvas based on its parent container.
+         * This ensures the chart scales properly with the window.
+         */
+        function resizeCanvas() {
+            const parent = pieChartCanvas.parentElement;
+            const size = Math.min(parent.offsetWidth, parent.offsetHeight); // Make it square based on the smaller dimension
+            pieChartCanvas.width = size;
+            pieChartCanvas.height = size;
+            const data = readData();
+            drawPieChart(data, currentPalette);
+        }
+
+
+        // Event Listeners
+        addRowBtn.addEventListener('click', () => addDataRow());
+        generateChartBtn.addEventListener('click', () => {
+            const data = readData();
+            drawPieChart(data, currentPalette);
+        });
+        downloadChartBtn.addEventListener('click', downloadChart);
+        window.addEventListener('resize', resizeCanvas); // Adjust canvas size on window resize
+
+        // Initial setup on page load
+        window.onload = () => {
+            // Populate with sample data
+            initialData.forEach(item => addDataRow(item.name, item.value));
+            initializeColorPalettes();
+            resizeCanvas(); // Set initial canvas size and draw chart
+        };
+    </script>
+</body>
+</html>
