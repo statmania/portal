@@ -18,8 +18,9 @@
             box-sizing: border-box;
         }
         .container {
+            /* Updated grid-template-columns for Controls (1fr), Histogram (2fr), Data (1fr) */
             display: grid;
-            grid-template-columns: 1fr 1fr 2fr; /* Three columns: Controls, Data, Histogram */
+            grid-template-columns: 1fr 2fr 1fr;
             gap: 20px; /* Space between columns */
             background-color: #fff;
             padding: 20px;
@@ -115,7 +116,7 @@
         #histogramCanvas {
             max-width: 100%;
             height: 100%; /* Canvas takes 100% of its parent's height */
-            background-color: #fff; /* Ensure white background for chart */
+            background-color: #e6e6e6; /* ggplot2-like gray background */
         }
 
         /* Responsive adjustments */
@@ -133,9 +134,9 @@
 </head>
 <body>
     <div class="container">
-        <!-- Column 1: Controls (Distribution, Number of Values, Parameters) -->
+        <!-- Column 1: Controls -->
         <div class="column">
-            <h2>1. Controls</h2>
+            <h2>Controls</h2>
             <label for="distributionSelect">Select Distribution:</label>
             <select id="distributionSelect">
                 <option value="normal">Normal Distribution</option>
@@ -145,7 +146,7 @@
             </select>
 
             <label for="numValues">Number of Values to Generate:</label>
-            <input type="number" id="numValues" value="100" min="1">
+            <input type="number" id="numValues" value="120" min="1">
 
             <div id="parametersContainer">
                 <!-- Parameters will be dynamically loaded here based on distribution -->
@@ -156,19 +157,19 @@
             <span id="numBinsValue">20</span>
         </div>
 
-        <!-- Column 2: Generated Data Output -->
-        <div class="column">
-            <h2>2. Generated Data</h2>
-            <div id="outputDataContainer">
-                <button id="copyBtn">Copy Values</button> <!-- Moved button above data -->
-                <pre id="outputData" contenteditable="true" style="user-select: text;"></pre>
-            </div>
+        <!-- Column 2: Histogram -->
+        <div class="column" id="histogramColumn">
+            <h2>Histogram</h2>
+            <canvas id="histogramCanvas"></canvas>
         </div>
 
-        <!-- Column 3: Histogram -->
-        <div class="column" id="histogramColumn">
-            <h2>3. Histogram</h2>
-            <canvas id="histogramCanvas"></canvas>
+        <!-- Column 3: Generated Data -->
+        <div class="column">
+            <h2>Generated Data</h2>
+            <div id="outputDataContainer">
+                <button id="copyBtn">Copy Values</button>
+                <pre id="outputData" contenteditable="true" style="user-select: text;"></pre>
+            </div>
         </div>
     </div>
 
@@ -263,14 +264,103 @@
             return min + Math.random() * (max - min);
         }
 
-        // --- End of Helper Functions ---
+        // --- Probability Density/Mass Function (PDF/PMF) Helpers ---
+
+        /**
+         * Calculates factorial of a non-negative integer.
+         * @param {number} n - The number to calculate factorial for.
+         * @returns {number} The factorial of n.
+         */
+        function factorial(n) {
+            if (n < 0) return NaN;
+            if (n === 0) return 1;
+            let result = 1;
+            for (let i = 1; i <= n; i++) {
+                result *= i;
+            }
+            return result;
+        }
+
+        /**
+         * Calculates combinations (nCk).
+         * @param {number} n - Total number of items.
+         * @param {number} k - Number of items to choose.
+         * @returns {number} The number of combinations.
+         */
+        function combinations(n, k) {
+            if (k < 0 || k > n) return 0;
+            if (k === 0 || k === n) return 1;
+            if (k > n / 2) k = n - k; // Optimization: C(n, k) = C(n, n-k)
+
+            let res = 1;
+            for (let i = 1; i <= k; i++) {
+                res = res * (n - i + 1) / i;
+            }
+            return res;
+        }
+
+        /**
+         * Calculates the Probability Density Function (PDF) for a Normal Distribution.
+         * @param {number} x - The value at which to evaluate the PDF.
+         * @param {number} mean - The mean ($\mu$) of the distribution.
+         * @param {number} stdDev - The standard deviation ($\sigma$) of the distribution.
+         * @returns {number} The PDF value at x.
+         */
+        function normalPdf(x, mean, stdDev) {
+            if (stdDev <= 0) return 0;
+            const exponent = -0.5 * Math.pow((x - mean) / stdDev, 2);
+            return (1 / (stdDev * Math.sqrt(2 * Math.PI))) * Math.exp(exponent);
+        }
+
+        /**
+         * Calculates the Probability Density Function (PDF) for a Uniform Distribution.
+         * @param {number} x - The value at which to evaluate the PDF.
+         * @param {number} min - The minimum value of the distribution.
+         * @param {number} max - The maximum value of the distribution.
+         * @returns {number} The PDF value at x.
+         */
+        function uniformPdf(x, min, max) {
+            if (min >= max) return 0;
+            if (x >= min && x < max) {
+                return 1 / (max - min);
+            }
+            return 0;
+        }
+
+        /**
+         * Calculates the Probability Mass Function (PMF) for a Binomial Distribution.
+         * @param {number} k - The number of successes.
+         * @param {number} n - The number of trials.
+         * @param {number} p - The probability of success on each trial.
+         * @returns {number} The PMF value for k successes.
+         */
+        function binomialPmf(k, n, p) {
+            if (k < 0 || k > n || p < 0 || p > 1) return 0;
+            const C = combinations(n, k);
+            return C * Math.pow(p, k) * Math.pow(1 - p, n - k);
+        }
+
+        /**
+         * Calculates the Probability Mass Function (PMF) for a Poisson Distribution.
+         * @param {number} k - The number of events.
+         * @param {number} lambda - The average rate ($\lambda$) of events per interval.
+         * @returns {number} The PMF value for k events.
+         */
+        function poissonPmf(k, lambda) {
+            if (k < 0 || !Number.isInteger(k) || lambda <= 0) return 0;
+            // Handle large k for factorial to avoid overflow, though for common lambda values, k won't be excessively large.
+            // For production, consider gamma function for log factorial or lookup tables.
+            return (Math.pow(lambda, k) * Math.exp(-lambda)) / factorial(k);
+        }
+
+        // --- End of Probability Density/Mass Function (PDF/PMF) Helpers ---
 
         // --- DOM Elements and Global Chart Instance ---
         const distributionSelect = document.getElementById('distributionSelect');
         const numValuesInput = document.getElementById('numValues');
         const parametersContainer = document.getElementById('parametersContainer');
-        const numBinsSlider = document.getElementById('numBinsSlider'); // New: Bins slider
-        const numBinsValueSpan = document.getElementById('numBinsValue'); // New: Bins value display
+        const numBinsSlider = document.getElementById('numBinsSlider');
+        const numBinsValueSpan = document.getElementById('numBinsValue');
         const outputData = document.getElementById('outputData');
         const copyBtn = document.getElementById('copyBtn');
         const histogramCanvas = document.getElementById('histogramCanvas');
@@ -438,7 +528,6 @@
          * Creates or updates a histogram using Chart.js based on the generated data.
          * @param {Array<number>} data - The array of numerical data to plot.
          * @param {string} distributionType - The type of distribution (e.g., 'normal', 'binomial')
-         * to help with appropriate binning.
          * @param {number} numBins - The desired number of bins for the histogram.
          */
         function createHistogram(data, distributionType, numBins) {
@@ -457,24 +546,21 @@
             if (isDiscrete) {
                 minVal = Math.floor(minVal);
                 maxVal = Math.ceil(maxVal);
+                // Ensure a reasonable range for discrete values
+                if (data.length > 0 && minVal === maxVal) {
+                    minVal -= 1; // Expand range slightly if all values are identical
+                    maxVal += 1;
+                }
                 numBins = Math.max(1, maxVal - minVal + 1);
-                if (numBins === 0 && data.length > 0) numBins = 1;
-                binWidth = 1;
-            }
-
-            if (data.length > 0 && minVal === maxVal) {
-                if (isDiscrete) {
+                binWidth = 1; // Bin width for discrete values is 1
+            } else if (data.length > 0 && minVal === maxVal) {
+                 // Adjust range for continuous data if all values are identical
+                minVal = minVal * 0.95;
+                maxVal = maxVal * 1.05;
+                if (minVal === maxVal) { // Fallback if still identical (e.g., value is 0)
                     minVal -= 0.5;
                     maxVal += 0.5;
-                } else {
-                    minVal = minVal * 0.9 || (minVal - 1);
-                    maxVal = maxVal * 1.1 || (maxVal + 1);
-                    if (minVal === maxVal) {
-                        minVal -= 1;
-                        maxVal += 1;
-                    }
                 }
-                numBins = 1;
                 binWidth = (maxVal - minVal) / numBins;
             } else if (data.length === 0) {
                 clearHistogram();
@@ -483,18 +569,21 @@
 
             const bins = Array(numBins).fill(0);
             const labels = [];
+            const densityData = []; // Data for the density curve
 
+            // Calculate bins and labels
             for (let i = 0; i < numBins; i++) {
                 let lowerBound = minVal + i * binWidth;
                 let upperBound = lowerBound + binWidth;
 
                 if (isDiscrete) {
-                    labels.push(lowerBound.toFixed(0));
+                    labels.push(Math.round(lowerBound).toString()); // Label with integer
                 } else {
                     labels.push(`${lowerBound.toFixed(2)} - ${upperBound.toFixed(2)}`);
                 }
             }
 
+            // Populate bins
             data.forEach(val => {
                 let binIndex;
                 if (isDiscrete) {
@@ -503,7 +592,7 @@
                     binIndex = Math.floor((val - minVal) / binWidth);
                 }
 
-                if (binIndex === numBins) {
+                if (binIndex === numBins) { // Handle values falling exactly on the upper bound of the last bin
                     binIndex = numBins - 1;
                 }
                 if (binIndex >= 0 && binIndex < numBins) {
@@ -511,18 +600,64 @@
                 }
             });
 
+            // Generate density/PMF curve data
+            for (let i = 0; i < numBins; i++) {
+                let xValue;
+                if (isDiscrete) {
+                    xValue = Math.round(minVal + i * binWidth); // Center of the bar for discrete
+                } else {
+                    xValue = minVal + (i + 0.5) * binWidth; // Midpoint of the bin for continuous
+                }
+                let yValue = 0;
+                let scaleFactor = numValues * (isDiscrete ? 1 : binWidth); // Scale PDF/PMF to match frequency counts
+
+                switch (distributionType) {
+                    case 'normal':
+                        const normalMean = parseFloat(document.getElementById('normalMean').value);
+                        const normalStdDev = parseFloat(document.getElementById('normalStdDev').value);
+                        yValue = normalPdf(xValue, normalMean, normalStdDev) * scaleFactor;
+                        break;
+                    case 'binomial':
+                        const binomialN = parseInt(document.getElementById('binomialN').value);
+                        const binomialP = parseFloat(document.getElementById('binomialP').value);
+                        yValue = binomialPmf(xValue, binomialN, binomialP) * scaleFactor;
+                        break;
+                    case 'poisson':
+                        const poissonLambda = parseFloat(document.getElementById('poissonLambda').value);
+                        yValue = poissonPmf(xValue, poissonLambda) * scaleFactor;
+                        break;
+                    case 'uniform':
+                        const uniformMin = parseFloat(document.getElementById('uniformMin').value);
+                        const uniformMax = parseFloat(document.getElementById('uniformMax').value);
+                        yValue = uniformPdf(xValue, uniformMin, uniformMax) * scaleFactor;
+                        break;
+                }
+                densityData.push(yValue);
+            }
+
             chartInstance = new Chart(ctx, {
-                type: 'bar',
+                type: 'bar', // Base type is bar for histogram
                 data: {
                     labels: labels,
                     datasets: [{
                         label: 'Frequency',
                         data: bins,
-                        backgroundColor: 'rgba(75, 192, 192, 0.7)',
-                        borderColor: 'rgba(75, 192, 192, 1)',
+                        backgroundColor: 'rgba(30, 144, 255, 0.7)', /* ggplot2 blue */
+                        borderColor: 'rgba(30, 144, 255, 1)',
                         borderWidth: 1,
-                        barPercentage: 1.0,
-                        categoryPercentage: 1.0
+                        barPercentage: 1.0, // Bars take full width of category
+                        categoryPercentage: 1.0 // Categories take full width
+                    },
+                    {
+                        label: 'Density / Probability',
+                        data: densityData,
+                        type: 'line', // Overlay as a line chart
+                        borderColor: 'rgb(255, 99, 132)', // Red line for density
+                        backgroundColor: 'rgba(255, 99, 132, 0.2)', // Light red fill
+                        borderWidth: 2,
+                        pointRadius: 0, // No points on the line
+                        fill: false,
+                        tension: 0.4 // Smooth curve
                     }]
                 },
                 options: {
@@ -536,7 +671,7 @@
                                 font: { size: 14, weight: 'bold' }
                             },
                             grid: {
-                                display: false
+                                display: false /* No vertical gridlines for ggplot2 style */
                             },
                             ticks: {
                                 autoSkip: true,
@@ -548,15 +683,18 @@
                             beginAtZero: true,
                             title: {
                                 display: true,
-                                text: 'Count (Frequency)',
+                                text: 'Count / Density', /* Adjusted label */
                                 font: { size: 14, weight: 'bold' }
+                            },
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.1)', /* Light gray horizontal gridlines */
+                                drawBorder: false /* No border line on the axis */
                             },
                             ticks: {
                                 callback: function(value) {
-                                    if (Number.isInteger(value)) {
-                                        return value;
-                                    }
-                                    return null;
+                                    // Only show integer ticks for frequency, but allow decimals for density.
+                                    // Since density is scaled to frequency, this callback works for both.
+                                    return value;
                                 }
                             }
                         }
@@ -564,25 +702,39 @@
                     plugins: {
                         title: {
                             display: true,
-                            text: `Histogram of ${distributionType.charAt(0).toUpperCase() + distributionType.slice(1)} Distribution`,
+                            text: `Histogram and Density of ${distributionType.charAt(0).toUpperCase() + distributionType.slice(1)} Distribution`,
                             font: { size: 16, weight: 'bold' },
                             padding: { top: 10, bottom: 20 }
                         },
                         legend: {
-                            display: false
+                            display: true, // Show legend for both bar and line
+                            position: 'top',
+                            labels: {
+                                boxWidth: 20,
+                                padding: 15
+                            }
                         },
                         tooltip: {
+                            mode: 'index',
+                            intersect: false, // Show tooltips for all datasets at a given x-value
                             callbacks: {
                                 label: function(context) {
                                     let label = context.dataset.label || '';
                                     if (label) {
                                         label += ': ';
                                     }
-                                    label += context.parsed.y;
+                                    if (context.dataset.type === 'line') {
+                                        label += context.parsed.y.toFixed(4); // More precision for density
+                                    } else {
+                                        label += context.parsed.y;
+                                    }
                                     return label;
                                 },
                                 title: function(context) {
-                                    return context.label;
+                                    if (isDiscrete) {
+                                        return `Value: ${context[0].label}`;
+                                    }
+                                    return `Range: ${context[0].label}`;
                                 }
                             }
                         }
