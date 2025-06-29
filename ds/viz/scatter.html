@@ -336,16 +336,16 @@
         /* Adjust width of the color input within its flex container */
         .color-single-option input[type="text"] {
             flex-grow: 1; /* Allow text input to take remaining space */
-            /* Add max-width to prevent excessive growth and overflowing */
-            max-width: 120px; /* Adjust as needed */
+            /* Added max-width to prevent excessive growth and overflowing */
+            max-width: 120px; /* Adjust as needed for better fit */
         }
 
         /* Specific styles for background color input */
         #customBackgroundColorInput {
             margin-left: 5px; /* Space from select dropdown */
             flex-grow: 1;
-            /* Add max-width to prevent excessive growth and overflowing */
-            max-width: 120px; /* Adjust as needed */
+            /* Added max-width to prevent excessive growth and overflowing */
+            max-width: 120px; /* Adjust as needed for better fit */
         }
         .background-color-option {
             display: flex;
@@ -419,7 +419,7 @@
                 <input type="text" id="plotTitleInput" placeholder="Enter plot title">
             </div>
 
-            <div class="option-group single-line-option"> <!-- Made this option group single-line -->
+            <div class="option-group single-line-option">
                 <label>Color:</label>
                 <div class="color-options-row">
                     <div class="color-single-option">
@@ -446,10 +446,10 @@
 
             <div class="option-group">
                 <input type="checkbox" id="drawLinesCheckbox">
-                <label for="drawLinesCheckbox">Draw Lines</label> <!-- Changed label text -->
+                <label for="drawLinesCheckbox">Draw Lines</label>
             </div>
 
-            <div class="option-group single-line-option"> <!-- Made this option group single-line -->
+            <div class="option-group single-line-option">
                 <label for="backgroundColorSelect">Background Color:</label>
                 <div class="background-color-option">
                     <select id="backgroundColorSelect">
@@ -457,9 +457,8 @@
                         <option value="#ffffff">White</option>
                         <option value="#000000">Black</option>
                         <option value="#ADD8E6">Light Blue</option>
-                        <option value="custom">Custom</option>
                     </select>
-                    <input type="text" id="customBackgroundColorInput" placeholder="Enter hex or color name">
+                    <input type="text" id="customBackgroundColorInput" placeholder="color name or hex">
                 </div>
             </div>
 
@@ -473,12 +472,19 @@
     </div>
 
     <script>
-        // Initial sample data (now 20 entries)
+        // Initial sample data (now 20 entries for cubic function with larger random deviations)
         let sampleData = [];
         for (let i = 0; i < 20; i++) {
+            const x = i * 0.5; // Spread out x values for a smoother curve
+            // Simple cubic function: y = x^3 - 6x^2 + 9x + 5
+            let y = (x * x * x) - (6 * x * x) + (9 * x) + 5;
+
+            // Add a larger random deviation for more scatter
+            y += (Math.random() - 0.5) * 15; // Increased multiplier from 5 to 15 for more scatter
+
             sampleData.push({
-                var1: Math.floor(Math.random() * 50) + 1,
-                var2: Math.floor(Math.random() * 50) + 1,
+                var1: parseFloat(x.toFixed(2)), // Keep two decimal places for clarity
+                var2: parseFloat(y.toFixed(2)),
                 category: String.fromCharCode(65 + (i % 4)) // Categories A, B, C, D
             });
         }
@@ -652,11 +658,8 @@
             const pointSize = 6; // Base size for point shapes
             const drawLines = document.getElementById('drawLinesCheckbox').checked; // Get line drawing state
 
-            // Get background color
-            let backgroundColor = document.getElementById('backgroundColorSelect').value;
-            if (backgroundColor === 'custom') {
-                backgroundColor = document.getElementById('customBackgroundColorInput').value || '#f8f8f8'; // Fallback to default gray if custom is empty
-            }
+            // Get background color from the custom input, falling back to default if empty
+            let backgroundColor = document.getElementById('customBackgroundColorInput').value || '#f8f8f8';
 
 
             // Clear previous SVG content
@@ -984,12 +987,13 @@
             const backgroundColorSelect = document.getElementById('backgroundColorSelect');
             const customBackgroundColorInput = document.getElementById('customBackgroundColorInput');
 
+            // When a predefined color is selected from the dropdown, update the text input field
             backgroundColorSelect.addEventListener('change', () => {
-                // The custom input is no longer disabled by default, but its value is only used if 'custom' is selected.
-                // We keep it enabled so user can type color and then select 'custom'.
+                customBackgroundColorInput.value = backgroundColorSelect.value;
                 debouncedGenerateScatterPlot();
             });
 
+            // The custom input directly triggers plot regeneration on input
             customBackgroundColorInput.addEventListener('input', debouncedGenerateScatterPlot);
 
 
