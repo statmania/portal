@@ -444,9 +444,15 @@
                 </select>
             </div>
 
-            <div class="option-group">
-                <input type="checkbox" id="drawLinesCheckbox">
-                <label for="drawLinesCheckbox">Draw Lines</label>
+            <div class="option-group" style="display: flex; align-items: center; gap: 20px;">
+                <div>
+                    <input type="checkbox" id="drawLinesCheckbox">
+                    <label for="drawLinesCheckbox">Draw Lines</label>
+                </div>
+                <div>
+                    <input type="checkbox" id="hideGridlinesCheckbox">
+                    <label for="hideGridlinesCheckbox">Hide Gridlines</label>
+                </div>
             </div>
 
             <div class="option-group single-line-option">
@@ -479,8 +485,8 @@
             // Simple cubic function: y = x^3 - 6x^2 + 9x + 5
             let y = (x * x * x) - (6 * x * x) + (9 * x) + 5;
 
-            // Add a larger random deviation for more scatter
-            y += (Math.random() - 0.5) * 15; // Increased multiplier from 5 to 15 for more scatter
+            // Add a larger random deviation for more scatter, approx 10-20% of the y-range
+            y += (Math.random() - 0.5) * 75; // Multiplier increased to 75
 
             sampleData.push({
                 var1: parseFloat(x.toFixed(2)), // Keep two decimal places for clarity
@@ -657,6 +663,7 @@
             const selectedPointType = document.getElementById('pointTypeSelect').value;
             const pointSize = 6; // Base size for point shapes
             const drawLines = document.getElementById('drawLinesCheckbox').checked; // Get line drawing state
+            const hideGridlines = document.getElementById('hideGridlinesCheckbox').checked; // Get hide gridlines state
 
             // Get background color from the custom input, falling back to default if empty
             let backgroundColor = document.getElementById('customBackgroundColorInput').value || '#f8f8f8';
@@ -744,6 +751,7 @@
             svg.append("g")
                 .attr("class", "grid x-grid")
                 .attr("transform", `translate(0,${height})`)
+                .style("display", hideGridlines ? "none" : "block") // Conditional display
                 .call(d3.axisBottom(xScale)
                     .ticks(10)
                     .tickSize(-height)
@@ -752,6 +760,7 @@
 
             svg.append("g")
                 .attr("class", "grid y-grid")
+                .style("display", hideGridlines ? "none" : "block") // Conditional display
                 .call(d3.axisLeft(yScale)
                     .ticks(10)
                     .tickSize(-width)
@@ -981,6 +990,9 @@
 
             // Event listener for draw lines checkbox
             document.getElementById('drawLinesCheckbox').addEventListener('change', debouncedGenerateScatterPlot);
+
+            // Event listener for hide gridlines checkbox
+            document.getElementById('hideGridlinesCheckbox').addEventListener('change', debouncedGenerateScatterPlot);
 
 
             // Event listeners for background color options
