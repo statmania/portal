@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Interactive Scatter Plot Maker</title>
     <script src="https://d3js.org/d3.v7.min.js"></script>
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         body {
             font-family: 'Inter', sans-serif;
@@ -22,7 +24,7 @@
             display: flex;
             flex-wrap: wrap; /* Allow wrapping on smaller screens */
             gap: 25px;
-            max-width: 1400px; /* Max width for the whole application */
+            max-width: 1700px; /* Increased max-width for better fitting of 4 columns */
             width: 100%;
             background-color: #ffffff;
             border-radius: 12px;
@@ -40,45 +42,64 @@
             flex-direction: column;
         }
 
-        /* Column 1: Data Input (30%) */
-        .data-input-column {
-            flex-basis: calc((100% - 50px) * 0.3); /* 30% of total content width minus gap */
-            min-width: 300px; /* Minimum width to prevent content squishing */
+        /* Column Layout for Large Screens (Default: >= 992px) */
+        .left-menu-column {
+            flex: 15 1 180px; /* Adjusted flex-grow for rebalancing */
+            min-width: 180px; /* Minimum width for menu readability */
+            max-width: 220px; /* Max width for consistency */
         }
 
-        /* Column 2: Plot Area (50%) */
         .plot-area {
-            flex-basis: calc((100% - 50px) * 0.5); /* 50% of total content width minus gap */
-            min-width: 500px; /* Minimum width for the plot to be readable */
+            flex: 40 1 400px; /* flex-grow flex-shrink flex-basis. User requested 40% and 400px min-width */
+            min-width: 400px; /* Adjusted minimum width for the plot */
             display: flex;
-            flex-direction: column; /* Changed to column to stack h2 and svg vertically */
-            justify-content: flex-start; /* Align contents to start (top) */
-            align-items: center; /* Center horizontally */
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: center;
         }
 
-        /* Column 3: Settings (20%) */
+        .data-input-column {
+            flex: 27 1 280px; /* Decreased width as requested (from 300px min-width) */
+            min-width: 280px; /* Adjusted minimum width */
+        }
+
         .settings {
-            flex-basis: calc((100% - 50px) * 0.2); /* 20% of total content width minus gap */
+            flex: 18 1 250px; /* Adjusted flex-grow for rebalancing */
             min-width: 250px; /* Minimum width for settings */
         }
 
 
-        /* Adjust column widths for better responsiveness */
-        @media (max-width: 1200px) {
+        /* Adjust column widths for Medium Screens (e.g., Tablets and smaller Laptops: 768px to 991px) */
+        @media (max-width: 991px) {
+            /* On medium screens, stack menu/data input (top row), then plot/settings (bottom row) */
+            .left-menu-column {
+                flex-basis: calc(40% - 12.5px); /* Take approx 40% of first row */
+                max-width: unset; /* Remove max-width restriction for flexibility */
+            }
             .data-input-column {
-                flex-basis: 100%; /* Data input takes full width on smaller screens */
+                flex-basis: calc(60% - 12.5px); /* Take approx 60% of first row */
+                min-width: unset; /* Remove min-width to allow shrinking */
             }
             .plot-area {
-                flex-basis: calc(60% - 12.5px); /* Two columns on medium screens */
+                flex-basis: calc(60% - 12.5px); /* 60% of two-column layout in second row */
+                min-width: unset; /* Remove min-width to allow shrinking */
             }
             .settings {
-                flex-basis: calc(40% - 12.5px); /* Two columns on medium screens */
+                flex-basis: calc(40% - 12.5px); /* 40% of two-column layout in second row */
+                min-width: unset; /* Remove min-width to allow shrinking */
+            }
+            .container {
+                gap: 25px; /* Revert to 25px gap for stacked sections, 1 gap for side-by-side */
             }
         }
 
-        @media (max-width: 768px) {
+        /* Adjust column widths for Small Screens (e.g., Mobile: <= 767px) */
+        @media (max-width: 767px) {
+            /* On small screens, all columns stack vertically */
             .column {
-                flex-basis: 100%; /* Single column on small screens */
+                flex-basis: 100%;
+                min-width: unset;
+                max-width: none;
             }
         }
 
@@ -93,18 +114,18 @@
 
         /* Specific style for the plot column's H2 */
         h2.plot-main-title {
-            margin-top: 0; /* Remove top margin for the H2 itself */
-            margin-bottom: 15px; /* Spacing between H2 and plot container */
+            margin-top: 0;
+            margin-bottom: 15px;
         }
 
         /* Data Input Table */
         #dataTableContainer {
-            overflow-x: auto; /* Allow horizontal scrolling for table if needed */
-            max-height: 400px; /* Added max-height for vertical scrolling */
-            overflow-y: auto; /* Enable vertical scrolling */
+            overflow-x: auto;
+            max-height: 400px;
+            overflow-y: auto;
             margin-bottom: 15px;
-            border: 1px solid #e0e0e0; /* Add border for container */
-            border-radius: 8px; /* Match table border-radius */
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
         }
 
         #dataTable {
@@ -112,24 +133,23 @@
             border-collapse: collapse;
             font-size: 0.9em;
             background-color: #fff;
-            /* Removed border-radius and overflow: hidden from here as container now handles it */
         }
 
         #dataTable th, #dataTable td {
             border: 1px solid #e0e0e0;
-            padding: 7px 10px; /* Reduced padding for smaller row height */
+            padding: 7px 10px;
             text-align: left;
-            white-space: nowrap; /* Prevent wrapping in cells */
+            white-space: nowrap;
         }
 
         #dataTable th {
-            background-color: #fafffa; /* Background to look editable */
+            background-color: #fafffa;
             font-weight: bold;
             color: #555;
-            cursor: text; /* Indicate editable headers */
-            position: sticky; /* Make header sticky for scrolling */
-            top: 0; /* Stick to the top */
-            z-index: 1; /* Ensure it's above scrolling content */
+            cursor: text;
+            position: sticky;
+            top: 0;
+            z-index: 1;
         }
 
         #dataTable td {
@@ -139,11 +159,11 @@
 
         /* Style for editable content */
         [contenteditable="true"] {
-            outline: none; /* Remove default focus outline */
-            background-color: #fafffa; /* Light green background when editable */
+            outline: none;
+            background-color: #fafffa;
             border-radius: 4px;
             padding: 2px 5px;
-            min-width: 50px; /* Ensure editable cells have some minimum width */
+            min-width: 50px;
         }
 
         #dataTable input[type="number"] {
@@ -165,7 +185,7 @@
         }
 
         button {
-            background-color: #4CAF50; /* Green */
+            background-color: #4CAF50;
             color: white;
             padding: 10px 18px;
             border: none;
@@ -185,9 +205,9 @@
             transform: translateY(0);
         }
 
-        button.action-button { /* Generic class for action buttons */
-            background-color: #007bff; /* Blue for primary action */
-            display: flex; /* For icon alignment */
+        button.action-button {
+            background-color: #007bff;
+            display: flex;
             align-items: center;
             gap: 5px;
         }
@@ -197,10 +217,10 @@
         }
 
         button.danger {
-            background-color: #dc3545; /* Red for destructive actions */
-            font-size: 1.2em; /* Make icon larger */
-            padding: 6px 10px; /* Adjust padding for icon */
-            line-height: 1; /* Remove extra line height for emoji */
+            background-color: #dc3545;
+            font-size: 1.2em;
+            padding: 6px 10px;
+            line-height: 1;
         }
         button.danger:hover {
             background-color: #c82333;
@@ -208,32 +228,30 @@
 
         /* Plot Area */
         #plotContainer {
-            flex-grow: 1; /* Allows plot container to take up remaining vertical space */
-            display: flex; /* Use flexbox for inner centering if needed */
+            flex-grow: 1;
+            display: flex;
             justify-content: center;
             align-items: center;
-            width: 100%; /* Ensure it uses full width of its parent column */
-            height: 450px; /* Fixed height for the SVG container */
+            width: 100%;
+            height: 450px;
         }
 
         #scatter-plot-svg {
-            background-color: #f8f8f8; /* Light gray background for plot area */
-            /* Removed border and box-shadow for ggplot2-like look */
-            overflow: visible; /* Allow axes labels/legend to extend */
-            /* Important: Width and Height will be set by JS attributes directly */
+            background-color: #f8f8f8;
+            overflow: visible;
         }
 
         /* ggplot2-like axis and gridlines */
         .axis path {
-            display: none; /* Hide axis lines */
+            display: none;
         }
         .axis line {
-            stroke: #e0e0e0; /* Light grey for gridlines */
-            stroke-dasharray: 2 2; /* Dashed gridlines */
+            stroke: #e0e0e0;
+            stroke-dasharray: 2 2;
             shape-rendering: crispEdges;
         }
         .axis .tick line {
-            opacity: 0.7; /* Make gridlines slightly transparent */
+            opacity: 0.7;
         }
         .axis text {
             font-size: 11px;
@@ -259,7 +277,7 @@
             height: auto;
             padding: 8px;
             font: 12px sans-serif;
-            background: rgba(0, 0, 0, 0.7); /* Slightly darker, semi-transparent */
+            background: rgba(0, 0, 0, 0.7);
             color: white;
             border-radius: 4px;
             pointer-events: none;
@@ -282,16 +300,16 @@
 
         /* General label and input styling */
         .settings label {
-            display: inline-block; /* Make labels inline */
-            margin-bottom: 0; /* Remove default block margin */
+            display: inline-block;
+            margin-bottom: 0;
             font-weight: bold;
             color: #555;
-            margin-right: 5px; /* Space between label and input */
+            margin-right: 5px;
         }
 
         .settings input[type="radio"] {
             margin-right: 5px;
-            accent-color: #007bff; /* Highlight radio button */
+            accent-color: #007bff;
         }
         .settings input[type="text"],
         .settings select {
@@ -306,22 +324,22 @@
         .single-line-option {
             display: flex;
             align-items: center;
-            gap: 10px; /* Space between label and input/select */
-            margin-bottom: 10px; /* Space from other option groups */
+            gap: 10px;
+            margin-bottom: 10px;
         }
 
         .single-line-option input[type="text"],
         .single-line-option select {
-            flex-grow: 1; /* Allow input/select to take up available space */
-            width: auto; /* Override default width */
+            flex-grow: 1;
+            width: auto;
         }
 
         /* New flex container for color options row */
         .color-options-row {
             display: flex;
-            flex-wrap: wrap; /* Allow wrapping on smaller screens */
-            gap: 15px; /* Space between the two radio option groups */
-            align-items: center; /* Vertically align items in the row */
+            flex-wrap: wrap;
+            gap: 15px;
+            align-items: center;
         }
 
         /* Styles for individual radio option groups within the row */
@@ -329,34 +347,32 @@
         .color-category-option {
             display: flex;
             align-items: center;
-            gap: 5px; /* Space between radio, label, and input */
-            margin-bottom: 0; /* Override previous margin-bottom from .option-group > div */
+            gap: 5px;
+            margin-bottom: 0;
         }
 
         /* Adjust width of the color input within its flex container */
         .color-single-option input[type="text"] {
-            flex-grow: 1; /* Allow text input to take remaining space */
-            /* Added max-width to prevent excessive growth and overflowing */
-            max-width: 120px; /* Adjust as needed for better fit */
+            flex-grow: 1;
+            max-width: 120px;
         }
 
         /* Specific styles for background color input */
         #customBackgroundColorInput {
-            margin-left: 5px; /* Space from select dropdown */
+            margin-left: 5px;
             flex-grow: 1;
-            /* Added max-width to prevent excessive growth and overflowing */
-            max-width: 120px; /* Adjust as needed for better fit */
+            max-width: 120px;
         }
         .background-color-option {
             display: flex;
             align-items: center;
             gap: 5px;
-            flex-wrap: wrap; /* Allow wrapping of elements if space is tight */
+            flex-wrap: wrap;
         }
 
         /* Adjust width for select dropdowns to prevent excessive shrinking */
         .settings select {
-            min-width: 120px; /* A reasonable minimum width for dropdowns */
+            min-width: 120px;
         }
 
 
@@ -368,16 +384,179 @@
         .legend-item {
             cursor: pointer;
         }
-        .legend-item rect {
+        /* Removed rect specific styles as path will be used */
+        .legend-item path {
             stroke: #ccc;
             stroke-width: 0.5px;
+        }
+
+        /* --- Left Menu Specific Styles --- */
+        .left-menu-column {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+
+        .logo-container {
+            margin-bottom: 15px;
+        }
+
+        .logo-image {
+            width: 60px; /* Set fixed width */
+            height: 60px; /* Set fixed height */
+            border-radius: 50%; /* Make it round if it's a square image */
+            object-fit: cover; /* Ensure the image covers the area */
+        }
+
+
+        .site-name {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+
+        .slogan {
+            font-size: 0.9em;
+            color: #666;
+            margin-bottom: 25px;
+        }
+
+        .menu-list {
+            list-style: none;
+            padding: 0;
+            width: 100%; /* Menu takes full width of its column */
+            text-align: left;
+        }
+
+        .menu-list li {
+            margin-bottom: 5px;
+        }
+
+        .menu-list a, .menu-list .menu-toggle {
+            display: block;
+            padding: 10px 15px;
+            color: #333;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background-color 0.2s ease, color 0.2s ease, font-weight 0.2s ease;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05); /* Subtle shadow */
+        }
+
+        .menu-list a:hover, .menu-list .menu-toggle:hover {
+            background-color: #e2e6ea;
+            color: #0056b3; /* Darker blue on hover */
+            font-weight: bold; /* Make bold on hover */
+            background-image: linear-gradient(to right, #e2e6ea, #f0f2f5); /* Subtle gradient */
+        }
+
+        .menu-list .menu-toggle {
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #f0f2f5;
+            border: 1px solid #ddd;
+            margin-bottom: 5px;
+        }
+
+        .menu-list .menu-toggle.expanded {
+             background-color: #d1e2ff; /* Lighter blue when expanded */
+             color: #0056b3;
+             border-color: #a0c4ff;
+             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+
+        .menu-list .sub-menu {
+            list-style: none;
+            padding-left: 15px;
+            max-height: 0; /* Hidden by default */
+            overflow: hidden;
+            transition: max-height 0.3s ease-out; /* Smooth transition */
+            background-color: #fdfdfd;
+            border-left: 3px solid #007bff;
+            margin-top: -5px; /* Overlap with parent slightly */
+        }
+
+        .menu-list .sub-menu.show {
+            max-height: 200px; /* Adjust as needed to show all items, or use JS to calculate */
+            transition: max-height 0.3s ease-in;
+        }
+
+        .menu-list .sub-menu li a {
+            padding: 8px 15px;
+            font-size: 0.95em;
+            color: #555;
+            box-shadow: none; /* Remove shadow for sub-menu items */
+        }
+
+        .menu-list .sub-menu li a:hover {
+            background-color: #edf2f7;
+            color: #007bff;
+            font-weight: normal; /* Keep normal for sub-menu hover */
+        }
+
+        /* Arrow for expandable menu */
+        .arrow {
+            display: inline-block;
+            transition: transform 0.2s ease;
+        }
+
+        .menu-toggle.expanded .arrow {
+            transform: rotate(90deg);
         }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <!-- Column 1: Data Input -->
+        <!-- Column 1: Left Menu -->
+        <div class="column left-menu-column">
+            <div class="logo-container">
+                <img src="https://avatars.githubusercontent.com/u/80940485" alt="Stat Mania Logo" class="logo-image">
+            </div>
+            <h2 class="site-name">Stat Mania</h2>
+            <p class="slogan">Making Sense of Statistics</p>
+
+            <ul class="menu-list">
+                <li><a href="#">Home</a></li>
+                <li class="has-submenu">
+                    <div class="menu-toggle" data-target="graphs-submenu">
+                        Graphs <i class="fas fa-chevron-right arrow"></i>
+                    </div>
+                    <ul class="sub-menu" id="graphs-submenu">
+                        <li><a href="#">Pie chart</a></li>
+                        <li><a href="#">Bar plot</a></li>
+                        <li><a href="#">Scatter plot</a></li>
+                        <li><a href="#">Histogram</a></li>
+                    </ul>
+                </li>
+                <li class="has-submenu">
+                    <div class="menu-toggle" data-target="data-analysis-submenu">
+                        Data Analysis <i class="fas fa-chevron-right arrow"></i>
+                    </div>
+                    <ul class="sub-menu" id="data-analysis-submenu">
+                        <li><a href="#">Summary</a></li>
+                        <!-- Add more data analysis items here -->
+                    </ul>
+                </li>
+                <!-- Add more top-level menu items here -->
+            </ul>
+        </div>
+
+        <!-- Column 2: Plot Area (now in 2nd position) -->
+        <div class="column plot-area">
+            <h2 class="plot-main-title">Scatter Plot</h2>
+            <div id="plotContainer">
+                <svg id="scatter-plot-svg"></svg>
+            </div>
+            <p id="error-message" style="color: red; margin-top: 10px;"></p>
+        </div>
+
+        <!-- Column 3: Data Input (now in 3rd position) -->
         <div class="column data-input-column">
             <h2>Data Input</h2>
             <div id="dataTableContainer">
@@ -401,16 +580,7 @@
             </div>
         </div>
 
-        <!-- Column 2: Scatter Plot Display -->
-        <div class="column plot-area">
-            <h2 class="plot-main-title">Scatter Plot</h2>
-            <div id="plotContainer">
-                <svg id="scatter-plot-svg"></svg>
-            </div>
-            <p id="error-message" style="color: red; margin-top: 10px;"></p>
-        </div>
-
-        <!-- Column 3: Plot Settings -->
+        <!-- Column 4: Plot Settings (remains in 4th position) -->
         <div class="column settings">
             <h2>Plot Settings</h2>
 
@@ -555,7 +725,7 @@
                 // Delete Button Cell (now with icon)
                 const deleteCell = row.insertCell();
                 const deleteBtn = document.createElement('button');
-                deleteBtn.innerHTML = '&#x1F5D1;'; // Trash can emoji
+                deleteBtn.innerHTML = '&times;'; // Changed to cross symbol
                 deleteBtn.classList.add('danger');
                 deleteBtn.setAttribute('title', 'Delete Row'); // Add tooltip for accessibility
                 deleteBtn.onclick = () => deleteRow(index);
@@ -642,8 +812,8 @@
 
                 if (isNaN(var1Val) || isNaN(var2Val)) {
                     // Only display warning if there's actual data in the row, not empty rows
-                    if (cells[0].textContent.trim() !== '' || cells[1].textContent.trim() !== '') {
-                        errorMessageDiv.textContent = `Warning: Row ${rowIndex + 1} contains non-numeric data for Variable 1 or 2 and will be skipped.`;
+                    if (cells[0].textContent.trim() !== '' || cells[1].textContent.trim() !== '' || cells[2].textContent.trim() !== '') {
+                        errorMessageDiv.textContent = `Warning: Row ${rowIndex + 1} contains invalid or incomplete data and will be skipped.`;
                     }
                     return; // Skip invalid rows
                 }
@@ -857,7 +1027,7 @@
             // 9. Add Legend (always right)
             if (colorOption === 'category') {
                 // Hardcode position to 'right'
-                addLegend(svg, colorScale, width, height, margin, 'right');
+                addLegend(svg, colorScale, width, height, margin, 'right', selectedPointType);
             }
         }
 
@@ -869,30 +1039,32 @@
          * @param {number} plotHeight - The height of the plotting area.
          * @param {Object} margin - The margins of the plot.
          * @param {string} position - The desired position ('right', 'top', 'bottom', 'left'). (Now always 'right' internally)
+         * @param {string} pointType - The type of point shape to use for legend indicators.
          */
-        function addLegend(svg, colorScale, plotWidth, plotHeight, margin, position) {
+        function addLegend(svg, colorScale, plotWidth, plotHeight, margin, position, pointType) {
             const legend = svg.append("g")
                 .attr("class", "legend");
 
-            const legendRectSize = 18;
-            const legendSpacing = 6;
+            const legendIconSize = 9; /* Size for the legend icon (half of desired side/radius) */
+            const legendSpacing = 15; /* Spacing between legend items */
 
             const legendItems = legend.selectAll(".legend-item")
                 .data(colorScale.domain())
                 .enter()
                 .append("g")
                 .attr("class", "legend-item")
-                .attr("transform", (d, i) => `translate(0, ${i * (legendRectSize + legendSpacing)})`);
+                .attr("transform", (d, i) => `translate(0, ${i * (legendIconSize * 2 + legendSpacing)})`); /* Adjusted for icon size */
 
-            legendItems.append("rect")
-                .attr("width", legendRectSize)
-                .attr("height", legendRectSize)
-                .attr("rx", 3) /* rounded corners */
-                .attr("fill", colorScale);
+            legendItems.append("path") /* Changed from rect to path */
+                .attr("d", getPointPath(pointType, legendIconSize)) /* Use getPointPath for icon shape */
+                .attr("transform", `translate(${legendIconSize}, ${legendIconSize / 2})`) /* Center the icon */
+                .attr("fill", colorScale)
+                .attr("stroke", "#333")
+                .attr("stroke-width", 0.5);
 
             legendItems.append("text")
-                .attr("x", legendRectSize + legendSpacing)
-                .attr("y", legendRectSize / 2)
+                .attr("x", legendIconSize * 2 + legendSpacing) /* Adjusted x position */
+                .attr("y", legendIconSize / 2)
                 .attr("dy", "0.35em")
                 .text(d => d);
 
@@ -1013,6 +1185,24 @@
             document.getElementById('header-var1').addEventListener('input', debouncedGenerateScatterPlot);
             document.getElementById('header-var2').addEventListener('input', debouncedGenerateScatterPlot);
             document.getElementById('header-category').addEventListener('input', debouncedGenerateScatterPlot);
+
+            // --- Menu Toggle Logic ---
+            document.querySelectorAll('.menu-toggle').forEach(toggle => {
+                toggle.addEventListener('click', function() {
+                    const targetId = this.dataset.target;
+                    const subMenu = document.getElementById(targetId);
+                    if (subMenu) {
+                        this.classList.toggle('expanded');
+                        subMenu.classList.toggle('show');
+                        // Calculate and set max-height for smooth transition
+                        if (subMenu.classList.contains('show')) {
+                            subMenu.style.maxHeight = subMenu.scrollHeight + "px";
+                        } else {
+                            subMenu.style.maxHeight = null; // Reset to allow collapse
+                        }
+                    }
+                });
+            });
         });
 
         // Add a resize observer to redraw the plot when the plot container changes size
