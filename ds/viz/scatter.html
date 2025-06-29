@@ -280,6 +280,7 @@
             padding-bottom: 0;
         }
 
+        /* General label and input styling */
         .settings label {
             display: inline-block; /* Make labels inline */
             margin-bottom: 0; /* Remove default block margin */
@@ -294,13 +295,25 @@
         }
         .settings input[type="text"],
         .settings select {
-            width: calc(100% - 20px); /* Adjust width considering label and radio */
             padding: 8px 10px;
             border: 1px solid #ddd;
             border-radius: 5px;
             font-size: 0.9em;
-            margin-top: 5px; /* Adjust top margin for stacked elements */
             box-sizing: border-box;
+        }
+
+        /* Specific single-line option groups */
+        .single-line-option {
+            display: flex;
+            align-items: center;
+            gap: 10px; /* Space between label and input/select */
+            margin-bottom: 10px; /* Space from other option groups */
+        }
+
+        .single-line-option input[type="text"],
+        .single-line-option select {
+            flex-grow: 1; /* Allow input/select to take up available space */
+            width: auto; /* Override default width */
         }
 
         /* New flex container for color options row */
@@ -323,19 +336,27 @@
         /* Adjust width of the color input within its flex container */
         .color-single-option input[type="text"] {
             flex-grow: 1; /* Allow text input to take remaining space */
-            width: auto; /* Reset width to be controlled by flex-grow */
+            /* Add max-width to prevent excessive growth and overflowing */
+            max-width: 120px; /* Adjust as needed */
         }
 
         /* Specific styles for background color input */
         #customBackgroundColorInput {
             margin-left: 5px; /* Space from select dropdown */
             flex-grow: 1;
+            /* Add max-width to prevent excessive growth and overflowing */
+            max-width: 120px; /* Adjust as needed */
         }
         .background-color-option {
             display: flex;
             align-items: center;
             gap: 5px;
             flex-wrap: wrap; /* Allow wrapping of elements if space is tight */
+        }
+
+        /* Adjust width for select dropdowns to prevent excessive shrinking */
+        .settings select {
+            min-width: 120px; /* A reasonable minimum width for dropdowns */
         }
 
 
@@ -393,12 +414,12 @@
         <div class="column settings">
             <h2>Plot Settings</h2>
 
-            <div class="option-group">
+            <div class="option-group single-line-option">
                 <label for="plotTitleInput">Plot Title:</label>
                 <input type="text" id="plotTitleInput" placeholder="Enter plot title">
             </div>
 
-            <div class="option-group">
+            <div class="option-group single-line-option"> <!-- Made this option group single-line -->
                 <label>Color:</label>
                 <div class="color-options-row">
                     <div class="color-single-option">
@@ -408,12 +429,12 @@
                     </div>
                     <div class="color-category-option">
                         <input type="radio" id="colorByCategory" name="colorOption" value="category">
-                        <label id="colorByCategoryLabel" for="colorByCategory">Category</label> <!-- Added ID for dynamic update -->
+                        <label id="colorByCategoryLabel" for="colorByCategory">Category</label>
                     </div>
                 </div>
             </div>
 
-            <div class="option-group">
+            <div class="option-group single-line-option">
                 <label for="pointTypeSelect">Point Type:</label>
                 <select id="pointTypeSelect">
                     <option value="circle">Circle</option>
@@ -424,6 +445,11 @@
             </div>
 
             <div class="option-group">
+                <input type="checkbox" id="drawLinesCheckbox">
+                <label for="drawLinesCheckbox">Draw Lines</label> <!-- Changed label text -->
+            </div>
+
+            <div class="option-group single-line-option"> <!-- Made this option group single-line -->
                 <label for="backgroundColorSelect">Background Color:</label>
                 <div class="background-color-option">
                     <select id="backgroundColorSelect">
@@ -433,7 +459,7 @@
                         <option value="#ADD8E6">Light Blue</option>
                         <option value="custom">Custom</option>
                     </select>
-                    <input type="text" id="customBackgroundColorInput" placeholder="Enter hex or color name" disabled>
+                    <input type="text" id="customBackgroundColorInput" placeholder="Enter hex or color name">
                 </div>
             </div>
 
@@ -624,11 +650,12 @@
             const singleColor = document.getElementById('singleColorInput').value || "steelblue";
             const selectedPointType = document.getElementById('pointTypeSelect').value;
             const pointSize = 6; // Base size for point shapes
+            const drawLines = document.getElementById('drawLinesCheckbox').checked; // Get line drawing state
 
             // Get background color
             let backgroundColor = document.getElementById('backgroundColorSelect').value;
             if (backgroundColor === 'custom') {
-                backgroundColor = document.getElementById('customBackgroundColorInput').value || '#f8f8f8'; // Fallback to default gray
+                backgroundColor = document.getElementById('customBackgroundColorInput').value || '#f8f8f8'; // Fallback to default gray if custom is empty
             }
 
 
@@ -760,7 +787,21 @@
                 .attr("y", 0 - (margin.top / 2) + 8) // Adjusted title Y position
                 .text(plotTitleInput.value);
 
-            // 7. Add points
+            // 7. Add lines if option is checked (drawn before points)
+            if (drawLines) {
+                const lineGenerator = d3.line()
+                    .x(d => xScale(d.x))
+                    .y(d => yScale(d.y));
+
+                svg.append("path")
+                    .datum(dataToPlot) // Bind all data to a single path element
+                    .attr("fill", "none")
+                    .attr("stroke", singleColor) // Use the selected single color for lines
+                    .attr("stroke-width", 1.5)
+                    .attr("d", lineGenerator);
+            }
+
+            // 8. Add points
             const points = svg.selectAll(".data-point")
                 .data(dataToPlot)
                 .enter()
@@ -801,7 +842,7 @@
             d3.selectAll(".tooltip").remove();
 
 
-            // 8. Add Legend (always right)
+            // 9. Add Legend (always right)
             if (colorOption === 'category') {
                 // Hardcode position to 'right'
                 addLegend(svg, colorScale, width, height, margin, 'right');
@@ -935,12 +976,17 @@
             // Event listener for point type change
             document.getElementById('pointTypeSelect').addEventListener('change', debouncedGenerateScatterPlot);
 
+            // Event listener for draw lines checkbox
+            document.getElementById('drawLinesCheckbox').addEventListener('change', debouncedGenerateScatterPlot);
+
+
             // Event listeners for background color options
             const backgroundColorSelect = document.getElementById('backgroundColorSelect');
             const customBackgroundColorInput = document.getElementById('customBackgroundColorInput');
 
             backgroundColorSelect.addEventListener('change', () => {
-                customBackgroundColorInput.disabled = (backgroundColorSelect.value !== 'custom');
+                // The custom input is no longer disabled by default, but its value is only used if 'custom' is selected.
+                // We keep it enabled so user can type color and then select 'custom'.
                 debouncedGenerateScatterPlot();
             });
 
