@@ -4,15 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Interactive Scatter Plot Maker</title>
-    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <!-- Google Fonts: Roboto, Open Sans, Henny Penny, and Almendra -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Almendra&family=Henny+Penny&family=Open+Sans:wght@400;600&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     <!-- Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         body {
-            font-family: 'Inter', sans-serif;
+            font-family: 'Roboto', sans-serif; /* Primary font for the body */
             margin: 0;
             padding: 20px;
-            background-color: #f0f2f5;
+            background-color: #f0f2f5; /* Light gray background */
             color: #333;
             display: flex;
             justify-content: center;
@@ -26,17 +29,17 @@
             gap: 25px;
             max-width: 1700px; /* Increased max-width for better fitting of 4 columns */
             width: 100%;
-            background-color: #ffffff;
+            background-color: #ffffff; /* White container background */
             border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1); /* Soft shadow */
             padding: 25px;
         }
 
         .column {
-            background-color: #f9f9f9;
+            background-color: #f9f9f9; /* Off-white for columns */
             padding: 20px;
             border-radius: 10px;
-            box-shadow: inset 0 1px 3px rgba(0,0,0,0.05);
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.05); /* Inner shadow for depth */
             box-sizing: border-box; /* Include padding and border in the element's total width and height */
             display: flex;
             flex-direction: column;
@@ -104,6 +107,7 @@
         }
 
         h2 {
+            font-family: 'Roboto', sans-serif; /* Consistent font for headings */
             color: #2c3e50;
             margin-top: 0;
             margin-bottom: 20px;
@@ -233,7 +237,7 @@
             justify-content: center;
             align-items: center;
             width: 100%;
-            height: 450px;
+            /* Removed fixed height here */
         }
 
         #scatter-plot-svg {
@@ -396,10 +400,13 @@
             flex-direction: column;
             align-items: center;
             text-align: center;
+            background-color: #ffffff; /* Reverted to white background */
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.05), 0 2px 8px rgba(0,0,0,0.08); /* More prominent shadow */
+            color: #333; /* Default text color for menu column */
         }
 
         .logo-container {
-            margin-bottom: 15px;
+            margin-bottom: 5px; /* Reduced margin */
         }
 
         .logo-image {
@@ -407,20 +414,25 @@
             height: 60px; /* Set fixed height */
             border-radius: 50%; /* Make it round if it's a square image */
             object-fit: cover; /* Ensure the image covers the area */
+            box-shadow: 0 0 0 4px #c8d9ff, 0 0 0 6px #a0c4ff; /* Rings around the logo */
         }
 
 
         .site-name {
-            font-size: 1.8em;
-            font-weight: bold;
-            color: #2c3e50;
-            margin-bottom: 5px;
+            font-family: 'Almendra', serif; /* Almendra font for site name */
+            font-size: 2.2em; /* Increased font size */
+            font-weight: 700; /* Bolder */
+            color: #2a52be; /* Reverted to deep blue */
+            margin-bottom: 0px; /* Reduced margin */
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1); /* Subtle text shadow */
         }
 
         .slogan {
-            font-size: 0.9em;
-            color: #666;
-            margin-bottom: 25px;
+            font-family: 'Henny Penny', cursive; /* Henny Penny font for slogan */
+            font-size: 1.2em; /* Slightly larger slogan font */
+            color: #555; /* Reverted to darker gray */
+            margin-top: 0px; /* Reduced margin */
+            margin-bottom: 15px; /* Reduced margin */
         }
 
         .menu-list {
@@ -431,42 +443,72 @@
         }
 
         .menu-list li {
-            margin-bottom: 5px;
+            margin-bottom: 8px; /* Increased spacing between items */
         }
 
         .menu-list a, .menu-list .menu-toggle {
+            font-family: 'Open Sans', sans-serif; /* Open Sans for menu items */
             display: block;
-            padding: 10px 15px;
-            color: #333;
+            padding: 12px 18px; /* Increased padding */
+            color: #ffffff; /* White text for contrast on blue background */
             text-decoration: none;
-            border-radius: 5px;
-            transition: background-color 0.2s ease, color 0.2s ease, font-weight 0.2s ease;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.05); /* Subtle shadow */
+            border-radius: 8px; /* More rounded corners */
+            transition: background-color 0.3s ease, color 0.3s ease, font-weight 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.15); /* More pronounced shadow for blue items */
+            background-color: #0099ff; /* Blue background for menu items */
+            border: 1px solid #0088ee; /* Matching border */
+            position: relative; /* For gradient overlay */
+            overflow: hidden; /* For gradient effect */
+            z-index: 1; /* To ensure content is above pseudo-element */
+        }
+
+        /* Modern Gradient Hover Effect */
+        .menu-list a::before, .menu-list .menu-toggle::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255,255,255,0.2); /* Subtle white overlay for hover */
+            z-index: -1; /* Behind the content */
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .menu-list a:hover::before, .menu-list .menu-toggle:hover::before {
+            opacity: 1;
         }
 
         .menu-list a:hover, .menu-list .menu-toggle:hover {
-            background-color: #e2e6ea;
-            color: #0056b3; /* Darker blue on hover */
-            font-weight: bold; /* Make bold on hover */
-            background-image: linear-gradient(to right, #e2e6ea, #f0f2f5); /* Subtle gradient */
+            color: #ffffff; /* Keep text white on hover */
+            font-weight: 600; /* Medium bold on hover */
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2); /* Stronger shadow on hover */
+            transform: translateY(-2px); /* Slight lift effect */
+        }
+        .menu-list a:active, .menu-list .menu-toggle:active {
+            transform: translateY(0); /* Return to original position */
         }
 
+
         .menu-list .menu-toggle {
-            font-weight: bold;
+            font-weight: 600; /* Medium bold */
             cursor: pointer;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background-color: #f0f2f5;
-            border: 1px solid #ddd;
+            background-color: #0099ff; /* Default blue for toggles */
+            border: 1px solid #0088ee; /* Matching border */
             margin-bottom: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.15); /* Consistent shadow for blue */
+            color: #ffffff; /* Text color for menu toggle - white */
         }
 
         .menu-list .menu-toggle.expanded {
-             background-color: #d1e2ff; /* Lighter blue when expanded */
-             color: #0056b3;
-             border-color: #a0c4ff;
-             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+             background-color: #0077cc; /* Darker blue when expanded */
+             color: #ffffff; /* Keep text white when expanded */
+             border-color: #0066bb;
+             box-shadow: 0 2px 6px rgba(0,0,0,0.18); /* Slightly stronger shadow */
         }
 
 
@@ -479,6 +521,8 @@
             background-color: #fdfdfd;
             border-left: 3px solid #007bff;
             margin-top: -5px; /* Overlap with parent slightly */
+            border-radius: 0 0 8px 8px; /* Rounded bottom corners */
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.03); /* Inner shadow for depth */
         }
 
         .menu-list .sub-menu.show {
@@ -491,6 +535,7 @@
             font-size: 0.95em;
             color: #555;
             box-shadow: none; /* Remove shadow for sub-menu items */
+            background-color: transparent; /* Sub-menu items have transparent background by default */
         }
 
         .menu-list .sub-menu li a:hover {
@@ -498,15 +543,39 @@
             color: #007bff;
             font-weight: normal; /* Keep normal for sub-menu hover */
         }
+        .menu-list .sub-menu li a::before {
+            background: none; /* Remove pseudo-element for sub-menu hover */
+            opacity: 0; /* Ensure no overlay on sub-menu items */
+        }
 
-        /* Arrow for expandable menu */
+        /* Active menu item styling */
+        .menu-list a.active-page {
+            background-color: #0077cc; /* Deeper blue for active background */
+            color: #ffffff; /* White text for active item */
+            font-weight: bold;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transform: translateY(-1px);
+        }
+        .menu-list a.active-page::before {
+            opacity: 1; /* Keep the gradient visible for active page */
+            background: linear-gradient(to right, #0077cc, #0055aa); /* A more saturated blue gradient */
+        }
+
+
+        /* Arrow for expandable menu - now plus/minus icon */
         .arrow {
             display: inline-block;
             transition: transform 0.2s ease;
         }
 
         .menu-toggle.expanded .arrow {
-            transform: rotate(90deg);
+            transform: rotate(45deg); /* Rotate plus to form an X */
+        }
+
+        /* Style for the download button when placed directly under the plot */
+        .plot-area .action-button {
+            margin-top: 20px; /* Add some space above the button */
+            align-self: center; /* Center the button in the plot area */
         }
     </style>
 </head>
@@ -525,21 +594,21 @@
                 <li><a href="#">Home</a></li>
                 <li class="has-submenu">
                     <div class="menu-toggle" data-target="graphs-submenu">
-                        Graphs <i class="fas fa-chevron-right arrow"></i>
+                        Graphs <i class="fas fa-plus arrow"></i>
                     </div>
                     <ul class="sub-menu" id="graphs-submenu">
-                        <li><a href="#">Pie chart</a></li>
-                        <li><a href="#">Bar plot</a></li>
-                        <li><a href="#">Scatter plot</a></li>
-                        <li><a href="#">Histogram</a></li>
+                        <li><a href="pie.html">Pie chart</a></li>
+                        <li><a href="bar.html">Bar plot</a></li>
+                        <li><a href="scatter.html" class="active-page">Scatter plot</a></li> <!-- Active page highlight -->
+                        <li><a href="hist.html">Histogram</a></li>
                     </ul>
                 </li>
                 <li class="has-submenu">
                     <div class="menu-toggle" data-target="data-analysis-submenu">
-                        Data Analysis <i class="fas fa-chevron-right arrow"></i>
+                        Data Analysis <i class="fas fa-plus arrow"></i>
                     </div>
                     <ul class="sub-menu" id="data-analysis-submenu">
-                        <li><a href="#">Summary</a></li>
+                        <li><a href="../analysis/csv-overview.html">Summary</a></li>
                         <!-- Add more data analysis items here -->
                     </ul>
                 </li>
@@ -549,11 +618,18 @@
 
         <!-- Column 2: Plot Area (now in 2nd position) -->
         <div class="column plot-area">
-            <h2 class="plot-main-title">Scatter Plot</h2>
+            <!-- Removed the fixed h2 title -->
             <div id="plotContainer">
                 <svg id="scatter-plot-svg"></svg>
             </div>
             <p id="error-message" style="color: red; margin-top: 10px;"></p>
+            <!-- Download Plot button moved here -->
+            <button onclick="downloadPlot()" class="action-button">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-download">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/>
+                </svg>
+                Download Plot (PNG)
+            </button>
         </div>
 
         <!-- Column 3: Data Input (now in 3rd position) -->
@@ -638,16 +714,25 @@
                 </div>
             </div>
 
-            <button onclick="downloadPlot()" class="action-button">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-download">
-                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/>
-                </svg>
-                Download Plot (PNG)
-            </button>
+            <!-- Download Plot button moved from here -->
         </div>
     </div>
 
+    <script src="https://d3js.org/d3.v7.min.js"></script>
     <script>
+        // Debounce function to limit how often a function is called
+        function debounce(func, delay) {
+            let timeout;
+            return function(...args) {
+                const context = this;
+                clearTimeout(timeout);
+                timeout = setTimeout(() => func.apply(context, args), delay);
+            };
+        }
+
+        // Debounced version of generateScatterPlot
+        const debouncedGenerateScatterPlot = debounce(generateScatterPlot, 150); // Increased debounce to 150ms
+
         // Initial sample data (now 20 entries for cubic function with larger random deviations)
         let sampleData = [];
         for (let i = 0; i < 20; i++) {
@@ -668,18 +753,6 @@
         // Global D3 color scale (will be initialized later)
         let colorScale = d3.scaleOrdinal(d3.schemeCategory10);
 
-        // Debounce function to limit how often a function is called
-        function debounce(func, delay) {
-            let timeout;
-            return function(...args) {
-                const context = this;
-                clearTimeout(timeout);
-                timeout = setTimeout(() => func.apply(context, args), delay);
-            };
-        }
-
-        // Debounced version of generateScatterPlot
-        const debouncedGenerateScatterPlot = debounce(generateScatterPlot, 150); // Increased debounce to 150ms
 
         // --- Data Table Management ---
 
@@ -846,25 +919,30 @@
 
 
             // Set up SVG dimensions and margins for the inner plot area
-            const margin = { top: 40, right: 80, bottom: 80, left: 80 };
+            // Decreased margins for a larger graph area
+            const margin = { top: 30, right: 60, bottom: 60, left: 60 };
 
             // Get the actual computed dimensions of the plotContainer
             const plotContainer = document.getElementById('plotContainer');
             const containerWidth = plotContainer.clientWidth;
             const containerHeight = plotContainer.clientHeight;
 
-            // Set SVG attributes based on container size directly for D3
+            // Calculate a square size based on the minimum of current width/height
+            // This ensures the plot remains square regardless of container's aspect ratio.
+            const squareSize = Math.min(containerWidth, containerHeight);
+
+            // Set SVG attributes based on the calculated square size
             svgElement
-                .attr("width", containerWidth)
-                .attr("height", containerHeight);
+                .attr("width", squareSize)
+                .attr("height", squareSize);
 
             // Ensure dimensions are positive before calculating inner plot area
-            if (containerWidth <= 0 || containerHeight <= 0) {
+            if (squareSize <= 0) {
                 return;
             }
 
-            let width = containerWidth - margin.left - margin.right;
-            let height = containerHeight - margin.top - margin.bottom;
+            let width = squareSize - margin.left - margin.right;
+            let height = squareSize - margin.top - margin.bottom;
 
             // Ensure inner plot dimensions are positive after margins
             width = Math.max(0, width);
@@ -1045,7 +1123,7 @@
             const legend = svg.append("g")
                 .attr("class", "legend");
 
-            const legendIconSize = 9; /* Size for the legend icon (half of desired side/radius) */
+            const legendIconSize = 6; /* Size for the legend icon (equal to plot points) */
             const legendSpacing = 15; /* Spacing between legend items */
 
             const legendItems = legend.selectAll(".legend-item")
@@ -1117,7 +1195,17 @@
 
             img.onerror = (error) => {
                 console.error("Error loading SVG for PNG conversion:", error);
-                alert("Failed to download plot as PNG. There might be an issue with SVG rendering.");
+                // Fallback for download might be needed if direct conversion fails (e.g., security restrictions)
+                // For direct download of SVG:
+                const svgBlob = new Blob([svgData], { type: 'image/svg+xml' });
+                const svgUrl = URL.createObjectURL(svgBlob);
+                const downloadLinkSvg = document.createElement('a');
+                downloadLinkSvg.href = svgUrl;
+                downloadLinkSvg.download = 'scatter-plot.svg';
+                document.body.appendChild(downloadLinkSvg);
+                downloadLinkSvg.click();
+                document.body.removeChild(downloadLinkSvg);
+                URL.revokeObjectURL(svgUrl);
             };
         }
 
@@ -1203,6 +1291,10 @@
                     }
                 });
             });
+
+            // --- Right-click save image on plot ---
+            // Removed contextmenu event listener from scatterPlotSvg
+            // The download button is now explicitly placed below the plot.
         });
 
         // Add a resize observer to redraw the plot when the plot container changes size
