@@ -3,24 +3,38 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Central Limit Theorem Visualizer</title>
+    <title>Stat Mania - Central Limit Theorem Visualizer</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Chart.js CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.0/dist/chart.min.js"></script>
+    <!-- Google Fonts - Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        /* Custom styles for better aesthetics and responsiveness */
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #f0f4f8; /* Light blue-gray background */
-            color: #334155; /* Darker text */
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            min-height: 100vh;
-            padding: 1rem;
+            background-color: #f8fafc; /* Tailwind: bg-slate-50 */
+            color: #334155; /* Tailwind: text-slate-700 */
         }
-        .container {
+        /* Custom scrollbar for a cleaner look */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #e2e8f0; /* Tailwind: bg-slate-200 */
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #94a3b8; /* Tailwind: bg-slate-400 */
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #64748b; /* Tailwind: bg-slate-500 */
+        }
+
+        /* Styles from the CLT visualizer for charts and sliders */
+        .clt-container { /* Renamed to avoid conflict with existing .container */
             background-color: #ffffff;
             border-radius: 1rem; /* Rounded corners */
             box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); /* Subtle shadow */
@@ -35,13 +49,20 @@
             width: 100%;
             margin-top: 1.5rem;
         }
+        /* Adjust for 2-column layout on medium screens and up */
         @media (min-width: 768px) {
-            .charts-wrapper {
-                display: flex;
-                gap: 2rem;
+            .clt-container {
+                max-width: 1200px; /* Increased max-width for better chart display in 2 columns */
+            }
+            .clt-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr)); /* Two columns */
             }
             .chart-container {
-                flex: 1;
+                margin-top: 0; /* Remove top margin when in grid */
+            }
+            .controls-column {
+                grid-column: span 2 / span 2; /* Span both columns */
+                margin-top: 1.5rem; /* Add top margin to separate from charts */
             }
         }
         /* Style for sliders to make them look better */
@@ -84,64 +105,169 @@
         }
     </style>
 </head>
-<body class="p-4 bg-gray-100 flex flex-col items-center min-h-screen">
+<body class="antialiased">
 
-    <div class="container text-center mb-6">
-        <h1 class="text-3xl font-bold text-blue-700 mb-4">Central Limit Theorem Visualizer</h1>
-    </div>
-
-    <div class="container grid grid-cols-1 md:grid-cols-3 gap-6">
-        <!-- Column 1: Introduction Text and Controls -->
-        <div class="flex flex-col items-center justify-start p-4">
-            <p class="text-lg text-gray-600 mb-4 text-center">
-                Observe how the distribution of sample means approaches a normal distribution as the sample size (n) increases,
-                even when the original distribution is not normal.
-            </p>
-
-            <div class="controls flex flex-col items-center gap-6 w-full">
-                <div class="flex flex-col items-center gap-2 w-full">
-                    <label for="distributionSelect" class="font-semibold text-gray-700">Select Distribution:</label>
-                    <select id="distributionSelect"
-                            class="p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 w-48 text-center">
-                        <option value="uniform">Uniform</option>
-                        <option value="normal">Normal</option>
-                        <option value="exponential">Exponential</option>
-                        <option value="binomial">Binomial</option>
-                        <option value="poisson">Poisson</option>
-                        <option value="beta">Beta</option>
-                        <option value="gamma">Gamma</option>
-                        <option value="chi-squared">Chi-squared</option>
-                    </select>
-                </div>
-
-                <div class="flex flex-col items-center gap-2 w-full">
-                    <label for="sampleSize" class="font-semibold text-gray-700">Sample Size (n): <span id="sampleSizeValue">1</span></label>
-                    <input type="range" id="sampleSize" value="1" min="1" max="100" step="1"
-                           class="w-full md:w-48">
-                </div>
-
-                <div class="flex flex-col items-center gap-2 w-full">
-                    <label for="numSamples" class="font-semibold text-gray-700">Number of Samples: <span id="numSamplesValue">1000</span></label>
-                    <input type="range" id="numSamples" value="1000" min="100" max="10000" step="100"
-                           class="w-full md:w-48">
+    <!-- Header/Navbar -->
+    <header class="bg-white shadow-sm py-4">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center">
+            <!-- Logo, Title, and Motto -->
+            <div class="flex items-center space-x-3">
+                <img src="../img/statmania_logo.png" alt="Stat Mania Logo" class="w-10 h-10 rounded-full" onerror="this.onerror=null;this.src='https://placehold.co/40x40/4f46e5/ffffff?text=Logo';">
+                <div>
+                    <div class="text-2xl font-bold text-indigo-600">Stat Mania</div>
+                    <p class="text-sm text-slate-500">Making sense of statistics</p>
                 </div>
             </div>
+
+            <!-- Desktop Navigation -->
+            <nav class="hidden md:block">
+                <ul class="flex space-x-6">
+                    <li><a href="#features" class="text-slate-600 hover:text-indigo-600 transition duration-300">Features</a></li>
+                    <li><a href="#cta" class="text-slate-600 hover:text-indigo-600 transition duration-300">Contact</a></li>
+                </ul>
+            </nav>
+
+            <!-- Mobile Menu Button (Hamburger Icon) -->
+            <button id="mobile-menu-button" class="md:hidden p-2 rounded-md text-slate-600 hover:text-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path>
+                </svg>
+            </button>
         </div>
 
-        <!-- Column 2: Original Distribution Chart -->
-        <div class="chart-container">
-            <h2 class="text-xl font-semibold text-gray-800 text-center mb-2">Original Distribution (<span id="originalDistName">Uniform</span>)</h2>
-            <canvas id="originalDistributionChart"></canvas>
+        <!-- Mobile Menu (Hidden by default) -->
+        <div id="mobile-menu" class="hidden md:hidden px-2 pt-2 pb-3 space-y-1 sm:px-3">
+            <a href="#features" class="block px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:bg-slate-100 hover:text-indigo-600">Features</a>
+            <a href="#cta" class="block px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:bg-slate-100 hover:text-indigo-600">Contact</a>
         </div>
+    </header>
 
-        <!-- Column 3: Sample Means Distribution Chart -->
-        <div class="chart-container">
-            <h2 class="text-xl font-semibold text-gray-800 text-center mb-2">Distribution of Sample Means</h2>
-            <canvas id="sampleMeansDistributionChart"></canvas>
+    <main>
+        <!-- Hero Section (now a compact page title section) -->
+        <section class="bg-gradient-to-r from-indigo-500 to-purple-600 text-white py-8 px-4 sm:px-6 lg:px-8 rounded-b-2xl shadow-lg">
+            <div class="container mx-auto text-center max-w-4xl">
+                <h1 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold leading-tight text-white flex items-center justify-center gap-3">
+                    <svg width="30" height="30" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                        <!-- X-axis -->
+                        <line x1="2" y1="22" x2="22" y2="22" stroke="currentColor" stroke-width="1.5"/>
+                        <!-- Y-axis -->
+                        <line x1="2" y1="22" x2="2" y2="2" stroke="currentColor" stroke-width="1.5"/>
+                        <!-- Bell-shaped curve, adjusted for 24x24 viewBox -->
+                        <path d="M4 20 Q 12 4 20 20" stroke="currentColor" fill="none" stroke-width="2"/>
+                    </svg>
+                    Central Limit Theorem Visualizer
+                </h1>
+                <!-- Removed the descriptive paragraph as requested -->
+            </div>
+        </section>
+
+        <!-- Main Content Area (where CLT visualizer content goes) -->
+        <section class="py-12 px-4 sm:px-6 lg:px-8 bg-white flex flex-col items-center min-h-screen">
+            <div class="clt-container clt-grid grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Column 1: Original Distribution Chart -->
+                <div class="chart-container">
+                    <h2 class="text-xl font-semibold text-gray-800 text-center mb-2">Original Distribution (<span id="originalDistName">Uniform</span>)</h2>
+                    <canvas id="originalDistributionChart"></canvas>
+                </div>
+
+                <!-- Column 2: Sample Means Distribution Chart -->
+                <div class="chart-container">
+                    <h2 class="text-xl font-semibold text-gray-800 text-center mb-2">Distribution of Sample Means</h2>
+                    <canvas id="sampleMeansDistributionChart"></canvas>
+                </div>
+
+                <!-- Column 3 (now spans 2 columns): Introduction Text and Controls -->
+                <div class="controls-column flex flex-col items-center justify-start p-4 md:col-span-2">
+ <!--
+ <p class="text-lg text-gray-600 mb-4 text-center">
+                        Observe how the distribution of sample means approaches a normal distribution as the sample size (n) increases,
+                        even when the original distribution is not normal.
+                    </p>
+-->
+                    <div class="controls flex flex-col md:flex-row md:flex-wrap justify-center items-center gap-6 w-full">
+                        <div class="flex flex-col items-center gap-2 w-full md:w-auto">
+                            <label for="distributionSelect" class="font-semibold text-gray-700">Select Distribution:</label>
+                            <select id="distributionSelect"
+                                    class="p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 w-48 text-center">
+                                <option value="uniform">Uniform</option>
+                                <option value="normal">Normal</option>
+                                <option value="exponential">Exponential</option>
+                                <option value="binomial">Binomial</option>
+                                <option value="poisson">Poisson</option>
+                                <option value="beta">Beta</option>
+                                <option value="gamma">Gamma</option>
+                                <option value="chi-squared">Chi-squared</option>
+                            </select>
+                        </div>
+
+                        <div class="flex flex-col items-center gap-2 w-full md:w-auto">
+                            <label for="sampleSize" class="font-semibold text-gray-700">Sample Size (n): <span id="sampleSizeValue">1</span></label>
+                            <input type="range" id="sampleSize" value="1" min="1" max="100" step="1"
+                                   class="w-full md:w-48">
+                        </div>
+
+                        <div class="flex flex-col items-center gap-2 w-full md:w-auto">
+                            <label for="numSamples" class="font-semibold text-gray-700">Number of Samples: <span id="numSamplesValue">1000</span></label>
+                            <input type="range" id="numSamples" value="1000" min="100" max="10000" step="100"
+                                   class="w-full md:w-48">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- Call to Action Section -->
+        <section id="cta" class="bg-indigo-700 py-16 px-4 sm:px-6 lg:px-8 text-white text-center rounded-t-2xl shadow-lg">
+            <div class="container mx-auto max-w-3xl">
+                <h2 class="text-3xl sm:text-4xl font-bold mb-6">Explore Other Services</h2>
+                <p class="text-lg sm:text-xl mb-8 opacity-90">
+                    Learn, Grow, and Implement
+                </p>
+                <div class="flex flex-col sm:flex-row justify-center gap-4">
+                    <a href="www.statmania.info" class="inline-block bg-white text-indigo-700 hover:bg-indigo-100 font-bold py-3 px-8 rounded-full shadow-lg transition duration-300 transform hover:scale-105">
+                        Learn
+                    </a>
+                    <a href="#" class="inline-block bg-transparent border-2 border-white text-white hover:bg-white hover:text-indigo-700 font-bold py-3 px-8 rounded-full shadow-lg transition duration-300 transform hover:scale-105">
+                        Data Science Tools
+                    </a>
+                    <a href="#" class="inline-block bg-transparent border-2 border-white text-white hover:bg-white hover:text-indigo-700 font-bold py-3 px-8 rounded-full shadow-lg transition duration-300 transform hover:scale-105">
+                        Services
+                    </a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-slate-800 text-white py-8 px-4 sm:px-6 lg:px-8 text-center rounded-t-lg shadow-inner">
+        <div class="container mx-auto">
+            <p class="mb-4">&copy; 2024 Stat Mania. All rights reserved.</p>
+            <div class="flex justify-center space-x-6">
+                <a href="#" class="text-slate-300 hover:text-white transition duration-300">Privacy Policy</a>
+                <a href="#" class="text-slate-300 hover:text-white transition duration-300">Terms of Service</a>
+                <a href="#" class="text-slate-300 hover:text-white transition duration-300">Sitemap</a>
+            </div>
         </div>
-    </div>
+    </footer>
 
     <script>
+        // JavaScript for mobile menu toggle
+        const mobileMenuButton = document.getElementById('mobile-menu-button');
+        const mobileMenu = document.getElementById('mobile-menu');
+
+        mobileMenuButton.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+
+        // Hide mobile menu when a link is clicked
+        const mobileMenuLinks = mobileMenu.querySelectorAll('a');
+        mobileMenuLinks.forEach(link => {
+            link.addEventListener('click', () => {
+                mobileMenu.classList.add('hidden');
+            });
+        });
+
         // Global chart instances
         let originalChart;
         let sampleMeansChart;
