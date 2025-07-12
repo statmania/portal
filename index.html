@@ -1,514 +1,731 @@
+
 <!DOCTYPE html>
 <html lang="en">
+
   <head>
-    <!-- Required meta tags -->
-    <meta charset="utf-8">
+
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <meta name="keywords" content="Bootstrap, Landing page, Template, Business, Service">
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-    <meta name="author" content="Grayrids">
-    <title>Stat Mania Portal</title>
-    <!--====== Favicon Icon ======-->
-    <link rel="shortcut icon" href="img/statmania_logo.png" type="image/png">
-    <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="css/bootstrap.min.css">
-    <link rel="stylesheet" href="css/animate.css">
-    <link rel="stylesheet" href="css/LineIcons.css">
-    <link rel="stylesheet" href="css/owl.carousel.css">
-    <link rel="stylesheet" href="css/owl.theme.css">
-    <link rel="stylesheet" href="css/magnific-popup.css">
-    <link rel="stylesheet" href="css/nivo-lightbox.css">
-    <link rel="stylesheet" href="css/main.css">    
-    <link rel="stylesheet" href="css/responsive.css">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@100;300;400;500;700;900&display=swap" rel="stylesheet">
+
+    <title>Statistics - Making Sense of Data</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+
+<!--
+
+TemplateMo 570 Chain App Dev
+
+https://templatemo.com/tm-570-chain-app-dev
+
+-->
+
+    <!-- Additional CSS Files -->
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css" integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf" crossorigin="anonymous">
+    <link rel="stylesheet" href="assets/css/templatemo-chain-app-dev.css">
+    <link rel="stylesheet" href="assets/css/animated.css">
+    <link rel="stylesheet" href="assets/css/owl.css">
 
   </head>
-  
-  <body>
 
-    <!-- Header Section Start -->
-    <header id="home" class="hero-area">    
-      <div class="overlay">
+<body>
+
+  <!-- ***** Preloader Start ***** -->
+  <div id="js-preloader" class="js-preloader">
+    <div class="preloader-inner">
+      <span class="dot"></span>
+      <div class="dots">
+        <span></span>
         <span></span>
         <span></span>
       </div>
-      <nav class="navbar navbar-expand-md bg-inverse fixed-top scrolling-navbar">
-        <div class="container">
-          <a href="index.html" class="navbar-brand"><img style="height:42px; width:42px;" src="img/statmania_logo.png" alt=""></a>
-          <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
-            <i class="lni-menu"></i>
-          </button>
-          <div class="collapse navbar-collapse" id="navbarCollapse">
-            <ul class="navbar-nav mr-auto w-100 justify-content-end">
-              <li class="nav-item">
-                <a class="nav-link page-scroll" href="#home">Home</a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link page-scroll" href="#services">About</a>
-              </li>  
-              <li class="nav-item">
-                <a class="nav-link page-scroll" href="#services">Services</a>
-              </li>                            
-              <li class="nav-item">
-   <!--             <a class="nav-link page-scroll" href="#showcase">Showcase</a> -->
-              </li>       
-              <li class="nav-item">
- <!--               <a class="nav-link page-scroll" href="#pricing">Pricing</a> -->
-              </li>     
-              <li class="nav-item">
-         <!--       <a class="nav-link page-scroll" href="#team">Team</a> -->
-              </li> 
-              <li class="nav-item">
-         <!--       <a class="nav-link page-scroll" href="#blog">Blog</a> -->
-              </li>  
-              <li class="nav-item">
-                <a class="nav-link page-scroll" href="#contact">Contact</a>
-              </li> 
-              <li class="nav-item">
-            <!--    <a class="btn btn-singin" href="#">Download</a> -->
-              </li>
+    </div>
+  </div>
+  <!-- ***** Preloader End ***** -->
+
+  <!-- ***** Header Area Start ***** -->
+  <header class="header-area header-sticky wow slideInDown" data-wow-duration="0.75s" data-wow-delay="0s">
+    <div class="container">
+      <div class="row">
+        <div class="col-12">
+          <nav class="main-nav">
+            <!-- ***** Logo Start ***** -->
+            <a href="index.html" class="logo">
+              <img src="assets/images/logo.png" alt="Chain App Dev">
+            </a>
+            <!-- ***** Logo End ***** -->
+            <!-- ***** Menu Start ***** -->
+            <ul class="nav">
+              <li class="scroll-to-section"><a href="#top" class="active">Home</a></li>
+              <li class="scroll-to-section"><a href="#services">Services</a></li>
+              <li class="scroll-to-section"><a href="#about">About</a></li>
+              <li class="scroll-to-section"><a href="#pricing">Pricing</a></li>
+              <li class="scroll-to-section"><a href="#newsletter">Newsletter</a></li>
+              <li><div class="gradient-button"><a id="modal_trigger" href="#modal"><i class="fa fa-sign-in-alt"></i> Sign In Now</a></div></li>
+            </ul>
+            <a class='menu-trigger'>
+                <span>Menu</span>
+            </a>
+            <!-- ***** Menu End ***** -->
+          </nav>
+        </div>
+      </div>
+    </div>
+  </header>
+  <!-- ***** Header Area End ***** -->
+
+  <div id="modal" class="popupContainer" style="display:none;">
+    <div class="popupHeader">
+        <span class="header_title">Login</span>
+        <span class="modal_close"><i class="fa fa-times"></i></span>
+    </div>
+
+    <section class="popupBody">
+        <!-- Social Login -->
+        <div class="social_login">
+            <div class="">
+                <a href="#" class="social_box fb">
+                    <span class="icon"><i class="fab fa-facebook"></i></span>
+                    <span class="icon_title">Connect with Facebook</span>
+
+                </a>
+
+                <a href="#" class="social_box google">
+                    <span class="icon"><i class="fab fa-google-plus"></i></span>
+                    <span class="icon_title">Connect with Google</span>
+                </a>
+            </div>
+
+            <div class="centeredText">
+                <span>Or use your Email address</span>
+            </div>
+
+            <div class="action_btns">
+                <div class="one_half"><a href="#" id="login_form" class="btn">Login</a></div>
+                <div class="one_half last"><a href="#" id="register_form" class="btn">Sign up</a></div>
+            </div>
+        </div>
+
+        <!-- Username & Password Login form -->
+        <div class="user_login">
+            <form>
+                <label>Email / Username</label>
+                <input type="text" />
+                <br />
+
+                <label>Password</label>
+                <input type="password" />
+                <br />
+
+                <div class="checkbox">
+                    <input id="remember" type="checkbox" />
+                    <label for="remember">Remember me on this computer</label>
+                </div>
+
+                <div class="action_btns">
+                    <div class="one_half"><a href="#" class="btn back_btn"><i class="fa fa-angle-double-left"></i> Back</a></div>
+                    <div class="one_half last"><a href="#" class="btn btn_red">Login</a></div>
+                </div>
+            </form>
+
+            <a href="#" class="forgot_password">Forgot password?</a>
+        </div>
+
+        <!-- Register Form -->
+        <div class="user_register">
+            <form>
+                <label>Full Name</label>
+                <input type="text" />
+                <br />
+
+                <label>Email Address</label>
+                <input type="email" />
+                <br />
+
+                <label>Password</label>
+                <input type="password" />
+                <br />
+
+                <div class="checkbox">
+                    <input id="send_updates" type="checkbox" />
+                    <label for="send_updates">Send me occasional email updates</label>
+                </div>
+
+                <div class="action_btns">
+                    <div class="one_half"><a href="#" class="btn back_btn"><i class="fa fa-angle-double-left"></i> Back</a></div>
+                    <div class="one_half last"><a href="#" class="btn btn_red">Register</a></div>
+                </div>
+            </form>
+        </div>
+    </section>
+</div>
+
+  <div class="main-banner wow fadeIn" id="top" data-wow-duration="1s" data-wow-delay="0.5s">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-12">
+          <div class="row">
+            <div class="col-lg-6 align-self-center">
+              <div class="left-content show-up header-text wow fadeInLeft" data-wow-duration="1s" data-wow-delay="1s">
+                <div class="row">
+                  <div class="col-lg-12">
+                    <h2>Unlock Your Power!</h2>
+                    <p> Be More Productive with Our Tools. Learn and Interact with Statistics and Data Science. Check Out Our Productivity Tools.</p>
+                  </div>
+                  <div class="col-lg-12">
+                    <div class="white-button first-button scroll-to-section">
+                      <a href="#contact">Learn<i class="fab fa-apple"></i></a>
+                    </div>
+                    <div class="white-button scroll-to-section">
+                      <a href="#contact">Data Science<i class="fab fa-google-play"></i></a>
+                    </div>
+                    <div class="white-button scroll-to-section">
+                      <a href="#contact">Productivity<i class="fab fa-google-play"></i></a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-lg-6">
+              <div class="right-image wow fadeInRight" data-wow-duration="1s" data-wow-delay="0.5s">
+                <img src="assets/images/slider-dec.png" alt="">
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="services" class="services section">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-8 offset-lg-2">
+          <div class="section-heading  wow fadeInDown" data-wow-duration="1s" data-wow-delay="0.5s">
+            <h4>Amazing <em>Statistics Tools</em> for you</h4>
+            <img src="assets/images/heading-line-dec.png" alt="">
+            <p>If you need the greatest collection of ...</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-3">
+          <div class="service-item first-service">
+            <div class="icon"></div>
+            <h4>Distribution Calculator</h4>
+            <p>Calculate probabilities for Binomial, Poisson, Normal, Uniform, and Exponential distributions.</p>
+            <div class="text-button">
+              <a href="ds/analysis/prob-dist.html">See in Action <i class="fa fa-arrow-right"></i></a>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-3">
+          <div class="service-item second-service">
+            <div class="icon"></div>
+            <h4>Distribution Visualizer</h4>
+            <p>Explore how probability distributions change with parameters.</p>
+            <div class="text-button">
+              <a href="ds/analysis/viz-dist.html">See in Action <i class="fa fa-arrow-right"></i></a>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-3">
+          <div class="service-item third-service">
+            <div class="icon"></div>
+            <h4>Correlation Visualizer</h4>
+            <p>Generate data and explore Pearson correlation. <a rel="nofollow" href="https://paypal.me/templatemo" target="_blank">a little via PayPal</a>. Thank you.</p>
+            <div class="text-button">
+              <a href="ds/viz/viz-corr.html">See in Action <i class="fa fa-arrow-right"></i></a>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-3">
+          <div class="service-item fourth-service">
+            <div class="icon"></div>
+            <h4>Pie Chart Generator</h4>
+            <p>Generate a pie chart or donut chart based on your data.</p>
+            <div class="text-button">
+              <a href="#">See in Action <i class="fa fa-arrow-right"></i></a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="about" class="about-us section">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-6 align-self-center">
+          <div class="section-heading">
+            <h4>About <em>What We Do</em> &amp; Who We Are</h4>
+            <img src="assets/images/heading-line-dec.png" alt="">
+            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eismod tempor incididunt ut labore et dolore magna.</p>
+          </div>
+          <div class="row">
+            <div class="col-lg-6">
+              <div class="box-item">
+                <h4><a href="#">Maintance Problems</a></h4>
+                <p>Lorem Ipsum Text</p>
+              </div>
+            </div>
+            <div class="col-lg-6">
+              <div class="box-item">
+                <h4><a href="#">24/7 Support &amp; Help</a></h4>
+                <p>Lorem Ipsum Text</p>
+              </div>
+            </div>
+            <div class="col-lg-6">
+              <div class="box-item">
+                <h4><a href="#">Fixing Issues About</a></h4>
+                <p>Lorem Ipsum Text</p>
+              </div>
+            </div>
+            <div class="col-lg-6">
+              <div class="box-item">
+                <h4><a href="#">Co. Development</a></h4>
+                <p>Lorem Ipsum Text</p>
+              </div>
+            </div>
+            <div class="col-lg-12">
+              <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eismod tempor idunte ut labore et dolore adipiscing  magna.</p>
+              <div class="gradient-button">
+                <a href="#">Start 14-Day Free Trial</a>
+              </div>
+              <span>*No Credit Card Required</span>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-6">
+          <div class="right-image">
+            <img src="assets/images/about-right-dec.png" alt="">
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+<!--
+  <div id="clients" class="the-clients">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-8 offset-lg-2">
+          <div class="section-heading">
+            <h4>Check What <em>The Clients Say</em> About Our App Dev</h4>
+            <img src="assets/images/heading-line-dec.png" alt="">
+            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eismod tempor incididunt ut labore et dolore magna.</p>
+          </div>
+        </div>
+        <div class="col-lg-12">
+          <div class="naccs">
+            <div class="grid">
+              <div class="row">
+                <div class="col-lg-7 align-self-center">
+                  <div class="menu">
+                    <div class="first-thumb active">
+                      <div class="thumb">
+                        <div class="row">
+                          <div class="col-lg-4 col-sm-4 col-12">
+                            <h4>David Martino Co</h4>
+                            <span class="date">30 November 2021</span>
+                          </div>
+                          <div class="col-lg-4 col-sm-4 d-none d-sm-block">
+                            <span class="category">Financial Apps</span>
+                          </div>
+                          <div class="col-lg-4 col-sm-4 col-12">
+                              <i class="fa fa-star"></i>
+                              <i class="fa fa-star"></i>
+                              <i class="fa fa-star"></i>
+                              <i class="fa fa-star"></i>
+                              <i class="fa fa-star"></i>
+                              <span class="rating">4.8</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div>
+                      <div class="thumb">
+                        <div class="row">
+                          <div class="col-lg-4 col-sm-4 col-12">
+                            <h4>Jake Harris Nyo</h4>
+                            <span class="date">29 November 2021</span>
+                          </div>
+                          <div class="col-lg-4 col-sm-4 d-none d-sm-block">
+                            <span class="category">Digital Business</span>
+                          </div>
+                          <div class="col-lg-4 col-sm-4 col-12">
+                              <i class="fa fa-star"></i>
+                              <i class="fa fa-star"></i>
+                              <i class="fa fa-star"></i>
+                              <i class="fa fa-star"></i>
+                              <i class="fa fa-star"></i>
+                              <span class="rating">4.5</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div>
+                      <div class="thumb">
+                        <div class="row">
+                          <div class="col-lg-4 col-sm-4 col-12">
+                            <h4>May Catherina</h4>
+                            <span class="date">27 November 2021</span>
+                          </div>
+                          <div class="col-lg-4 col-sm-4 d-none d-sm-block">
+                            <span class="category">Business &amp; Economics</span>
+                          </div>
+                          <div class="col-lg-4 col-sm-4 col-12">
+                              <i class="fa fa-star"></i>
+                              <i class="fa fa-star"></i>
+                              <i class="fa fa-star"></i>
+                              <i class="fa fa-star"></i>
+                              <i class="fa fa-star"></i>
+                              <span class="rating">4.7</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div>
+                      <div class="thumb">
+                        <div class="row">
+                          <div class="col-lg-4 col-sm-4 col-12">
+                            <h4>Random User</h4>
+                            <span class="date">24 November 2021</span>
+                          </div>
+                          <div class="col-lg-4 col-sm-4 d-none d-sm-block">
+                            <span class="category">New App Ecosystem</span>
+                          </div>
+                          <div class="col-lg-4 col-sm-4 col-12">
+                              <i class="fa fa-star"></i>
+                              <i class="fa fa-star"></i>
+                              <i class="fa fa-star"></i>
+                              <i class="fa fa-star"></i>
+                              <i class="fa fa-star"></i>
+                              <span class="rating">3.9</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="last-thumb">
+                      <div class="thumb">
+                        <div class="row">
+                          <div class="col-lg-4 col-sm-4 col-12">
+                            <h4>Mark Amber Do</h4>
+                            <span class="date">21 November 2021</span>
+                          </div>
+                          <div class="col-lg-4 col-sm-4 d-none d-sm-block">
+                            <span class="category">Web Development</span>
+                          </div>
+                          <div class="col-lg-4 col-sm-4 col-12">
+                              <i class="fa fa-star"></i>
+                              <i class="fa fa-star"></i>
+                              <i class="fa fa-star"></i>
+                              <i class="fa fa-star"></i>
+                              <i class="fa fa-star"></i>
+                              <span class="rating">4.3</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-lg-5">
+                  <ul class="nacc">
+                    <li class="active">
+                      <div>
+                        <div class="thumb">
+                          <div class="row">
+                            <div class="col-lg-12">
+                              <div class="client-content">
+                                <img src="assets/images/quote.png" alt="">
+                                <p>“Lorem ipsum dolor sit amet, consectetur adpiscing elit, sed do eismod tempor idunte ut labore et dolore magna aliqua darwin kengan
+                                  lorem ipsum dolor sit amet, consectetur picing elit massive big blasta.”</p>
+                              </div>
+                              <div class="down-content">
+                                <img src="assets/images/client-image.jpg" alt="">
+                                <div class="right-content">
+                                  <h4>David Martino</h4>
+                                  <span>CEO of David Company</span>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </li>
+                    <li>
+                      <div>
+                        <div class="thumb">
+                          <div class="row">
+                            <div class="col-lg-12">
+                              <div class="client-content">
+                                <img src="assets/images/quote.png" alt="">
+                                <p>“CTO, Lorem ipsum dolor sit amet, consectetur adpiscing elit, sed do eismod tempor idunte ut labore et dolore magna aliqua darwin kengan
+                                  lorem ipsum dolor sit amet, consectetur picing elit massive big blasta.”</p>
+                              </div>
+                              <div class="down-content">
+                                <img src="assets/images/client-image.jpg" alt="">
+                                <div class="right-content">
+                                  <h4>Jake H. Nyo</h4>
+                                  <span>CTO of Digital Company</span>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </li>
+                    <li>
+                      <div>
+                        <div class="thumb">
+                          <div class="row">
+                            <div class="col-lg-12">
+                              <div class="client-content">
+                                <img src="assets/images/quote.png" alt="">
+                                <p>“May, Lorem ipsum dolor sit amet, consectetur adpiscing elit, sed do eismod tempor idunte ut labore et dolore magna aliqua darwin kengan
+                                  lorem ipsum dolor sit amet, consectetur picing elit massive big blasta.”</p>
+                              </div>
+                              <div class="down-content">
+                                <img src="assets/images/client-image.jpg" alt="">
+                                <div class="right-content">
+                                  <h4>May C.</h4>
+                                  <span>Founder of Catherina Co.</span>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </li>
+                    <li>
+                      <div>
+                        <div class="thumb">
+                          <div class="row">
+                            <div class="col-lg-12">
+                              <div class="client-content">
+                                <img src="assets/images/quote.png" alt="">
+                                <p>“Lorem ipsum dolor sit amet, consectetur adpiscing elit, sed do eismod tempor idunte ut labore et dolore magna aliqua darwin kengan
+                                  lorem ipsum dolor sit amet, consectetur picing elit massive big blasta.”</p>
+                              </div>
+                              <div class="down-content">
+                                <img src="assets/images/client-image.jpg" alt="">
+                                <div class="right-content">
+                                  <h4>Random Staff</h4>
+                                  <span>Manager, Digital Company</span>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </li>
+                    <li>
+                      <div>
+                        <div class="thumb">
+                          <div class="row">
+                            <div class="col-lg-12">
+                              <div class="client-content">
+                                <img src="assets/images/quote.png" alt="">
+                                <p>“Mark, Lorem ipsum dolor sit amet, consectetur adpiscing elit, sed do eismod tempor idunte ut labore et dolore magna aliqua darwin kengan
+                                  lorem ipsum dolor sit amet, consectetur picing elit massive big blasta.”</p>
+                              </div>
+                              <div class="down-content">
+                                <img src="assets/images/client-image.jpg" alt="">
+                                <div class="right-content">
+                                  <h4>Mark Am</h4>
+                                  <span>CTO, Amber Do Company</span>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="pricing" class="pricing-tables">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-8 offset-lg-2">
+          <div class="section-heading">
+            <h4>We Have The Best Pre-Order <em>Prices</em> You Can Get</h4>
+            <img src="assets/images/heading-line-dec.png" alt="">
+            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eismod tempor incididunt ut labore et dolore magna.</p>
+          </div>
+        </div>
+        <div class="col-lg-4">
+          <div class="pricing-item-regular">
+            <span class="price">$12</span>
+            <h4>Standard Plan App</h4>
+            <div class="icon">
+              <img src="assets/images/pricing-table-01.png" alt="">
+            </div>
+            <ul>
+              <li>Lorem Ipsum Dolores</li>
+              <li>20 TB of Storage</li>
+              <li class="non-function">Life-time Support</li>
+              <li class="non-function">Premium Add-Ons</li>
+              <li class="non-function">Fastest Network</li>
+              <li class="non-function">More Options</li>
+            </ul>
+            <div class="border-button">
+              <a href="#">Purchase This Plan Now</a>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-4">
+          <div class="pricing-item-pro">
+            <span class="price">$25</span>
+            <h4>Business Plan App</h4>
+            <div class="icon">
+              <img src="assets/images/pricing-table-01.png" alt="">
+            </div>
+            <ul>
+              <li>Lorem Ipsum Dolores</li>
+              <li>50 TB of Storage</li>
+              <li>Life-time Support</li>
+              <li>Premium Add-Ons</li>
+              <li class="non-function">Fastest Network</li>
+              <li class="non-function">More Options</li>
+            </ul>
+            <div class="border-button">
+              <a href="#">Purchase This Plan Now</a>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-4">
+          <div class="pricing-item-regular">
+            <span class="price">$66</span>
+            <h4>Premium Plan App</h4>
+            <div class="icon">
+              <img src="assets/images/pricing-table-01.png" alt="">
+            </div>
+            <ul>
+              <li>Lorem Ipsum Dolores</li>
+              <li>120 TB of Storage</li>
+              <li>Life-time Support</li>
+              <li>Premium Add-Ons</li>
+              <li>Fastest Network</li>
+              <li>More Options</li>
+            </ul>
+            <div class="border-button">
+              <a href="#">Purchase This Plan Now</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+-->
+  <footer id="newsletter">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-8 offset-lg-2">
+          <div class="section-heading">
+            <h4>Join our mailing list to receive the news &amp; latest trends</h4>
+          </div>
+        </div>
+        <div class="col-lg-6 offset-lg-3">
+          <form id="search" action="#" method="GET">
+            <div class="row">
+              <div class="col-lg-6 col-sm-6">
+                <fieldset>
+                  <input type="address" name="address" class="email" placeholder="Email Address..." autocomplete="on" required>
+                </fieldset>
+              </div>
+              <div class="col-lg-6 col-sm-6">
+                <fieldset>
+                  <button type="submit" class="main-button">Subscribe Now <i class="fa fa-angle-right"></i></button>
+                </fieldset>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-lg-3">
+          <div class="footer-widget">
+            <h4>Contact Us</h4>
+            <p>Rio de Janeiro - RJ, 22795-008, Brazil</p>
+            <p><a href="#">010-020-0340</a></p>
+            <p><a href="#">info@company.co</a></p>
+          </div>
+        </div>
+        <div class="col-lg-3">
+          <div class="footer-widget">
+            <h4>About Us</h4>
+            <ul>
+              <li><a href="#">Home</a></li>
+              <li><a href="#">Services</a></li>
+              <li><a href="#">About</a></li>
+              <li><a href="#">Testimonials</a></li>
+              <li><a href="#">Pricing</a></li>
+            </ul>
+            <ul>
+              <li><a href="#">About</a></li>
+              <li><a href="#">Testimonials</a></li>
+              <li><a href="#">Pricing</a></li>
             </ul>
           </div>
         </div>
-      </nav>  
-      <div class="container">      
-        <div class="row space-100">
-          <div class="col-lg-6 col-md-12 col-xs-12">
-            <div class="contents">
-              <h2 class="head-title">Welcome to Stat Mania Portal</h2>
-              <p>Explore Resources on Data Science</p>
-              <div class="header-button">
-                <a href="https://www.statmania.info/" rel="nofollow" target="_blank" class="btn btn-border-filled"> Explore The Blog</a>
-                <a href="https://www.bishwo.com" rel="nofollow" target="_blank" class="btn btn-border page-scroll">Parent Portal</a>
-              </div>
+        <div class="col-lg-3">
+          <div class="footer-widget">
+            <h4>Useful Links</h4>
+            <ul>
+              <li><a href="#">Free Apps</a></li>
+              <li><a href="#">App Engine</a></li>
+              <li><a href="#">Programming</a></li>
+              <li><a href="#">Development</a></li>
+              <li><a href="#">App News</a></li>
+            </ul>
+            <ul>
+              <li><a href="#">App Dev Team</a></li>
+              <li><a href="#">Digital Web</a></li>
+              <li><a href="#">Normal Apps</a></li>
+            </ul>
+          </div>
+        </div>
+        <div class="col-lg-3">
+          <div class="footer-widget">
+            <h4>About Our Company</h4>
+            <div class="logo">
+              <img width="30" src="" alt="">
             </div>
+            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore.</p>
           </div>
-          <div class="col-lg-6 col-md-12 col-xs-12 p-0">
-            <div class="intro-img">
-        <img src="img/intro.png" alt="">
-            </div>            
+        </div>
+        <div class="col-lg-12">
+          <div class="copyright-text">
+            <p>Copyright © 2022 Chain App Dev Company. All Rights Reserved.
+          <br>Design: <a href="#" target="_blank" title="css templates">TemplateMo</a></p>
           </div>
-        </div> 
-      </div>             
-    </header>
-    <!-- Header Section End --> 
-
-
-    <!-- Services Section Start -->
-    <section id="services" class="section">
-      <div class="container">
-
-        <div class="row">
-          <!-- Start Col -->
-          <div class="col-lg-4 col-md-6 col-xs-12">
-            <div class="services-item text-center">
-              <div class="icon">
-                <i class="lni-agenda"></i>
-              </div>
-              <h4>Learn & Grow</h4>
-              <p>Covers topics such as statistics, mathematics, linux, data analysis and visualization</p>
-              <a href="https://www.statmania.info/" target="_blank" class="btn btn-border page-scroll">Learn More</a>
-            </div>
-          </div>
-          <!-- End Col -->
-
-<!-- Line Icons: https://preview.uideck.com/items/inspire/dark/line-icons.html -->
-          <!-- Start Col -->
-          <div class="col-lg-4 col-md-6 col-xs-12">
-            <div class="services-item text-center">
-              <div class="icon">
-                <i class="lni-bulb"></i>
-              </div>
-              <h4>Play Games</h4>
-              <p>Play, Learn, Conquer – </br> Let Math Be Your Game!</p>
-              <a href="https://game.statmania.info/list.html" target="_blank" class="btn btn-border page-scroll">Learn More</a>
-            </div>
-          </div>
-          <!-- End Col -->
-
-                    <!-- Start Col -->
-          <div class="col-lg-4 col-md-6 col-xs-12">
-            <div class="services-item text-center">
-              <div class="icon">
-                <i class="lni-bar-chart"></i>
-              </div>
-              <h4>Bar Chart</h4>
-              <p>Make a bar chart by providing values corresponding to categories.</p>
-              <a href="ds/viz/bar.html" target="_blank" class="btn btn-border page-scroll">Learn More</a>
-            </div>
-          </div>
-          <!-- End Col -->
-
-                              <!-- Start Col -->
-          <div class="col-lg-4 col-md-6 col-xs-12">
-            <div class="services-item text-center">
-              <div class="icon">
-                <i class="lni-code"></i>
-              </div>
-              <h4>R Programming</h4>
-              <p>R is one of the best programing languages to performa data analytics, machine learning. Packgaes such as ggplot2 makes it wonderful choice for data visualization.</p>
-              <a href="https://www.statmania.info/search/label/R?max-results=12" target="_blank" class="btn btn-border page-scroll">Learn More</a>
-            </div>
-          </div>
-          <!-- End Col -->
-
-          <!-- Start Col -->
-          <div class="col-lg-4 col-md-6 col-xs-12">
-            <div class="services-item text-center">
-              <div class="icon">
-                <i class="lni-stats-up"></i>
-              </div>
-              <h4>Data visualization</h4>
-              <p>Learn to make outstanding charts and graphs. Make Maps, Bar Diagram, Pie or Donut Chart, ano many more!</p>
-              <a href="https://www.statmania.info/search/label/visualization?max-results=20" target="_blank" class="btn btn-border page-scroll">Learn More</a>
-            </div>
-          </div>
-          <!-- End Col -->
-
-                    <!-- Start Col -->
-          <div class="col-lg-4 col-md-6 col-xs-12">
-            <div class="services-item text-center">
-              <div class="icon">
-                <i class="lni-blackboard"></i>
-              </div>
-              <h4>Stat Lectures</h4>
-              <p>Learn statistics step by step through these well-arranged topics.</p>
-              <a href="https://docs.statmania.info" target="_blank" class="btn btn-border page-scroll">Learn More</a>
-            </div>
-          </div>
-          <!-- End Col -->
-
-
-                    <!-- Start Col -->
-          <div class="col-lg-4 col-md-6 col-xs-12">
-            <div class="services-item text-center">
-              <div class="icon">
-                <i class="lni-book"></i>
-              </div>
-              <h4>Password Generator</h4>
-<p>Generate strong, random passwords with your preferred length and characters.</p>
-              <a href="service/password.html" target="_blank" class="btn btn-border page-scroll">Learn More</a>
-            </div>
-          </div>
-          <!-- End Col -->
-
         </div>
       </div>
-    </section>
-    <!-- Services Section End -->
-
-    <!-- Our Pricing Plan Section Start -->
-    <section id="pricing" class="section">
-      <div class="container">
-        <!-- Start Row -->
-        <div class="row">
-          <div class="col-lg-12">
-            <div class="pricing-text section-header text-center">  
-              <div>   
-                <h2 class="section-title">Our Packages</h2>
-                <div class="desc-text">
-                  <p>Among the packages</p>
-                  <p>We offer These</p>
-                </div>
-              </div> 
-            </div>
-          </div>
-
-        </div>
-        <!-- End Row -->
-        <!-- Start Row -->
-        <div class="row pricing-tables">
-         <!--  Start Col -->
-          <div class="col-lg-4 col-md-4 col-xs-12">
-            <div class="pricing-table text-center">
-              <div class="pricing-details">
-                <h3>Free</h3>
-                <h1><span>$</span>- -</h1>
-                <ul>
-                  <li>Check Back Later</li>
-                  <li>Check Back Later</li>
-                </ul>
-              </div>
-              <div class="plan-button">
-                <a href="#" class="btn btn-border">Purchase</a>
-              </div>
-            </div>
-          </div>
-           <!--  End Col -->
-         <!--  Start Col -->
-          <div class="col-lg-4 col-md-4 col-xs-12">
-            <div class="pricing-table text-center">
-              <div class="pricing-details">
-                <h3>standard</h3>
-                <h1><span>$</span>- -</h1>
-                <ul>
-                <li>Check Back Later</li>
-                <li>Check Back Later</li>
-                </ul>
-              </div>
-              <div class="plan-button">
-                <a href="#" class="btn btn-common">Purchase</a>
-              </div>
-            </div>
-          </div>
-           <!--  End Col -->
-         <!--  Start Col -->
-          <div class="col-lg-4 col-md-4 col-xs-12">
-            <div class="pricing-table text-center">
-              <div class="pricing-details">
-                <h3>Business</h3>
-                <h1><span>$</span>- -</h1>
-                <ul>
-                  <li>Check Back Later</li>
-                  <li>Check Back Later</li>
-                </ul>
-              </div>
-              <div class="plan-button">
-                <a href="#" class="btn btn-border">Purchase</a>
-              </div>
-            </div>
-          </div>
-           <!--  End Col -->
-
-        </div>
-        <!-- End Row -->
-      </div>
-    </section>
-    <!-- Our Pricing Plan Section End --> 
-
-    <!-- Client Testimoninals Section Start -->
-    <section id="testimonial" class="section">
-    <div class="pricing-text section-header text-center">
-              <div>
-                <h2 style="color:white;" class="section-title">Explore Videos</h2>
-                <div class="desc-text">
-                  <a style="color:blue; background-color:yellow;" href="https://www.youtube.com/@statmania7905/videos" target="_blank" class="btn btn-border page-scroll">Watch ALL</a>
-                </div>
-              </div>
-      <div class="container right-position">
-        <!-- Start Row -->
-        <div class="row">
-          <div class="col-md-12 col-sm-12">
-            <div class="video-promo-content text-center">
-
-              <a id="play-video" class="video-play-button video-popup" href="https://www.youtube.com/watch?v=g9LHxhaHir0">
-                <span></span>
-              </a>
-
-            </div>
-          </div>
-        </div>
-        <!-- End Row -->
-
-      </div>
-    </section>
-    <!-- Client Testimoninals Section End -->
-    <!-- Contact Us Section -->
-    <section id="contact" class="section">
-      <!-- Container Starts -->
-      <div class="container">
-        <!-- Start Row -->
-        <div class="row">
-          <div class="col-lg-12">
-            <div class="contact-text section-header text-center">  
-              <div>   
-                <h2 class="section-title">Get In Touch</h2>
-                <div class="desc-text">
-                  <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do</p>  
-                  <p>eiusmod tempor incididunt ut labore et dolore.</p>
-                </div>
-              </div> 
-            </div>
-          </div>
-
-        </div>
-        <!-- End Row -->
-        <!-- Start Row -->
-        <div class="row">
-          <!-- Start Col -->
-          <div class="col-lg-6 col-md-12">
-          <form id="contactForm">
-            <div class="row">
-              <div class="col-md-6">
-                <div class="form-group">
-                  <input type="text" class="form-control" id="name" name="name" placeholder="Name" required data-error="Please enter your name">
-                  <div class="help-block with-errors"></div>
-                </div>                                 
-              </div>
-              <div class="col-md-6">
-                <div class="form-group">
-                  <input type="text" placeholder="Subject" id="msg_subject" class="form-control" name="msg_subject" required data-error="Please enter your subject">
-                  <div class="help-block with-errors"></div>
-                </div> 
-              </div>
-              <div class="col-md-6">
-                <div class="form-group">
-                  <input type="text" class="form-control" id="email" name="email" placeholder="Email" required data-error="Please enter your Email">
-                  <div class="help-block with-errors"></div>
-                </div>                                 
-              </div>
-              <div class="col-md-6">
-                <div class="form-group">
-                  <input type="text" placeholder="Budget" id="budget" class="form-control" name="budget" required data-error="Please enter your Budget">
-                  <div class="help-block with-errors"></div>
-                </div> 
-              </div>
-              <div class="col-md-12">
-                <div class="form-group"> 
-                  <textarea class="form-control" id="message"  name="message" placeholder="Write Message" rows="4" data-error="Write your message" required></textarea>
-                  <div class="help-block with-errors"></div>
-                </div>
-                <div class="submit-button">
-                  <button class="btn btn-common" id="submit" type="submit">Submit</button>
-                  <div id="msgSubmit" class="h3 hidden"></div> 
-                  <div class="clearfix"></div> 
-                </div>
-              </div>
-            </div>            
-          </form>
-          </div>
-          <!-- End Col -->
-          <!-- Start Col -->
-          <div class="col-lg-1">
-            
-          </div>
-          <!-- End Col -->
-          <!-- Start Col -->
-          <div class="col-lg-4 col-md-12">
-            <div class="contact-img">
-              <img src="img/contact.jpg" class="img-fluid" alt="">
-            </div>
-          </div>
-          <!-- End Col -->
-          <!-- Start Col -->
-          <div class="col-lg-1">
-          </div>
-          <!-- End Col -->
-
-        </div>
-        <!-- End Row -->
-      </div>
-    </section>
-    <!-- Contact Us Section End -->
-
-    <!-- Footer Section Start -->
-    <footer>
-      <!-- Footer Area Start -->
-      <section id="footer-Content">
-        <div class="container">
-          <!-- Start Row -->
-          <div class="row">
-
-          <!-- Start Col -->
-            <div class="col-lg-3 col-md-6 col-sm-6 col-xs-6 col-mb-12">
-              
-              <div class="footer-logo">
-               <img src="img/statmania_logo.png" alt="">
-              </div>
-            </div>
-             <!-- End Col -->
-              <!-- Start Col -->
-            <div class="col-lg-2 col-md-6 col-sm-6 col-xs-6 col-mb-12">
-              <div class="widget">
-                <h3 class="block-title">Statistics</h3>
-                <ul class="menu">
-                  <li><a href="http://www.statmania.info/search/label/probability?max-results=12">  - Probability</a></li>
-                  <li><a href="https://www.statmania.info/search/label/paradox?max-results=12">- Paradox</a></li>
-                  <li><a href="http://www.statmania.info/search/label/R?max-results=12">- R Programming</a></li>
-                  <li><a href="http://www.statmania.info/search/label/bio?max-results=12">- Bio</a></li>
-                </ul>
-              </div>
-            </div>
-             <!-- End Col -->
-              <!-- Start Col -->
-            <div class="col-lg-2 col-md-6 col-sm-6 col-xs-6 col-mb-12">
-              <div class="widget">
-                <h3 class="block-title">Programming</h3>
-                <ul class="menu">
-                  <li><a href="http://www.statmania.info/search/label/visualization?max-results=20">  - Visualization</a></li>
-                  <li><a href="http://www.statmania.info/search/label/ggplot2?max-results=20">- ggplot2</a></li>
-                  <li><a href="http://www.statmania.info/search/label/Linux?max-results=20">- Linux</a></li>
-                  <li><a href="http://www.statmania.info/search/label/loop?max-results=20">- Loop</a></li>
-                  <li><a href="http://www.statmania.info/search/label/ds?max-results=12">- Data Science?</a></li>
-                </ul>
-              </div>
-            </div>
-             <!-- End Col -->
-              <!-- Start Col -->
-            <div class="col-lg-2 col-md-6 col-sm-6 col-xs-6 col-mb-12">
-              <div class="widget">
-                <h3 class="block-title">Misc</h3>
-                <ul class="menu">
-                  <li><a href="https://docs.statmania.info/">  - Stat Lectures</a></li>
-                  <li><a href="https://game.statmania.info/list.html">- Games</a></li>
-                  <li><a href="https://docs.statmania.info/question/auto/stat_prob_mcq.html">- Questions</a></li>
-                </ul>
-              </div>
-            </div>
-             <!-- End Col -->
-              <!-- Start Col -->
-            <div class="col-lg-3 col-md-6 col-sm-6 col-xs-6 col-mb-12">
-              <div class="widget">
-                <h3 class="block-title">Subscribe Now</h3>
-                <p>Appropriately implement calysts for change visa wireless catalysts for change. </p>
-                <div class="subscribe-area">
-                  <input type="email" class="form-control" placeholder="Enter Email">
-                  <span><i class="lni-chevron-right"></i></span>
-                </div>
-              </div>
-            </div>
-            <!-- End Col -->
-          </div>
-          <!-- End Row -->
-        </div>
-        <!-- Copyright Start  -->
-
-        <div class="copyright">
-          <div class="container">
-            <!-- Star Row -->
-            <div class="row">
-              <div class="col-md-12">
-                <div class="site-info text-center">
-                  <p>Crafted by <a href="#" rel="nofollow">UIdeck</a></p>
-                </div>              
-                
-              </div>
-              <!-- End Col -->
-            </div>
-            <!-- End Row -->
-          </div>
-        </div>
-      <!-- Copyright End -->
-      </section>
-      <!-- Footer area End -->
-      
-    </footer>
-    <!-- Footer Section End --> 
-
-
-    <!-- Go To Top Link -->
-    <a href="#" class="back-to-top">
-      <i class="lni-chevron-up"></i>
-    </a> 
-
-    <!-- Preloader -->
-    <div id="preloader">
-      <div class="loader" id="loader-1"></div>
     </div>
-    <!-- End Preloader -->
+  </footer>
 
-    <!-- jQuery first, then Tether, then Bootstrap JS. -->
-    <script src="js/jquery-min.js"></script>
-    <script src="js/popper.min.js"></script>
-    <script src="js/bootstrap.min.js"></script>
-    <script src="js/owl.carousel.js"></script>      
-    <script src="js/jquery.nav.js"></script>    
-    <script src="js/scrolling-nav.js"></script>    
-    <script src="js/jquery.easing.min.js"></script>     
-    <script src="js/nivo-lightbox.js"></script>     
-    <script src="js/jquery.magnific-popup.min.js"></script>     
-    <script src="js/form-validator.min.js"></script>
-    <script src="js/contact-form-script.js"></script>   
-    <script src="js/main.js"></script>
-    
-  </body>
+
+  <!-- Scripts -->
+  <script src="vendor/jquery/jquery.min.js"></script>
+  <script src="vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+  <script src="assets/js/owl-carousel.js"></script>
+  <script src="assets/js/animation.js"></script>
+  <script src="assets/js/imagesloaded.js"></script>
+  <script src="assets/js/popup.js"></script>
+  <script src="assets/js/custom.js"></script>
+</body>
 </html>
