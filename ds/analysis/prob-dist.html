@@ -135,8 +135,9 @@
         <section class="bg-gradient-to-r from-indigo-500 to-purple-600 text-white py-8 px-4 sm:px-6 lg:px-8 rounded-b-2xl shadow-lg">
             <div class="container mx-auto text-center max-w-4xl">
                 <h1 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold leading-tight flex items-center justify-center">
+                    <!-- New SVG Icon for Statistical Distribution Calculator -->
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-white mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v10a2 2 0 002 2z" />
                     </svg>
                     Statistical Distribution Calculator
                 </h1>
@@ -424,4 +425,113 @@
                 probability = 0;
             } else if (comparison === 'lessThan') {
                 // CDF: P(X <= x) = 1 - e^(-lambda * x)
-                probability = 1 - Math.ex
+                probability = 1 - Math.exp(-lambda * x);
+            } else if (comparison === 'greaterThan') {
+                // P(X > x) = e^(-lambda * x)
+                probability = Math.exp(-lambda * x);
+            }
+            return probability;
+        }
+
+        // --- DOM Elements and Event Listeners ---
+        const distributionSelect = document.getElementById('distributionSelect');
+        const parameterGroups = document.querySelectorAll('.param-group');
+        const xValueInput = document.getElementById('xValue');
+        const comparisonRadios = document.querySelectorAll('input[name="comparison"]');
+        const resultDiv = document.getElementById('result');
+        const probabilityResultSpan = document.getElementById('probabilityResult');
+
+        // Function to perform the calculation and update the result
+        function performCalculation() {
+            const selectedDistribution = distributionSelect.value;
+            const x = parseFloat(xValueInput.value);
+            const comparison = document.querySelector('input[name="comparison"]:checked').value;
+            let result = "Error: Invalid input";
+
+            try {
+                switch (selectedDistribution) {
+                    case 'binomial':
+                        const n = parseInt(document.getElementById('binomialN').value);
+                        const p = parseFloat(document.getElementById('binomialP').value);
+                        result = calculateBinomial(n, p, x, comparison);
+                        break;
+                    case 'poisson':
+                        const lambdaPoisson = parseFloat(document.getElementById('poissonLambda').value);
+                        result = calculatePoisson(lambdaPoisson, x, comparison);
+                        break;
+                    case 'normal':
+                        const mean = parseFloat(document.getElementById('normalMean').value);
+                        const stdDev = parseFloat(document.getElementById('normalStdDev').value);
+                        result = calculateNormal(mean, stdDev, x, comparison);
+                        break;
+                    case 'uniform':
+                        const a = parseFloat(document.getElementById('uniformA').value);
+                        const b = parseFloat(document.getElementById('uniformB').value);
+                        result = calculateUniform(a, b, x, comparison);
+                        break;
+                    case 'exponential':
+                        const lambdaExp = parseFloat(document.getElementById('exponentialLambda').value);
+                        result = calculateExponential(lambdaExp, x, comparison);
+                        break;
+                    default:
+                        result = "Distribution not recognized.";
+                }
+
+                if (typeof result === 'number' && !isNaN(result)) {
+                    probabilityResultSpan.textContent = result.toFixed(6); // Display with 6 decimal places
+                } else {
+                    probabilityResultSpan.textContent = result;
+                }
+            } catch (e) {
+                probabilityResultSpan.textContent = `Calculation Error: ${e.message}`;
+            }
+
+            resultDiv.classList.remove('hidden');
+        }
+
+        // Function to update parameter inputs based on selected distribution
+        function updateParameters() {
+            const selectedDistribution = distributionSelect.value;
+            parameterGroups.forEach(group => {
+                group.classList.add('hidden');
+            });
+            document.getElementById(`${selectedDistribution}Params`).classList.remove('hidden');
+
+            // Set default xValue based on distribution type
+            if (selectedDistribution === 'binomial' || selectedDistribution === 'poisson') {
+                xValueInput.setAttribute('step', '1'); // Discrete
+                xValueInput.value = Math.floor(xValueInput.value); // Ensure integer
+            } else {
+                xValueInput.setAttribute('step', 'any'); // Continuous
+            }
+            performCalculation(); // Perform calculation after parameter update
+        }
+
+        // Initial call to set up parameters and perform calculation on load
+        updateParameters();
+
+        // Event listener for distribution selection change
+        distributionSelect.addEventListener('change', updateParameters);
+
+        // Event listener for xValue input and all parameter inputs
+        xValueInput.addEventListener('input', performCalculation);
+
+        // Add event listeners to all parameter inputs
+        document.getElementById('binomialN').addEventListener('input', performCalculation);
+        document.getElementById('binomialP').addEventListener('input', performCalculation);
+        document.getElementById('poissonLambda').addEventListener('input', performCalculation);
+        document.getElementById('normalMean').addEventListener('input', performCalculation);
+        document.getElementById('normalStdDev').addEventListener('input', performCalculation);
+        document.getElementById('uniformA').addEventListener('input', performCalculation);
+        document.getElementById('uniformB').addEventListener('input', performCalculation);
+        document.getElementById('exponentialLambda').addEventListener('input', performCalculation);
+
+        // Add event listeners to comparison radio buttons
+        comparisonRadios.forEach(radio => {
+            radio.addEventListener('change', performCalculation);
+        });
+
+    </script>
+
+</body>
+</html>
