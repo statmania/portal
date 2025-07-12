@@ -201,10 +201,7 @@
                                 <span id="numPointsValue" class="parameter-value text-sm">Value: 200</span>
                             </div>
 
-                            <div class="button-group mt-4">
-                                <button id="generateDataButton">Generate New Data</button>
-                                <button id="clearPlotButton" class="clear-button">Clear Plot</button>
-                            </div>
+                            <!-- The button group was removed as requested -->
 
                             <div class="mt-6 p-4 bg-indigo-50 rounded-lg text-center shadow-inner">
                                 <p class="text-lg font-semibold text-indigo-800">Calculated Pearson r:</p>
@@ -279,8 +276,8 @@
         const correlationValueSpan = document.getElementById('correlationValue');
         const numPointsSlider = document.getElementById('numPointsSlider');
         const numPointsValueSpan = document.getElementById('numPointsValue');
-        const generateDataButton = document.getElementById('generateDataButton');
-        const clearPlotButton = document.getElementById('clearPlotButton');
+        // const generateDataButton = document.getElementById('generateDataButton'); // Removed
+        // const clearPlotButton = document.getElementById('clearPlotButton'); // Removed
         const calculatedCorrelationSpan = document.getElementById('calculatedCorrelation');
 
         let dataPoints = []; // Array to store {x, y} objects
@@ -461,17 +458,17 @@
 
         // --- Event Listeners and Initial Setup ---
 
-        generateDataButton.addEventListener('click', () => {
-            const desiredRho = parseFloat(correlationSlider.value);
-            const numPoints = parseInt(numPointsSlider.value);
-            dataPoints = generateCorrelatedData(numPoints, desiredRho);
-            drawCorrelationPlot();
-        });
+        // generateDataButton.addEventListener('click', () => { // Removed
+        //     const desiredRho = parseFloat(correlationSlider.value);
+        //     const numPoints = parseInt(numPointsSlider.value);
+        //     dataPoints = generateCorrelatedData(numPoints, desiredRho);
+        //     drawCorrelationPlot();
+        // });
 
-        clearPlotButton.addEventListener('click', () => {
-            clearCanvas();
-            drawCorrelationPlot(); // Redraw empty axes
-        });
+        // clearPlotButton.addEventListener('click', () => { // Removed
+        //     clearCanvas();
+        //     drawCorrelationPlot(); // Redraw empty axes
+        // });
 
         correlationSlider.addEventListener('input', () => {
             correlationValueSpan.textContent = `Value: ${parseFloat(correlationSlider.value).toFixed(2)}`;
