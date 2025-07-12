@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Central Limit Theorem Visualizer</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.0/dist/chart.min.js"></script>
+    <style>
+        /* Custom styles for better aesthetics and responsiveness */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f4f8; /* Light blue-gray background */
+            color: #334155; /* Darker text */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding: 1rem;
+        }
+        .container {
+            background-color: #ffffff;
+            border-radius: 1rem; /* Rounded corners */
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); /* Subtle shadow */
+            padding: 1.5rem;
+            max-width: 90%; /* Responsive width */
+            width: 100%;
+            margin-bottom: 1.5rem;
+        }
+        .chart-container {
+            position: relative;
+            height: 400px; /* Fixed height for charts */
+            width: 100%;
+            margin-top: 1.5rem;
+        }
+        @media (min-width: 768px) {
+            .charts-wrapper {
+                display: flex;
+                gap: 2rem;
+            }
+            .chart-container {
+                flex: 1;
+            }
+        }
+        /* Style for sliders to make them look better */
+        input[type="range"] {
+            -webkit-appearance: none; /* Override default look */
+            appearance: none;
+            width: 100%; /* Full-width */
+            height: 8px; /* Slider track height */
+            background: #cbd5e1; /* Light gray track */
+            outline: none;
+            opacity: 0.7;
+            -webkit-transition: .2s;
+            transition: opacity .2s;
+            border-radius: 4px;
+        }
+
+        input[type="range"]:hover {
+            opacity: 1;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px; /* Thumb width */
+            height: 20px; /* Thumb height */
+            background: #3b82f6; /* Blue thumb */
+            border-radius: 50%; /* Circular thumb */
+            cursor: grab;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            margin-top: -6px; /* Center thumb vertically */
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            background: #3b82f6;
+            border-radius: 50%;
+            cursor: grab;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+    </style>
+</head>
+<body class="p-4 bg-gray-100 flex flex-col items-center min-h-screen">
+
+    <div class="container text-center mb-6">
+        <h1 class="text-3xl font-bold text-blue-700 mb-4">Central Limit Theorem Visualizer</h1>
+    </div>
+
+    <div class="container grid grid-cols-1 md:grid-cols-3 gap-6">
+        <!-- Column 1: Introduction Text and Controls -->
+        <div class="flex flex-col items-center justify-start p-4">
+            <p class="text-lg text-gray-600 mb-4 text-center">
+                Observe how the distribution of sample means approaches a normal distribution as the sample size (n) increases,
+                even when the original distribution is not normal.
+            </p>
+
+            <div class="controls flex flex-col items-center gap-6 w-full">
+                <div class="flex flex-col items-center gap-2 w-full">
+                    <label for="distributionSelect" class="font-semibold text-gray-700">Select Distribution:</label>
+                    <select id="distributionSelect"
+                            class="p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 w-48 text-center">
+                        <option value="uniform">Uniform</option>
+                        <option value="normal">Normal</option>
+                        <option value="exponential">Exponential</option>
+                        <option value="binomial">Binomial</option>
+                        <option value="poisson">Poisson</option>
+                        <option value="beta">Beta</option>
+                        <option value="gamma">Gamma</option>
+                        <option value="chi-squared">Chi-squared</option>
+                    </select>
+                </div>
+
+                <div class="flex flex-col items-center gap-2 w-full">
+                    <label for="sampleSize" class="font-semibold text-gray-700">Sample Size (n): <span id="sampleSizeValue">1</span></label>
+                    <input type="range" id="sampleSize" value="1" min="1" max="100" step="1"
+                           class="w-full md:w-48">
+                </div>
+
+                <div class="flex flex-col items-center gap-2 w-full">
+                    <label for="numSamples" class="font-semibold text-gray-700">Number of Samples: <span id="numSamplesValue">1000</span></label>
+                    <input type="range" id="numSamples" value="1000" min="100" max="10000" step="100"
+                           class="w-full md:w-48">
+                </div>
+            </div>
+        </div>
+
+        <!-- Column 2: Original Distribution Chart -->
+        <div class="chart-container">
+            <h2 class="text-xl font-semibold text-gray-800 text-center mb-2">Original Distribution (<span id="originalDistName">Uniform</span>)</h2>
+            <canvas id="originalDistributionChart"></canvas>
+        </div>
+
+        <!-- Column 3: Sample Means Distribution Chart -->
+        <div class="chart-container">
+            <h2 class="text-xl font-semibold text-gray-800 text-center mb-2">Distribution of Sample Means</h2>
+            <canvas id="sampleMeansDistributionChart"></canvas>
+        </div>
+    </div>
+
+    <script>
+        // Global chart instances
+        let originalChart;
+        let sampleMeansChart;
+
+        // Elements
+        const sampleSizeSlider = document.getElementById('sampleSize');
+        const sampleSizeValueSpan = document.getElementById('sampleSizeValue');
+        const numSamplesSlider = document.getElementById('numSamples');
+        const numSamplesValueSpan = document.getElementById('numSamplesValue');
+        const distributionSelect = document.getElementById('distributionSelect');
+        const originalDistNameSpan = document.getElementById('originalDistName');
+
+        // --- Random Number Generation Functions ---
+
+        // Generates a random number from a uniform distribution [min, max)
+        function getRandomUniform(min, max) {
+            return Math.random() * (max - min) + min;
+        }
+
+        // Generates a random number from a standard normal distribution (mean=0, stdDev=1)
+        // using the Box-Muller transform.
+        let hasSpare = false;
+        let spareValue;
+        function getRandomNormal(mean = 0, stdDev = 1) {
+            if (hasSpare) {
+                hasSpare = false;
+                return spareValue * stdDev + mean;
+            }
+            let u, v, s;
+            do {
+                u = Math.random() * 2 - 1; // Between -1 and 1
+                v = Math.random() * 2 - 1; // Between -1 and 1
+                s = u * u + v * v;
+            } while (s >= 1 || s === 0);
+
+            const mul = Math.sqrt(-2 * Math.log(s) / s);
+            spareValue = v * mul;
+            hasSpare = true;
+            return u * mul * stdDev + mean;
+        }
+
+        // Generates a random number from an exponential distribution (rate lambda)
+        // Mean of exponential distribution is 1/lambda.
+        function getRandomExponential(lambda = 1) {
+            return -Math.log(1 - Math.random()) / lambda;
+        }
+
+        // Generates a random number from a Binomial distribution (n trials, p probability)
+        // Simulated by summing n Bernoulli trials.
+        function getRandomBinomial(n = 10, p = 0.5) {
+            let successes = 0;
+            for (let i = 0; i < n; i++) {
+                if (Math.random() < p) {
+                    successes++;
+                }
+            }
+            return successes;
+        }
+
+        // Generates a random number from a Poisson distribution (lambda rate)
+        // Using inverse transform sampling.
+        function getRandomPoisson(lambda = 3) {
+            let L = Math.exp(-lambda);
+            let k = 0;
+            let p = 1;
+            do {
+                k++;
+                p *= Math.random();
+            } while (p > L);
+            return k - 1;
+        }
+
+        // Generates a random number from a Gamma distribution (k shape, theta scale)
+        // Simplified for integer k (sum of k exponential random variables).
+        function getRandomGammaIntegerK(k, theta) {
+            let sum = 0;
+            for (let i = 0; i < k; i++) {
+                sum += getRandomExponential(1 / theta); // Exponential with mean theta
+            }
+            return sum;
+        }
+
+        // Generates a random number from a Beta distribution (alpha, beta parameters)
+        // If X ~ Gamma(alpha, 1) and Y ~ Gamma(beta, 1), then X / (X + Y) ~ Beta(alpha, beta).
+        // Requires alpha and beta to be integers for this simplified Gamma.
+        function getRandomBeta(alpha = 2, beta = 5) {
+            const x = getRandomGammaIntegerK(alpha, 1);
+            const y = getRandomGammaIntegerK(beta, 1);
+            return x / (x + y);
+        }
+
+        // Generates a random number from a Chi-squared distribution (k degrees of freedom)
+        // Sum of k squared standard normal variates.
+        function getRandomChiSquared(k = 3) {
+            let sumOfSquares = 0;
+            for (let i = 0; i < k; i++) {
+                const z = getRandomNormal(0, 1); // Standard normal
+                sumOfSquares += z * z;
+            }
+            return sumOfSquares;
+        }
+
+        // --- Helper Functions ---
+
+        // Function to generate data for a histogram
+        function createHistogramData(data, bins) {
+            if (data.length === 0) {
+                return { labels: [], datasets: [] };
+            }
+
+            // Calculate min and max values from the data
+            const minVal = Math.min(...data);
+            const maxVal = Math.max(...data);
+
+            // If minVal and maxVal are the same (e.g., all data points are identical),
+            // prevent division by zero and create a single bin.
+            if (minVal === maxVal) {
+                return {
+                    labels: [minVal.toFixed(2)],
+                    datasets: [{
+                        label: 'Frequency',
+                        data: [data.length],
+                        backgroundColor: 'rgba(59, 130, 246, 0.7)',
+                        borderColor: 'rgba(59, 130, 246, 1)',
+                        borderWidth: 1,
+                        barPercentage: 1,
+                        categoryPercentage: 1,
+                    }]
+                };
+            }
+
+            const range = maxVal - minVal;
+            const binWidth = range / bins;
+
+            // Initialize bins
+            const histogram = new Array(bins).fill(0);
+            const labels = [];
+
+            // Populate histogram
+            data.forEach(value => {
+                let binIndex = Math.floor((value - minVal) / binWidth);
+                // Ensure the max value falls into the last bin, and values below min into the first
+                if (binIndex >= bins) binIndex = bins - 1;
+                if (binIndex < 0) binIndex = 0;
+                histogram[binIndex]++;
+            });
+
+            // Create labels for the bins
+            for (let i = 0; i < bins; i++) {
+                const lowerBound = minVal + i * binWidth;
+                const upperBound = minVal + (i + 1) * binWidth;
+                labels.push(`${lowerBound.toFixed(2)} - ${upperBound.toFixed(2)}`);
+            }
+
+            return {
+                labels: labels,
+                datasets: [{
+                    label: 'Frequency',
+                    data: histogram,
+                    backgroundColor: 'rgba(59, 130, 246, 0.7)', // Blue-500 with opacity
+                    borderColor: 'rgba(59, 130, 246, 1)',
+                    borderWidth: 1,
+                    barPercentage: 1, // Make bars fill the bin
+                    categoryPercentage: 1, // Make bars fill the bin
+                }]
+            };
+        }
+
+        // Function to calculate the mean of an array
+        function calculateMean(arr) {
+            if (arr.length === 0) return 0;
+            const sum = arr.reduce((acc, val) => acc + val, 0);
+            return sum / arr.length;
+        }
+
+        // --- Main Simulation Logic ---
+
+        function runSimulation() {
+            const n = parseInt(sampleSizeSlider.value);
+            const numSamples = parseInt(numSamplesSlider.value);
+            const selectedDistribution = distributionSelect.value;
+
+            // Update the original distribution name display
+            originalDistNameSpan.textContent = selectedDistribution.charAt(0).toUpperCase() + selectedDistribution.slice(1).replace('-', ' ');
+
+            if (isNaN(n) || n < 1 || isNaN(numSamples) || numSamples < 100) {
+                console.error("Invalid input for sample size or number of samples.");
+                return;
+            }
+
+            let getRandomNumber;
+            // Default parameters for distributions
+            const distParams = {
+                uniform: { min: 0, max: 1 },
+                normal: { mean: 0, stdDev: 1 },
+                exponential: { lambda: 1 }, // mean = 1/lambda = 1
+                binomial: { n: 10, p: 0.5 }, // 10 trials, 0.5 probability
+                poisson: { lambda: 3 }, // average rate of 3
+                beta: { alpha: 2, beta: 5 }, // skewed towards 0
+                gamma: { k: 2, theta: 1 }, // shape 2, scale 1 (mean = k*theta = 2)
+                'chi-squared': { k: 3 } // 3 degrees of freedom
+            };
+
+            switch (selectedDistribution) {
+                case 'uniform':
+                    getRandomNumber = () => getRandomUniform(distParams.uniform.min, distParams.uniform.max);
+                    break;
+                case 'normal':
+                    getRandomNumber = () => getRandomNormal(distParams.normal.mean, distParams.normal.stdDev);
+                    break;
+                case 'exponential':
+                    getRandomNumber = () => getRandomExponential(distParams.exponential.lambda);
+                    break;
+                case 'binomial':
+                    getRandomNumber = () => getRandomBinomial(distParams.binomial.n, distParams.binomial.p);
+                    break;
+                case 'poisson':
+                    getRandomNumber = () => getRandomPoisson(distParams.poisson.lambda);
+                    break;
+                case 'beta':
+                    getRandomNumber = () => getRandomBeta(distParams.beta.alpha, distParams.beta.beta);
+                    break;
+                case 'gamma':
+                    getRandomNumber = () => getRandomGammaIntegerK(distParams.gamma.k, distParams.gamma.theta);
+                    break;
+                case 'chi-squared':
+                    getRandomNumber = () => getRandomChiSquared(distParams['chi-squared'].k);
+                    break;
+                default:
+                    getRandomNumber = () => getRandomUniform(distParams.uniform.min, distParams.uniform.max);
+            }
+
+            // --- Generate Original Distribution Data ---
+            const originalData = [];
+            // Using 10000 points for consistent visualization of the base distribution
+            for (let i = 0; i < 10000; i++) {
+                originalData.push(getRandomNumber());
+            }
+            const originalHistogramData = createHistogramData(originalData, 30); // 30 bins for original
+
+            // Update or create the original distribution chart
+            if (originalChart) {
+                originalChart.data = originalHistogramData;
+                originalChart.options.scales.x.title.text = `Value Range (${originalDistNameSpan.textContent} Distribution)`;
+                originalChart.update();
+            } else {
+                const ctxOriginal = document.getElementById('originalDistributionChart').getContext('2d');
+                originalChart = new Chart(ctxOriginal, {
+                    type: 'bar',
+                    data: originalHistogramData,
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            title: {
+                                display: false, // Title is handled by H2 tag
+                            },
+                            legend: {
+                                display: false,
+                            }
+                        },
+                        scales: {
+                            x: {
+                                title: {
+                                    display: true,
+                                    text: `Value Range (${originalDistNameSpan.textContent} Distribution)`,
+                                    color: '#475569', // Slate-600
+                                },
+                                grid: {
+                                    display: false,
+                                }
+                            },
+                            y: {
+                                title: {
+                                    display: true,
+                                    text: 'Frequency',
+                                    color: '#475569', // Slate-600
+                                },
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+            }
+
+            // --- Generate Sample Means Distribution Data ---
+            const sampleMeans = [];
+            for (let i = 0; i < numSamples; i++) {
+                const sample = [];
+                for (let j = 0; j < n; j++) {
+                    sample.push(getRandomNumber()); // Draw from the selected distribution
+                }
+                sampleMeans.push(calculateMean(sample));
+            }
+
+            // Determine optimal number of bins for sample means using Sturges' formula or sqrt(N)
+            const binsForMeans = Math.ceil(Math.sqrt(numSamples)); // Using sqrt(N) heuristic
+            const sampleMeansHistogramData = createHistogramData(sampleMeans, binsForMeans);
+
+            // Update or create the sample means distribution chart
+            if (sampleMeansChart) {
+                sampleMeansChart.data = sampleMeansHistogramData;
+                sampleMeansChart.update();
+            } else {
+                const ctxMeans = document.getElementById('sampleMeansDistributionChart').getContext('2d');
+                sampleMeansChart = new Chart(ctxMeans, {
+                    type: 'bar',
+                    data: sampleMeansHistogramData,
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            title: {
+                                display: false, // Title is handled by H2 tag
+                            },
+                            legend: {
+                                display: false,
+                            }
+                        },
+                        scales: {
+                            x: {
+                                title: {
+                                    display: true,
+                                    text: 'Mean Value Range',
+                                    color: '#475569', // Slate-600
+                                },
+                                grid: {
+                                    display: false,
+                                }
+                            },
+                            y: {
+                                title: {
+                                    display: true,
+                                    text: 'Frequency',
+                                    color: '#475569', // Slate-600
+                                },
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+            }
+        }
+
+        // --- Event Listeners ---
+
+        // Update slider value displays and run simulation dynamically
+        sampleSizeSlider.addEventListener('input', () => {
+            sampleSizeValueSpan.textContent = sampleSizeSlider.value;
+            runSimulation(); // Run simulation on input for dynamic updates
+        });
+        numSamplesSlider.addEventListener('input', () => {
+            numSamplesValueSpan.textContent = numSamplesSlider.value;
+            runSimulation(); // Run simulation on input for dynamic updates
+        });
+
+        // Run simulation on distribution change
+        distributionSelect.addEventListener('change', runSimulation);
+
+        // Run simulation on initial load
+        window.onload = function() {
+            // Initialize slider value displays
+            sampleSizeValueSpan.textContent = sampleSizeSlider.value;
+            numSamplesValueSpan.textContent = numSamplesSlider.value;
+            runSimulation();
+        };
+    </script>
+</body>
+</html>
