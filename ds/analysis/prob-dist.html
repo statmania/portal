@@ -224,7 +224,7 @@
 
                         <div class="mb-8 flex justify-center space-x-4 radio-group">
                             <div>
-                                <input type="radio" id="equal" name="comparison" value="equal" checked>
+                                <input type="radio" id="equal" name="comparison" value="equal">
                                 <label for="equal" class="inline-block px-4 py-2 rounded-md border border-gray-300">Equal To</label>
                             </div>
                             <div>
@@ -435,7 +435,7 @@
 
         // --- DOM Elements and Event Listeners ---
         const distributionSelect = document.getElementById('distributionSelect');
-        const parameterGroups = document.querySelectorAll('.param-group');
+        const parameterInputs = document.querySelectorAll('#parameters input[type="number"]');
         const xValueInput = document.getElementById('xValue');
         const comparisonRadios = document.querySelectorAll('input[name="comparison"]');
         const resultDiv = document.getElementById('result');
@@ -489,20 +489,24 @@
             resultDiv.classList.remove('hidden');
         }
 
-        // Function to update parameter inputs based on selected distribution
+        // Function to update parameter inputs and default radio selection based on selected distribution
         function updateParameters() {
             const selectedDistribution = distributionSelect.value;
-            parameterGroups.forEach(group => {
+            document.querySelectorAll('.param-group').forEach(group => {
                 group.classList.add('hidden');
             });
             document.getElementById(`${selectedDistribution}Params`).classList.remove('hidden');
 
-            // Set default xValue based on distribution type
+            // Set default xValue step based on distribution type
             if (selectedDistribution === 'binomial' || selectedDistribution === 'poisson') {
                 xValueInput.setAttribute('step', '1'); // Discrete
                 xValueInput.value = Math.floor(xValueInput.value); // Ensure integer
+                // For discrete, default to "Equal To"
+                document.getElementById('equal').checked = true;
             } else {
                 xValueInput.setAttribute('step', 'any'); // Continuous
+                // For continuous, default to "Less Than"
+                document.getElementById('lessThan').checked = true;
             }
             performCalculation(); // Perform calculation after parameter update
         }
@@ -513,22 +517,13 @@
         // Event listener for distribution selection change
         distributionSelect.addEventListener('change', updateParameters);
 
-        // Event listener for xValue input and all parameter inputs
+        // Event listeners for all relevant inputs to trigger calculation
         xValueInput.addEventListener('input', performCalculation);
-
-        // Add event listeners to all parameter inputs
-        document.getElementById('binomialN').addEventListener('input', performCalculation);
-        document.getElementById('binomialP').addEventListener('input', performCalculation);
-        document.getElementById('poissonLambda').addEventListener('input', performCalculation);
-        document.getElementById('normalMean').addEventListener('input', performCalculation);
-        document.getElementById('normalStdDev').addEventListener('input', performCalculation);
-        document.getElementById('uniformA').addEventListener('input', performCalculation);
-        document.getElementById('uniformB').addEventListener('input', performCalculation);
-        document.getElementById('exponentialLambda').addEventListener('input', performCalculation);
-
-        // Add event listeners to comparison radio buttons
         comparisonRadios.forEach(radio => {
             radio.addEventListener('change', performCalculation);
+        });
+        parameterInputs.forEach(input => {
+            input.addEventListener('input', performCalculation);
         });
 
     </script>
