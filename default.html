@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Stat Mania - Making sense of statistics</title>
+    <title>Stat Mania - Default Page</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Google Fonts - Inter -->
@@ -39,7 +39,7 @@
         <div class="container mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center">
             <!-- Logo, Title, and Motto -->
             <div class="flex items-center space-x-3">
-                <img src="https://placehold.co/40x40/4f46e5/ffffff?text=Logo" alt="Stat Mania Logo" class="w-10 h-10 rounded-full" onerror="this.onerror=null;this.src='https://placehold.co/40x40/4f46e5/ffffff?text=Logo';">
+                <img src="../img/statmania_logo.png" alt="Stat Mania Logo" class="w-10 h-10 rounded-full" onerror="this.onerror=null;this.src='https://placehold.co/40x40/4f46e5/ffffff?text=Logo';">
                 <div>
                     <div class="text-2xl font-bold text-indigo-600">Stat Mania</div>
                     <p class="text-sm text-slate-500">Making sense of statistics</p>
@@ -70,13 +70,35 @@
     </header>
 
     <main>
-        <!-- Hero Section -->
-        <section class="bg-gradient-to-r from-indigo-500 to-purple-600 text-white py-20 px-4 sm:px-6 lg:px-8 rounded-b-2xl shadow-lg">
+        <!-- Hero Section (now a compact page title section) -->
+        <section class="bg-gradient-to-r from-indigo-500 to-purple-600 text-white py-8 px-4 sm:px-6 lg:px-8 rounded-b-2xl shadow-lg">
             <div class="container mx-auto text-center max-w-4xl">
-                <h1 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-tight mb-6">
-                    Password Generator
+                <h1 class="text-3xl sm:text-4xl lg:text-5xl font-extrabold leading-tight">
+                    Content Title
                 </h1>
+                <p class="text-lg sm:text-xl mt-2 opacity-90">
+                    This is a placeholder for your page-specific content.
+                </p>
+            </div>
+        </section>
 
+        <!-- Main Content Area (where password/BMI forms would go) -->
+        <section class="py-12 px-4 sm:px-6 lg:px-8 bg-white">
+            <div class="container mx-auto max-w-2xl">
+                <h2 class="text-2xl font-bold text-center text-slate-800 mb-8">
+                    Your Page Content Goes Here
+                </h2>
+                <div class="bg-slate-50 p-8 rounded-xl shadow-md border border-slate-200 text-slate-700">
+                    <p class="mb-4">
+                        This section is designed to hold the specific content for each of your internal pages, such as a password reset form, a BMI calculator, or any other functional component.
+                    </p>
+                    <p class="mb-4">
+                        You can replace this placeholder `div` with your actual forms, interactive elements, or informational text.
+                    </p>
+                    <p>
+                        Feel free to add more Tailwind CSS classes to style your content as needed.
+                    </p>
+                </div>
             </div>
         </section>
 
@@ -93,7 +115,10 @@
                         Learn
                     </a>
                     <a href="#" class="inline-block bg-transparent border-2 border-white text-white hover:bg-white hover:text-indigo-700 font-bold py-3 px-8 rounded-full shadow-lg transition duration-300 transform hover:scale-105">
-                        Start Data Science
+                        Data Science Tools
+                    </a>
+                     <a href="#" class="inline-block bg-transparent border-2 border-white text-white hover:bg-white hover:text-indigo-700 font-bold py-3 px-8 rounded-full shadow-lg transition duration-300 transform hover:scale-105">
+                        Services
                     </a>
                 </div>
             </div>
