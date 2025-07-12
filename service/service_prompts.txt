@@ -1,0 +1,28 @@
+I want a web app to let user give info about train status: train name and which station has it crossed. I'll show this info on website beside train name. Also observing inpuyt time, I'll calculate how much has the train delayed.
+
+
+
+1. My user can open an account by giving user_name and password and a security question to verify identity and chnage password later.
+
+2. Then they can input train name and station it crossed.
+
+3. Timestmp would be auto-collected.
+
+I want to use a free database for storing these info. Info which are more than one day old would be deleted. Now what can I do? Give me the simplest solution.
+
+Use these sample train info
+
+csv type
+Train, No, station, dep_time
+UPABAN EXPRESS, 739, Dhaka, 2200
+UPABAN EXPRESS, 739, Biman_Bandar, 2228
+UPABAN EXPRESS, 739, Narsingdi, 2311
+UPABAN EXPRESS, 739, Bhairab_Bazar, 2343
+UPABAN EXPRESS, 739,Shaistaganj, 0125
+UPABAN EXPRESS, 739,Sreemangal, 0211
+UPABAN EXPRESS, 739, Bhanugach, 0232
+UPABAN EXPRESS, 739, Shamshernagar, 0243
+UPABAN EXPRESS, 739, Kulaura, 0311
+UPABAN EXPRESS, 739, Baramchal, 0327
+UPABAN EXPRESS, 739, Maijgaon, 0345
+UPABAN EXPRESS, 739, Sylhet, 0500

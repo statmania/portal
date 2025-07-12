@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fibonacci Generator & Graph</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- MathJax CDN for LaTeX rendering -->
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        /* Custom styles for better aesthetics and responsiveness */
+        body {
+            font-family: "Inter", sans-serif;
+            background-color: #f0f4f8; /* Light blue-gray background */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh; /* Ensure it takes full viewport height */
+            margin: 0;
+            padding: 20px; /* Add some padding around the content */
+            box-sizing: border-box; /* Include padding in element's total width and height */
+        }
+        .container {
+            background-color: #ffffff;
+            border-radius: 1rem; /* Rounded corners */
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1); /* Soft shadow */
+            padding: 2rem;
+            display: flex;
+            flex-direction: column; /* Default to column for small screens */
+            gap: 2rem; /* Space between columns/sections */
+            max-width: 1200px; /* Max width for the container */
+            width: 100%; /* Full width on small screens */
+        }
+        @media (min-width: 768px) { /* Medium screens and up */
+            .container {
+                flex-direction: row; /* Two columns on larger screens */
+            }
+        }
+        .column {
+            flex: 1; /* Each column takes equal space */
+            padding: 1.5rem;
+            border-radius: 0.75rem;
+            background-color: #f8fafc; /* Lighter background for columns */
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.06); /* Inner shadow */
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            position: relative; /* Needed for absolute positioning of MathJax label */
+        }
+        input[type="range"] {
+            width: 100%;
+            -webkit-appearance: none; /* Remove default styling */
+            appearance: none;
+            height: 8px; /* Height of the slider track */
+            background: #cbd5e1; /* Light gray track */
+            outline: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.2s ease-in-out;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px; /* Size of the slider thumb */
+            height: 20px;
+            background: #3b82f6; /* Blue thumb */
+            border-radius: 50%; /* Circular thumb */
+            cursor: grab;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            transition: background 0.2s ease-in-out, transform 0.2s ease-in-out;
+        }
+        input[type="range"]::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            background: #3b82f6;
+            border-radius: 50%;
+            cursor: grab;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            transition: background 0.2s ease-in-out, transform 0.2s ease-in-out;
+        }
+        input[type="range"]:hover::-webkit-slider-thumb {
+            background: #2563eb; /* Darker blue on hover */
+            transform: scale(1.1); /* Slightly enlarge on hover */
+        }
+        input[type="range"]:active::-webkit-slider-thumb {
+            cursor: grabbing;
+            transform: scale(1.2); /* Even larger when active */
+        }
+        #fibonacciOutput {
+            background-color: #e2e8f0; /* Light gray background for output */
+            padding: 1rem;
+            border-radius: 0.5rem;
+            min-height: 100px; /* Ensure some height even if empty */
+            overflow-y: auto; /* Scroll for long sequences */
+            word-wrap: break-word; /* Break long words */
+            font-family: 'Courier New', Courier, monospace; /* Monospace font for numbers */
+            color: #334155;
+            font-size: 0.9rem;
+        }
+        canvas {
+            background-color: #ffffff;
+            border-radius: 0.5rem;
+            border: 1px solid #e2e8f0;
+            width: 100%; /* Make canvas responsive */
+            height: 400px; /* Fixed height for graph, adjust as needed */
+            display: block; /* Remove extra space below canvas */
+        }
+        #goldenRatioLabel {
+            position: absolute;
+            color: #ef4444; /* Red color for label */
+            font-size: 0.875rem; /* text-sm */
+            font-weight: 600; /* font-semibold */
+            background-color: #ffffff;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.375rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            white-space: nowrap; /* Prevent text wrapping */
+            transform: translateY(-50%); /* Vertically center the label */
+            z-index: 10; /* Ensure it's above the canvas */
+            pointer-events: none; /* Allow clicks to pass through to canvas */
+        }
+        #yAxisMathJaxLabel {
+            position: absolute;
+            left: 10px; /* Adjust as needed */
+            top: 50%;
+            transform: translateY(-50%) rotate(-90deg);
+            white-space: nowrap;
+            font-size: 1.1rem; /* Adjust font size for MathJax */
+            color: #475569;
+            z-index: 5; /* Below golden ratio label */
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Left Column: Generator -->
+        <div class="column">
+            <h2 class="text-2xl font-bold text-gray-800 mb-4 text-center">Fibonacci Generator</h2>
+
+            <label for="nValue" class="block text-lg font-medium text-gray-700 mb-2">
+                Set 'n' value: <span id="currentN" class="text-blue-600 font-semibold">10</span>
+            </label>
+            <input type="range" id="nValue" min="0" max="90" value="10" class="mb-4">
+            <!-- Max value set to 90 as numbers grow very large beyond that -->
+
+            <h3 class="text-xl font-semibold text-gray-800 mb-2">Fibonacci Sequence:</h3>
+            <div id="fibonacciOutput" class="text-gray-700"></div>
+        </div>
+
+        <!-- Right Column: Graph -->
+        <div class="column relative">
+            <h2 class="text-2xl font-bold text-gray-800 mb-4 text-center">Fibonacci Graph</h2>
+            <canvas id="fibonacciGraph"></canvas>
+            <!-- MathJax label for Golden Ratio -->
+            <div id="goldenRatioLabel" class="hidden"></div>
+            <!-- MathJax label for Y-axis -->
+            <div id="yAxisMathJaxLabel" class="hidden"></div>
+        </div>
+    </div>
+
+    <script>
+        // Get DOM elements
+        const nValueSlider = document.getElementById('nValue');
+        const currentNText = document.getElementById('currentN');
+        const fibonacciOutputDiv = document.getElementById('fibonacciOutput');
+        const fibonacciGraphCanvas = document.getElementById('fibonacciGraph');
+        const ctx = fibonacciGraphCanvas.getContext('2d');
+        const goldenRatioLabel = document.getElementById('goldenRatioLabel');
+        const yAxisMathJaxLabel = document.getElementById('yAxisMathJaxLabel');
+
+
+        // Golden Ratio constant
+        const GOLDEN_RATIO = 1.61803398875;
+
+        // Function to calculate Fibonacci sequence up to n
+        function calculateFibonacci(n) {
+            if (n === 0) return [0n]; // Return BigInt 0 for n=0
+            if (n === 1) return [0n, 1n]; // Return BigInt 0 and 1 for n=1
+            if (n < 0) return []; // Handle negative input gracefully
+
+            let sequence = [0n, 1n]; // Use BigInt for large numbers
+            for (let i = 2; i <= n; i++) {
+                sequence.push(sequence[i - 1] + sequence[i - 2]);
+            }
+            return sequence;
+        }
+
+        // Function to draw the graph
+        function drawGraph(fibSequence) {
+            // Clear canvas
+            ctx.clearRect(0, 0, fibonacciGraphCanvas.width, fibonacciGraphCanvas.height);
+
+            const padding = 50; // Padding from canvas edges
+            const width = fibonacciGraphCanvas.width - 2 * padding;
+            const height = fibonacciGraphCanvas.height - 2 * padding;
+
+            // Adjust canvas resolution for better rendering on high-DPI screens
+            const dpr = window.devicePixelRatio || 1;
+            fibonacciGraphCanvas.width = fibonacciGraphCanvas.offsetWidth * dpr;
+            fibonacciGraphCanvas.height = fibonacciGraphCanvas.offsetHeight * dpr;
+            ctx.scale(dpr, dpr); // Scale context to match resolution
+
+            // If sequence is too small to calculate ratios (need at least F_0, F_1, F_2 for F_2/F_1)
+            if (fibSequence.length < 3) {
+                ctx.font = '16px Inter';
+                ctx.fillStyle = '#64748b';
+                ctx.textAlign = 'center';
+                ctx.fillText('Adjust slider to generate ratios', fibonacciGraphCanvas.width / (2 * dpr), fibonacciGraphCanvas.height / (2 * dpr));
+                goldenRatioLabel.classList.add('hidden'); // Hide label if no graph
+                yAxisMathJaxLabel.classList.add('hidden'); // Hide Y-axis label if no graph
+                return;
+            }
+
+            // Y-axis scaling for ratios
+            const minRatioValue = 0; // Ratios won't go below 0
+            const maxRatioValue = 2.5; // A reasonable upper bound for convergence visualization
+            const yScaleFactor = height / (maxRatioValue - minRatioValue);
+
+            // Draw X-axis (index)
+            ctx.beginPath();
+            ctx.moveTo(padding, fibonacciGraphCanvas.height - padding);
+            ctx.lineTo(fibonacciGraphCanvas.width - padding, fibonacciGraphCanvas.height - padding);
+            ctx.strokeStyle = '#64748b';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            // Draw Y-axis (Ratio)
+            ctx.beginPath();
+            ctx.moveTo(padding, fibonacciGraphCanvas.height - padding);
+            ctx.lineTo(padding, padding);
+            ctx.strokeStyle = '#64748b';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            // X-axis labels (index for the ratio F_{k+1}/F_k)
+            ctx.font = '12px Inter';
+            ctx.fillStyle = '#475569';
+            ctx.textAlign = 'center';
+            const numRatios = fibSequence.length - 2; // Number of ratios F2/F1 to Fn/Fn-1
+
+            // Determine indices to label
+            const indicesToLabel = new Set();
+            if (numRatios >= 1) {
+                indicesToLabel.add(1); // Always include the first index (k=1)
+                if (numRatios > 1) {
+                    indicesToLabel.add(fibSequence.length - 2); // Always include the last index (k=n-1)
+                }
+
+                const targetLabels = 10; // Aim for around 10 labels
+                if (numRatios > targetLabels) {
+                    const step = Math.ceil(numRatios / (targetLabels - 1));
+                    for (let i = 1; i <= numRatios; i += step) {
+                        indicesToLabel.add(i);
+                    }
+                } else {
+                    for (let i = 1; i <= numRatios; i++) {
+                        indicesToLabel.add(i);
+                    }
+                }
+            }
+
+            const sortedIndices = Array.from(indicesToLabel).sort((a, b) => a - b);
+
+            const xStepForRatios = width / (numRatios > 0 ? numRatios : 1);
+
+            for (const k of sortedIndices) {
+                const x = padding + ((k - 1) * xStepForRatios);
+                ctx.fillText(k.toString(), x, fibonacciGraphCanvas.height - padding + 20);
+            }
+
+            // The main X-axis label: "n"
+            ctx.fillText('n', fibonacciGraphCanvas.width / 2, fibonacciGraphCanvas.height - padding + 40);
+
+            // Y-axis labels (Ratio Values)
+            ctx.textAlign = 'right';
+            ctx.textBaseline = 'middle';
+            const ratioLabels = [0.5, 1.0, 1.5, GOLDEN_RATIO, 2.0, 2.5]; // Specific labels for ratios
+            for (const labelValue of ratioLabels) {
+                const y = fibonacciGraphCanvas.height - padding - ((labelValue - minRatioValue) * yScaleFactor);
+                if (y >= padding && y <= fibonacciGraphCanvas.height - padding) { // Only draw if within bounds
+                    ctx.fillText(labelValue.toFixed(2), padding - 10, y);
+                }
+            }
+
+            // Vertical Y-axis label using MathJax
+            yAxisMathJaxLabel.innerHTML = '$$\\frac{F_{n+1}}{F_n}$$';
+            MathJax.typesetPromise([yAxisMathJaxLabel]).then(() => {
+                const canvasRect = fibonacciGraphCanvas.getBoundingClientRect();
+                const columnRect = fibonacciGraphCanvas.parentElement.getBoundingClientRect();
+
+                // Position the label relative to the column, considering canvas offset
+                const labelTop = (canvasRect.height / 2) + canvasRect.top - columnRect.top;
+                const labelLeft = (padding - 35) + canvasRect.left - columnRect.left; // Adjust left for rotation
+
+                yAxisMathJaxLabel.style.top = `${labelTop}px`;
+                yAxisMathJaxLabel.style.left = `${labelLeft}px`;
+                yAxisMathJaxLabel.classList.remove('hidden');
+            });
+
+
+            // Plot Fibonacci Ratios
+            ctx.beginPath();
+            ctx.strokeStyle = '#3b82f6'; // Blue line for graph
+            ctx.lineWidth = 3;
+
+            let firstPoint = true;
+            // Iterate from k=1 to get F_2/F_1, F_3/F_2, ..., F_n/F_{n-1}
+            for (let k = 1; k < fibSequence.length - 1; k++) { // k is the index of the denominator F_k
+                const currentFib = Number(fibSequence[k]);
+                const nextFib = Number(fibSequence[k + 1]);
+
+                // Avoid division by zero, especially for F_0. Ratios start meaningfully from F_2/F_1.
+                if (currentFib === 0) {
+                    continue;
+                }
+
+                const ratio = nextFib / currentFib;
+
+                // X-coordinate corresponds to 'k' (the denominator's index)
+                const x = padding + ((k - 1) * xStepForRatios); // Map k (from 1) to x-axis starting from 0 for ratios
+
+                // Y-coordinate based on ratio
+                const y = fibonacciGraphCanvas.height - padding - ((ratio - minRatioValue) * yScaleFactor);
+
+                if (firstPoint) {
+                    ctx.moveTo(x, y);
+                    firstPoint = false;
+                } else {
+                    ctx.lineTo(x, y);
+                }
+
+                // Draw points
+                ctx.fillStyle = '#3b82f6';
+                ctx.beginPath();
+                ctx.arc(x, y, 4, 0, Math.PI * 2); // Circle for each point
+                ctx.fill();
+            }
+            ctx.stroke(); // Draw the line connecting points
+
+            // Draw Golden Ratio line
+            let goldenRatioY = fibonacciGraphCanvas.height - padding - ((GOLDEN_RATIO - minRatioValue) * yScaleFactor);
+
+            // Update and position MathJax label
+            if (goldenRatioY >= padding && goldenRatioY <= fibonacciGraphCanvas.height - padding) {
+                goldenRatioLabel.innerHTML = `$$\\phi \\approx ${GOLDEN_RATIO.toFixed(5)}$$`;
+                MathJax.typesetPromise([goldenRatioLabel]).then(() => {
+                    // Position the label after MathJax has rendered it
+                    const canvasRect = fibonacciGraphCanvas.getBoundingClientRect();
+                    const columnRect = fibonacciGraphCanvas.parentElement.getBoundingClientRect();
+
+                    // Calculate position relative to the parent column
+                    const labelTop = goldenRatioY / dpr + canvasRect.top - columnRect.top;
+                    const labelLeft = (padding + 10) / dpr + canvasRect.left - columnRect.left;
+
+                    goldenRatioLabel.style.top = `${labelTop}px`;
+                    goldenRatioLabel.style.left = `${labelLeft}px`;
+                    goldenRatioLabel.classList.remove('hidden');
+                });
+
+                // Draw the dashed line on the canvas
+                ctx.beginPath();
+                ctx.strokeStyle = '#ef4444'; // Red color for golden ratio line
+                ctx.lineWidth = 1;
+                ctx.setLineDash([5, 5]); // Dashed line
+                ctx.moveTo(padding, goldenRatioY);
+                ctx.lineTo(fibonacciGraphCanvas.width - padding, goldenRatioY);
+                ctx.stroke();
+                ctx.setLineDash([]); // Reset line dash
+            } else {
+                goldenRatioLabel.classList.add('hidden'); // Hide label if line is out of bounds
+            }
+        }
+
+        // Function to update the display and graph
+        function updateFibonacci() {
+            const n = parseInt(nValueSlider.value);
+            currentNText.textContent = n;
+
+            const fibSequence = calculateFibonacci(n);
+            // Format output with commas
+            fibonacciOutputDiv.textContent = fibSequence.map(val => val.toLocaleString()).join(', ');
+
+            // Redraw graph
+            drawGraph(fibSequence);
+        }
+
+        // Initial update when the page loads
+        window.addEventListener('load', () => {
+            // Set initial canvas size to match its display size
+            fibonacciGraphCanvas.width = fibonacciGraphCanvas.offsetWidth;
+            fibonacciGraphCanvas.height = fibonacciGraphCanvas.offsetHeight;
+            updateFibonacci();
+        });
+
+        // Event listener for slider changes
+        nValueSlider.addEventListener('input', updateFibonacci);
+
+        // Handle window resize to make canvas responsive
+        window.addEventListener('resize', () => {
+            // Update canvas dimensions to match its new display size
+            fibonacciGraphCanvas.width = fibonacciGraphCanvas.offsetWidth;
+            fibonacciGraphCanvas.height = fibonacciGraphCanvas.offsetHeight;
+            updateFibonacci(); // Redraw graph with new dimensions
+        });
+
+    </script>
+</body>
+</html>

@@ -64,3 +64,15 @@ Done now. A few more things.
 4. In Plot Settings, put color name option just below single color option (now this text box is below Category). Also by default color name (tell user hex color/color name)
 
 5. Apply Settings & Update Plot button not needed. Instead add download icon
+
+# Math
+Please make a js based web page to generate fibonacci numbers up to nth value.
+
+1. User can use a scroller to change n.
+
+2. Make auto/dynamic; no generate click required.
+
+3. Show output values with commas (no \n)
+
+4. Graph y axis: vertical label  and add axis values
+On the y axis, show estimated golden ratio, which would converge as n gets bigger. This is the goal.Removve Fibonacci value from y axis. SHow Fn+1/Fn ratio instead. This value should converge to 1.618 as n tends to infty. Showing this is our goal.

@@ -1,0 +1,918 @@
+import React, { useState, useEffect, createContext, useContext } from 'react';
+import { initializeApp } from 'firebase/app';
+import {
+  getAuth,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  signOut,
+  onAuthStateChanged,
+  sendPasswordResetEmail,
+  signInAnonymously,
+  signInWithCustomToken // Ensure this is explicitly imported
+} from 'firebase/auth';
+import {
+  getFirestore,
+  collection,
+  addDoc,
+  query,
+  orderBy,
+  where,
+  onSnapshot,
+  deleteDoc,
+  doc,
+  getDocs,
+  setDoc,
+  getDoc
+} from 'firebase/firestore';
+
+// Global variables provided by the Canvas environment
+const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+// Corrected reference for initialAuthToken: was previously referencing itself, now correctly references __initial_auth_token
+const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
+// Context for Firebase services and user data
+const FirebaseContext = createContext(null);
+
+const FirebaseProvider = ({ children }) => {
+  const [app, setApp] = useState(null);
+  const [db, setDb] = useState(null);
+  const [auth, setAuth] = useState(null);
+  const [currentUser, setCurrentUser] = useState(null);
+  const [userId, setUserId] = useState(null);
+  const [loadingFirebase, setLoadingFirebase] = useState(true);
+
+  useEffect(() => {
+    // Log config to debug
+    console.log("Firebase App ID:", appId);
+    console.log("Firebase Config:", firebaseConfig);
+    console.log("Initial Auth Token:", initialAuthToken);
+
+    // Initialize Firebase only once
+    if (!app) {
+      const firebaseApp = initializeApp(firebaseConfig);
+      const firestoreDb = getFirestore(firebaseApp);
+      const firebaseAuth = getAuth(firebaseApp);
+
+      setApp(firebaseApp);
+      setDb(firestoreDb);
+      setAuth(firebaseAuth);
+
+      // Listen for authentication state changes
+      const unsubscribe = onAuthStateChanged(firebaseAuth, async (user) => {
+        if (user) {
+          setCurrentUser(user);
+          setUserId(user.uid);
+          console.log("Auth state changed: User logged in with UID:", user.uid, "Email:", user.email);
+        } else {
+          setCurrentUser(null);
+          setUserId(null);
+          console.log("Auth state changed: User logged out or no user. Attempting anonymous sign-in if needed.");
+          // Sign in anonymously if no initial token is provided or user logs out
+          // This ensures a userId is always available for public data if needed
+          if (!initialAuthToken) { // Only attempt anonymous sign-in if no custom token was provided
+            try {
+              await signInAnonymously(firebaseAuth);
+              console.log("Signed in anonymously.");
+            } catch (error) {
+              console.error("Error signing in anonymously:", error);
+            }
+          }
+        }
+        setLoadingFirebase(false);
+      });
+
+      // Attempt to sign in with custom token if available
+      const signInWithToken = async () => {
+        if (!firebaseAuth) { // Ensure auth instance is ready
+          console.error("Firebase Auth instance not ready for sign-in attempt.");
+          setLoadingFirebase(false);
+          return;
+        }
+
+        if (initialAuthToken) {
+          try {
+            // Use the imported function directly with the auth instance
+            await signInWithCustomToken(firebaseAuth, initialAuthToken);
+            console.log("Signed in with custom token.");
+          } catch (error) {
+            console.error("Error signing in with custom token:", error);
+            // Fallback to anonymous if custom token fails
+            try {
+              await signInAnonymously(firebaseAuth);
+              console.log("Signed in anonymously as fallback.");
+            } catch (anonError) {
+              console.error("Error signing in anonymously after custom token failure:", anonError);
+            }
+          }
+        } else {
+          // If no initial token, sign in anonymously by default
+          try {
+            await signInAnonymously(firebaseAuth);
+            console.log("Signed in anonymously.");
+          } catch (error) {
+            console.error("Error signing in anonymously:", error);
+          }
+        }
+        setLoadingFirebase(false);
+      };
+
+      signInWithToken();
+
+      return () => unsubscribe(); // Cleanup auth listener on unmount
+    }
+  }, [app, firebaseConfig, initialAuthToken]); // Removed currentUser from dependencies here to prevent re-initialization loops
+
+  return (
+    <FirebaseContext.Provider value={{ app, db, auth, currentUser, userId, loadingFirebase }}>
+      {children}
+    </FirebaseContext.Provider>
+  );
+};
+
+// Custom hook to use Firebase context
+const useFirebase = () => useContext(FirebaseContext);
+
+// --- Auth Components ---
+const AuthForm = () => {
+  const { auth, db, currentUser, userId } = useFirebase();
+  const [isRegistering, setIsRegistering] = useState(false);
+  const [username, setUsername] = useState(''); // This will be used as email for Firebase Auth
+  const [password, setPassword] = useState('');
+  const [securityQuestion, setSecurityQuestion] = useState('');
+  const [securityAnswer, setSecurityAnswer] = useState('');
+  const [message, setMessage] = useState('');
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [resetEmail, setResetEmail] = useState('');
+
+  const handleAuth = async (e) => {
+    e.preventDefault();
+    setMessage('');
+    try {
+      if (isRegistering) {
+        const userCredential = await createUserWithEmailAndPassword(auth, username, password);
+        // Store user profile with security question in Firestore
+        // Path: /artifacts/{appId}/users/{userId}/profile/data
+        await setDoc(doc(db, `artifacts/${appId}/users/${userCredential.user.uid}/profile/data`), {
+          username: username,
+          securityQuestion: securityQuestion,
+          securityAnswer: securityAnswer, // In a real app, hash this!
+          createdAt: new Date()
+        });
+        setMessage('Registration successful! You are now logged in.');
+      } else {
+        await signInWithEmailAndPassword(auth, username, password);
+        setMessage('Login successful!');
+      }
+    } catch (error) {
+      console.error('Auth error:', error);
+      setMessage(`Error: ${error.message}`);
+    }
+  };
+
+  const handleForgotPassword = async (e) => {
+    e.preventDefault();
+    setMessage('');
+    try {
+      await sendPasswordResetEmail(auth, resetEmail);
+      setMessage('Password reset email sent! Check your inbox.');
+      setShowForgotPassword(false);
+      setResetEmail('');
+    } catch (error) {
+      console.error('Password reset error:', error);
+      setMessage(`Error sending reset email: ${error.message}`);
+    }
+  };
+
+  const handleLogout = async () => {
+    setMessage('');
+    try {
+      await signOut(auth);
+      setMessage('Logged out successfully.');
+    } catch (error) {
+      console.error('Logout error:', error);
+      setMessage(`Error logging out: ${error.message}`);
+    }
+  };
+
+  if (currentUser) {
+    return (
+      <div className="p-6 bg-white rounded-lg shadow-md mb-6">
+        <h2 className="text-2xl font-bold mb-4 text-gray-800">Welcome, {currentUser.email}!</h2>
+        <p className="text-gray-600 mb-4">Your User ID: <span className="font-mono text-sm break-all">{userId}</span></p>
+        <button
+          onClick={handleLogout}
+          className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg shadow-md transition duration-300 ease-in-out"
+        >
+          Logout
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="p-6 bg-white rounded-lg shadow-md mb-6">
+      <h2 className="text-2xl font-bold mb-4 text-gray-800">{isRegistering ? 'Register' : 'Login'}</h2>
+      {message && <p className="mb-4 text-sm text-red-500">{message}</p>}
+      {!showForgotPassword ? (
+        <form onSubmit={handleAuth}>
+          <div className="mb-4">
+            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="username">
+              Email (Username)
+            </label>
+            <input
+              type="email"
+              id="username"
+              className="shadow appearance-none border rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              required
+            />
+          </div>
+          <div className="mb-6">
+            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="password">
+              Password
+            </label>
+            <input
+              type="password"
+              id="password"
+              className="shadow appearance-none border rounded-lg w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+          </div>
+          {isRegistering && (
+            <>
+              <div className="mb-4">
+                <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="securityQuestion">
+                  Security Question
+                </label>
+                <input
+                  type="text"
+                  id="securityQuestion"
+                  className="shadow appearance-none border rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                  value={securityQuestion}
+                  onChange={(e) => setSecurityQuestion(e.target.value)}
+                  required={isRegistering}
+                />
+              </div>
+              <div className="mb-6">
+                <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="securityAnswer">
+                  Security Answer
+                </label>
+                <input
+                  type="text"
+                  id="securityAnswer"
+                  className="shadow appearance-none border rounded-lg w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline"
+                  value={securityAnswer}
+                  onChange={(e) => setSecurityAnswer(e.target.value)}
+                  required={isRegistering}
+                />
+              </div>
+            </>
+          )}
+          <div className="flex items-center justify-between">
+            <button
+              type="submit"
+              className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg focus:outline-none focus:shadow-outline transition duration-300 ease-in-out"
+            >
+              {isRegistering ? 'Register' : 'Login'}
+            </button>
+            <button
+              type="button"
+              onClick={() => setIsRegistering(!isRegistering)}
+              className="inline-block align-baseline font-bold text-sm text-blue-500 hover:text-blue-800"
+            >
+              {isRegistering ? 'Already have an account? Login' : 'Need an account? Register'}
+            </button>
+          </div>
+          {!isRegistering && (
+            <button
+              type="button"
+              onClick={() => setShowForgotPassword(true)}
+              className="mt-4 inline-block align-baseline font-bold text-sm text-gray-500 hover:text-gray-800"
+            >
+              Forgot Password?
+            </button>
+          )}
+        </form>
+      ) : (
+        <form onSubmit={handleForgotPassword}>
+          <div className="mb-4">
+            <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="resetEmail">
+              Enter your account email
+            </label>
+            <input
+              type="email"
+              id="resetEmail"
+              className="shadow appearance-none border rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+              value={resetEmail}
+              onChange={(e) => setResetEmail(e.target.value)}
+              required
+            />
+          </div>
+          <div className="flex items-center justify-between">
+            <button
+              type="submit"
+              className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg focus:outline-none focus:shadow-outline transition duration-300 ease-in-out"
+            >
+              Send Reset Email
+            </button>
+            <button
+              type="button"
+              onClick={() => setShowForgotPassword(false)}
+              className="inline-block align-baseline font-bold text-sm text-gray-500 hover:text-gray-800"
+            >
+              Back to Login
+            </button>
+          </div>
+        </form>
+      )}
+    </div>
+  );
+};
+
+// Helper function to convert HH:MM string to minutes from midnight
+const timeToMinutes = (timeStr) => {
+  const [hours, minutes] = timeStr.split(':').map(Number);
+  return hours * 60 + minutes;
+};
+
+// Helper function to calculate delay in minutes
+const calculateDelay = (scheduledTimeStr, actualTimeStr) => {
+  const scheduledMinutes = timeToMinutes(scheduledTimeStr);
+  const actualMinutes = timeToMinutes(actualTimeStr);
+
+  let delay = actualMinutes - scheduledMinutes;
+
+  // Handle overnight schedules (e.g., scheduled 23:00, actual 01:00 next day)
+  // If actual time is much earlier than scheduled (e.g., scheduled 23:00, actual 01:00 -> -22 hours),
+  // assume it's the next day if the difference is significant
+  if (delay < -720) { // If difference is more than 12 hours early, assume next day
+    delay += 24 * 60; // Add 24 hours
+  } else if (delay > 720) { // If difference is more than 12 hours late, assume previous day
+    delay -= 24 * 60; // Subtract 24 hours
+  }
+
+  return delay; // Delay in minutes
+};
+
+
+// --- Train Status Input Component ---
+const TrainStatusInput = () => {
+  const { db, currentUser, userId } = useFirebase();
+  const [trainSchedules, setTrainSchedules] = useState([]);
+  const [selectedTrain, setSelectedTrain] = useState('');
+  const [availableStations, setAvailableStations] = useState([]);
+  const [selectedStation, setSelectedStation] = useState('');
+  const [actualDepartureTime, setActualDepartureTime] = useState(''); // HH:MM format
+  const [message, setMessage] = useState('');
+
+  // Fetch train schedules on component mount
+  useEffect(() => {
+    if (!db || !currentUser) return; // Added currentUser check
+    // Query to get all train schedules from the public data path
+    const q = query(collection(db, `artifacts/${appId}/public/data/trainSchedules`));
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const schedules = [];
+      snapshot.forEach((doc) => {
+        schedules.push({ id: doc.id, ...doc.data() });
+      });
+      setTrainSchedules(schedules);
+    }, (err) => {
+      console.error("Error fetching train schedules:", err);
+      // Display a user-friendly message if there's a permission error
+      setMessage("Error loading train schedules. Please ensure you are logged in and have sufficient permissions.");
+    });
+    return () => unsubscribe();
+  }, [db, currentUser]); // Added currentUser to dependencies
+
+  // Update available stations when selected train changes
+  useEffect(() => {
+    if (selectedTrain) {
+      const train = trainSchedules.find(t => `${t.trainName} - ${t.trainNo}` === selectedTrain);
+      if (train) {
+        setAvailableStations(train.schedule.map(s => s.station));
+        setSelectedStation(''); // Reset station selection
+      }
+    } else {
+      setAvailableStations([]);
+      setSelectedStation('');
+    }
+  }, [selectedTrain, trainSchedules]);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setMessage('');
+
+    if (!currentUser) {
+      setMessage('Please log in to submit train status.');
+      return;
+    }
+    if (!selectedTrain || !selectedStation || !actualDepartureTime) {
+      setMessage('Please fill in all fields.');
+      return;
+    }
+
+    try {
+      const train = trainSchedules.find(t => `${t.trainName} - ${t.trainNo}` === selectedTrain);
+      const stationSchedule = train?.schedule.find(s => s.station === selectedStation);
+
+      if (!train || !stationSchedule) {
+        setMessage('Selected train or station not found in schedule data.');
+        return;
+      }
+
+      const scheduledDepTime = stationSchedule.dep_time;
+      const delayMinutes = calculateDelay(scheduledDepTime, actualDepartureTime);
+
+      // Add document to the public trainStatus collection
+      // Path: /artifacts/{appId}/public/data/trainStatus
+      await addDoc(collection(db, `artifacts/${appId}/public/data/trainStatus`), {
+        trainName: train.trainName,
+        trainNo: train.trainNo,
+        stationCrossed: selectedStation,
+        actualDepartureTime: actualDepartureTime,
+        scheduledDepartureTime: scheduledDepTime,
+        delayMinutes: delayMinutes,
+        timestamp: new Date(), // Auto-collected report timestamp
+        reportedBy: userId,
+        reporterEmail: currentUser.email
+      });
+      setMessage('Train status submitted successfully!');
+      setSelectedTrain(''); // Resetting selectedTrain
+      setSelectedStation(''); // Resetting selectedStation
+      setActualDepartureTime('');
+    } catch (error) {
+      console.error('Error adding document:', error);
+      setMessage(`Error submitting status: ${error.message}`);
+    }
+  };
+
+  if (!currentUser) {
+    return null; // Don't show input form if not logged in
+  }
+
+  return (
+    <div className="p-6 bg-white rounded-lg shadow-md mb-6">
+      <h2 className="text-2xl font-bold mb-4 text-gray-800">Report Train Status</h2>
+      {message && <p className="mb-4 text-sm text-red-500">{message}</p>}
+      <form onSubmit={handleSubmit}>
+        <div className="mb-4">
+          <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="trainSelect">
+            Train Name / No
+          </label>
+          <select
+            id="trainSelect"
+            className="shadow appearance-none border rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            value={selectedTrain}
+            onChange={(e) => setSelectedTrain(e.target.value)}
+            required
+          >
+            <option value="">Select a Train</option>
+            {trainSchedules.map((train) => (
+              <option key={train.id} value={`${train.trainName} - ${train.trainNo}`}>
+                {`${train.trainName} - ${train.trainNo}`}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div className="mb-4">
+          <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="stationSelect">
+            Station Crossed
+          </label>
+          <select
+            id="stationSelect"
+            className="shadow appearance-none border rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+            value={selectedStation}
+            onChange={(e) => setSelectedStation(e.target.value)}
+            required
+            disabled={!selectedTrain}
+          >
+            <option value="">Select a Station</option>
+            {availableStations.map((station) => (
+              <option key={station} value={station}>
+                {station}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div className="mb-6">
+          <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="actualDepartureTime">
+            Actual Departure Time (HH:MM)
+          </label>
+          <input
+            type="time"
+            id="actualDepartureTime"
+            className="shadow appearance-none border rounded-lg w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline"
+            value={actualDepartureTime}
+            onChange={(e) => setActualDepartureTime(e.target.value)}
+            required
+          />
+        </div>
+        <button
+          type="submit"
+          className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg focus:outline-none focus:shadow-outline transition duration-300 ease-in-out"
+        >
+          Submit Status
+        </button>
+      </form>
+    </div>
+  );
+};
+
+// --- Live Train Status Display Component (Previous TrainStatusDisplay) ---
+const LiveTrainStatusDisplay = () => {
+  const { db, currentUser } = useFirebase(); // Added currentUser check
+  const [trainStatuses, setTrainStatuses] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    if (!db || !currentUser) return; // Added currentUser check
+
+    // Query to get all train statuses from the public data path, ordered by timestamp
+    const q = query(collection(db, `artifacts/${appId}/public/data/trainStatus`), orderBy('timestamp', 'desc'));
+
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const statuses = [];
+      snapshot.forEach((doc) => {
+        statuses.push({ id: doc.id, ...doc.data() });
+      });
+      setTrainStatuses(statuses);
+      setLoading(false);
+    }, (err) => {
+      console.error("Error fetching train statuses:", err);
+      setError("Failed to load train statuses. Please ensure you are logged in and have sufficient permissions.");
+      setLoading(false);
+    });
+
+    return () => unsubscribe(); // Cleanup listener on unmount
+  }, [db, currentUser]); // Added currentUser to dependencies
+
+  const formatDelay = (delayMinutes) => {
+    if (delayMinutes === undefined || delayMinutes === null) return 'N/A';
+    const absDelay = Math.abs(delayMinutes);
+    const hours = Math.floor(absDelay / 60);
+    const minutes = absDelay % 60;
+    let delayString = '';
+    if (hours > 0) delayString += `${hours}h `;
+    delayString += `${minutes}m`;
+
+    return delayMinutes > 0 ? `${delayString} late` : delayMinutes < 0 ? `${delayString} early` : 'on time';
+  };
+
+  if (loading) {
+    return <p className="text-center text-gray-600">Loading live train statuses...</p>;
+  }
+
+  if (error) {
+    return <p className="text-center text-red-500">{error}</p>;
+  }
+
+  return (
+    <div className="p-6 bg-white rounded-lg shadow-md mb-6">
+      <h2 className="text-2xl font-bold mb-4 text-gray-800">Live Train Statuses</h2>
+      {trainStatuses.length === 0 ? (
+        <p className="text-gray-600">No train statuses reported yet.</p>
+      ) : (
+        <div className="space-y-4">
+          {trainStatuses.map((status) => (
+            <div key={status.id} className="border border-gray-200 rounded-lg p-4 shadow-sm bg-gray-50">
+              <p className="text-lg font-semibold text-gray-800">{`${status.trainName} - ${status.trainNo}`}</p>
+              <p className="text-gray-700">Last Crossed: <span className="font-medium">{status.stationCrossed}</span> at {status.actualDepartureTime}</p>
+              <p className="text-gray-600 text-sm">Scheduled: {status.scheduledDepartureTime}</p>
+              <p className="text-gray-600 text-sm">Delay: <span className={`font-medium ${status.delayMinutes > 0 ? 'text-red-600' : status.delayMinutes < 0 ? 'text-green-600' : 'text-blue-700'}`}>{formatDelay(status.delayMinutes)}</span></p>
+              <p className="text-gray-600 text-xs">Reported: {status.timestamp?.toDate().toLocaleString()} by {status.reporterEmail || 'Anonymous'}</p>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+// --- Get Info Page (New Component) ---
+const TrainInfoDisplay = () => {
+  const { db, currentUser } = useFirebase(); // Added currentUser check
+  const [trainSchedules, setTrainSchedules] = useState([]);
+  const [selectedTrain, setSelectedTrain] = useState('');
+  const [latestStatus, setLatestStatus] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState('');
+
+  // Fetch train schedules on component mount to populate dropdown
+  useEffect(() => {
+    if (!db || !currentUser) return; // Added currentUser check
+    const q = query(collection(db, `artifacts/${appId}/public/data/trainSchedules`));
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const schedules = [];
+      snapshot.forEach((doc) => {
+        schedules.push({ id: doc.id, ...doc.data() });
+      });
+      setTrainSchedules(schedules);
+    }, (err) => {
+      console.error("Error fetching train schedules:", err);
+      setMessage("Error loading train schedules. Please ensure you are logged in and have sufficient permissions.");
+    });
+    return () => unsubscribe();
+  }, [db, currentUser]); // Added currentUser to dependencies
+
+  useEffect(() => {
+    if (!db || !selectedTrain || !currentUser) { // Added currentUser check
+      setLatestStatus(null);
+      setMessage('Please select a train.');
+      return;
+    }
+
+    setLoading(true);
+    setMessage('');
+
+    const [trainName, trainNo] = selectedTrain.split(' - ');
+
+    // Query to get the latest status for the selected train
+    // Path: /artifacts/{appId}/public/data/trainStatus
+    const q = query(
+      collection(db, `artifacts/${appId}/public/data/trainStatus`),
+      where('trainName', '==', trainName),
+      where('trainNo', '==', trainNo),
+      orderBy('timestamp', 'desc')
+    );
+
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      if (snapshot.empty) {
+        setLatestStatus(null);
+        setMessage('No info available for this train yet.');
+      } else {
+        setLatestStatus({ id: snapshot.docs[0].id, ...snapshot.docs[0].data() });
+        setMessage('');
+      }
+      setLoading(false);
+    }, (err) => {
+      console.error("Error fetching latest train status:", err);
+      setMessage("Failed to load train info. Please ensure you are logged in and have sufficient permissions.");
+      setLoading(false);
+    });
+
+    return () => unsubscribe(); // Cleanup listener on unmount
+  }, [db, selectedTrain, currentUser]); // Added currentUser to dependencies
+
+  const formatDelay = (delayMinutes) => {
+    if (delayMinutes === undefined || delayMinutes === null) return 'N/A';
+    const absDelay = Math.abs(delayMinutes);
+    const hours = Math.floor(absDelay / 60);
+    const minutes = absDelay % 60;
+    let delayString = '';
+    if (hours > 0) delayString += `${hours}h `;
+    delayString += `${minutes}m`;
+
+    return delayMinutes > 0 ? `${delayString} late` : delayMinutes < 0 ? `${delayString} early` : 'on time';
+  };
+
+  return (
+    <div className="p-6 bg-white rounded-lg shadow-md">
+      <h2 className="text-2xl font-bold mb-4 text-gray-800">Get Train Info</h2>
+      <div className="mb-4">
+        <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="trainInfoSelect">
+          Select Train
+        </label>
+        <select
+          id="trainInfoSelect"
+          className="shadow appearance-none border rounded-lg w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+          value={selectedTrain}
+          onChange={(e) => setSelectedTrain(e.target.value)}
+        >
+          <option value="">Select a Train</option>
+          {trainSchedules.map((train) => (
+            <option key={train.id} value={`${train.trainName} - ${train.trainNo}`}>
+              {`${train.trainName} - ${train.trainNo}`}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      {loading && <p className="text-center text-gray-600">Fetching info...</p>}
+      {message && <p className="text-center text-gray-600">{message}</p>}
+
+      {latestStatus && !loading && (
+        <div className="border border-gray-200 rounded-lg p-4 shadow-sm bg-gray-50 mt-4">
+          <p className="text-lg font-semibold text-gray-800">{`${latestStatus.trainName} - ${latestStatus.trainNo}`}</p>
+          <p className="text-gray-700">Last Station Crossed: <span className="font-medium">{latestStatus.stationCrossed}</span></p>
+          <p className="text-gray-600 text-sm">Actual Departure: {latestStatus.actualDepartureTime}</p>
+          <p className="text-gray-600 text-sm">Scheduled Departure: {latestStatus.scheduledDepartureTime}</p>
+          <p className="text-gray-600 text-sm">Reported At: {latestStatus.timestamp?.toDate().toLocaleString()}</p>
+          <p className="text-gray-600 text-sm">Delay: <span className={`font-medium ${latestStatus.delayMinutes > 0 ? 'text-red-600' : latestStatus.delayMinutes < 0 ? 'text-green-600' : 'text-blue-700'}`}>{formatDelay(latestStatus.delayMinutes)}</span></p>
+          <p className="text-gray-500 text-xs">Reported By: {latestStatus.reporterEmail || 'Anonymous'}</p>
+        </div>
+      )}
+    </div>
+  );
+};
+
+// --- Data Cleanup Component (Client-side) ---
+const DataCleanup = () => {
+  const { db, currentUser } = useFirebase(); // Added currentUser check
+
+  useEffect(() => {
+    if (!db || !currentUser) return; // Added currentUser check
+
+    const cleanupOldData = async () => {
+      const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000); // 24 hours in milliseconds
+      // Query to delete old train status data from the public data path
+      const q = query(
+        collection(db, `artifacts/${appId}/public/data/trainStatus`),
+        where('timestamp', '<', twentyFourHoursAgo)
+      );
+
+      try {
+        const snapshot = await getDocs(q);
+        if (snapshot.empty) {
+          console.log("No old train status data to delete.");
+          return;
+        }
+
+        let deletedCount = 0;
+        for (const docSnapshot of snapshot.docs) {
+          await deleteDoc(doc(db, `artifacts/${appId}/public/data/trainStatus`, docSnapshot.id));
+          deletedCount++;
+        }
+        console.log(`Deleted ${deletedCount} old train status documents.`);
+      } catch (error) {
+        console.error("Error cleaning up old data:", error);
+        // Display a user-friendly message if there's a permission error
+        // Note: This cleanup runs in background, so a console error is usually sufficient.
+      }
+    };
+
+    // Run cleanup on component mount
+    cleanupOldData();
+
+    // Run cleanup every hour (adjust as needed)
+    const intervalId = setInterval(cleanupOldData, 60 * 60 * 1000); // Every 1 hour
+
+    return () => clearInterval(intervalId); // Cleanup interval on unmount
+  }, [db, currentUser]); // Added currentUser to dependencies
+
+  return null; // This component doesn't render anything
+};
+
+// --- Data Seeding Component ---
+const SeedTrainSchedules = () => {
+  const { db, currentUser } = useFirebase(); // Added currentUser check
+  const [message, setMessage] = useState('');
+  const [isSeeded, setIsSeeded] = useState(false);
+
+  // Sample data to be seeded
+  const sampleSchedules = [
+    {
+      trainName: "UPABAN EXPRESS",
+      trainNo: "739",
+      schedule: [
+        { station: "Dhaka", dep_time: "22:00" },
+        { station: "Biman_Bandar", dep_time: "22:28" },
+        { station: "Narsingdi", dep_time: "23:11" },
+        { station: "Bhairab_Bazar", dep_time: "23:43" },
+        { station: "Shaistaganj", dep_time: "01:25" },
+        { station: "Sreemangal", dep_time: "02:11" },
+        { station: "Bhanugach", dep_time: "02:32" },
+        { station: "Shamshernagar", dep_time: "02:43" },
+        { station: "Kulaura", dep_time: "03:11" },
+        { station: "Baramchal", dep_time: "03:27" },
+        { station: "Maijgaon", dep_time: "03:45" },
+        { station: "Sylhet", dep_time: "05:00" }
+      ]
+    },
+    // Add more train schedules here if needed
+    // {
+    //   trainName: "ANOTHER TRAIN",
+    //   trainNo: "123",
+    //   schedule: [
+    //     { station: "Station A", dep_time: "08:00" },
+    //     { station: "Station B", dep_time: "08:30" }
+    //   ]
+    // }
+  ];
+
+  const handleSeed = async () => {
+    if (!db || !currentUser) { // Added currentUser check
+      setMessage('Firebase not initialized or user not logged in.');
+      return;
+    }
+    setMessage('Seeding data...');
+    try {
+      // Check if data already exists to prevent re-seeding
+      const q = query(collection(db, `artifacts/${appId}/public/data/trainSchedules`));
+      const snapshot = await getDocs(q);
+      if (!snapshot.empty) {
+        setMessage('Train schedules already exist. Not re-seeding.');
+        setIsSeeded(true);
+        return;
+      }
+
+      for (const train of sampleSchedules) {
+        // Add document to the public trainSchedules collection
+        // Path: /artifacts/{appId}/public/data/trainSchedules
+        await addDoc(collection(db, `artifacts/${appId}/public/data/trainSchedules`), train);
+      }
+      setMessage('Train schedules seeded successfully!');
+      setIsSeeded(true);
+    } catch (error) {
+      console.error("Error seeding data:", error);
+      setMessage(`Error seeding data: ${error.message}`);
+    }
+  };
+
+  return (
+    <div className="p-6 bg-white rounded-lg shadow-md mb-6">
+      <h2 className="text-2xl font-bold mb-4 text-gray-800">Seed Train Schedules</h2>
+      {message && <p className="mb-4 text-sm text-blue-500">{message}</p>}
+      <button
+        onClick={handleSeed}
+        disabled={isSeeded || !currentUser} // Disable if not logged in
+        className="bg-purple-500 hover:bg-purple-600 text-white font-bold py-2 px-4 rounded-lg focus:outline-none focus:shadow-outline transition duration-300 ease-in-out disabled:opacity-50"
+      >
+        {isSeeded ? 'Schedules Seeded' : 'Seed Sample Train Schedules'}
+      </button>
+      <p className="text-sm text-gray-500 mt-2">Click this once to populate initial train schedules in your database.</p>
+    </div>
+  );
+};
+
+
+// --- Main App Component ---
+const App = () => {
+  const { loadingFirebase } = useFirebase();
+  const [activeTab, setActiveTab] = useState('giveInfo'); // 'giveInfo' or 'getInfo' or 'liveStatus'
+
+  if (loadingFirebase) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-100">
+        <p className="text-xl text-gray-700">Loading application...</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-100 p-4 sm:p-6 font-sans flex justify-center items-start">
+      <div className="w-full max-w-2xl">
+        <h1 className="text-4xl font-extrabold text-center text-gray-900 mb-8">
+          Train Status Tracker
+        </h1>
+        <AuthForm />
+        <SeedTrainSchedules /> {/* Seeding component */}
+
+        {/* Navigation Tabs */}
+        <div className="flex justify-center mb-6 space-x-4">
+          <button
+            onClick={() => setActiveTab('giveInfo')}
+            className={`py-2 px-4 rounded-lg font-semibold ${activeTab === 'giveInfo' ? 'bg-blue-600 text-white shadow-md' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}
+          >
+            Give Info
+          </button>
+          <button
+            onClick={() => setActiveTab('getInfo')}
+            className={`py-2 px-4 rounded-lg font-semibold ${activeTab === 'getInfo' ? 'bg-blue-600 text-white shadow-md' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}
+          >
+            Get Info
+          </button>
+          <button
+            onClick={() => setActiveTab('liveStatus')}
+            className={`py-2 px-4 rounded-lg font-semibold ${activeTab === 'liveStatus' ? 'bg-blue-600 text-white shadow-md' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}
+          >
+            Live Statuses
+          </button>
+        </div>
+
+        {/* Conditional Rendering of Components based on activeTab */}
+        {activeTab === 'giveInfo' && <TrainStatusInput />}
+        {activeTab === 'getInfo' && <TrainInfoDisplay />}
+        {activeTab === 'liveStatus' && <LiveTrainStatusDisplay />}
+
+        <DataCleanup /> {/* Invisible component for background data cleanup */}
+      </div>
+    </div>
+  );
+};
+
+// Main component wrapped with FirebaseProvider
+export default function WrappedApp() {
+  return (
+    <>
+      {/* Tailwind CSS CDN */}
+      <script src="https://cdn.tailwindcss.com"></script>
+      {/* Inter font for better aesthetics */}
+      <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+      <style>
+        {`
+          body {
+            font-family: 'Inter', sans-serif;
+          }
+        `}
+      </style>
+      <FirebaseProvider>
+        <App />
+      </FirebaseProvider>
+    </>
+  );
+}
