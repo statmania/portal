@@ -1,577 +1,468 @@
-
 <!DOCTYPE html>
 <html lang="en">
-
-  <head>
-
+<head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <meta name="description" content="">
-    <meta name="author" content="">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@100;300;400;500;700;900&display=swap" rel="stylesheet">
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Stat Mania - Making sense of statistics</title>
-
-    <!-- Bootstrap core CSS -->
-    <link href="vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
-
-    <!-- Additional CSS Files -->
-    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css" xintegrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf" crossorigin="anonymous">
-    <link rel="stylesheet" href="assets/css/templatemo-chain-app-dev.css">
-    <link rel="stylesheet" href="assets/css/animated.css">
-    <link rel="stylesheet" href="assets/css/owl.css">
-
+    <meta name="description" content="Stat Mania: Making sense of statistics. Explore our tools for data analysis, visualization, and everyday utilities.">
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts - Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        /* Custom CSS for responsive background consistency */
-        @media (max-width: 991px) { /* Applies to screens smaller than 992px (Bootstrap's 'lg' breakpoint) */
-            .main-banner .right-image {
-                display: block !important; /* Ensure the image container is always visible */
-                width: 100%; /* Make it take full width on small screens */
-                text-align: center; /* Center the image horizontally */
-                margin-top: 30px; /* Add some space above the image when it stacks */
-            }
-            .main-banner .right-image img {
-                max-width: 100%; /* Ensure the image scales down to fit its container */
-                height: auto; /* Maintain aspect ratio */
-                display: block; /* Make the image a block element for proper centering */
-                margin-left: auto; /* Center the image */
-                margin-right: auto; /* Center the image */
-            }
-            /* Adjust padding for the left content on small screens if needed */
-            .main-banner .left-content {
-                padding-bottom: 0; /* Reduce bottom padding if the image stacks below */
-            }
+        body {
+            font-family: 'Inter', sans-serif;
+            /* Apply a subtle gradient background to the entire body */
+            background: linear-gradient(to bottom right, #f0f4f8, #e0e7ee); /* Light blue-gray to very light purple-gray */
+            color: #334155; /* Tailwind: text-slate-700 */
+            position: relative; /* Needed for absolute positioning of background icons */
+            min-height: 100vh; /* Ensure body takes full viewport height */
         }
-        /* Style for the service icons */
-        .service-item .icon {
-            font-size: 3.5rem; /* Adjust icon size for Font Awesome icons */
-            color: #4f46e5; /* A shade of indigo, similar to other elements */
-            margin-bottom: 15px; /* Space between icon and title */
-            display: flex; /* Use flexbox for centering */
-            justify-content: center; /* Center horizontally */
-            align-items: center; /* Center vertically */
-            height: 80px; /* Give it a fixed height for consistent spacing */
-            overflow: hidden; /* Hide any overflow if the icon is too large */
+        /* Custom scrollbar for a cleaner look */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
         }
-        /* Style for SVG icons within the service-item icon container */
-        .service-item .icon svg {
-            max-width: 100%; /* Ensure SVG scales down to fit container */
-            max-height: 100%; /* Ensure SVG scales down to fit container */
-            width: auto; /* Allow width to adjust to maintain aspect ratio */
-            height: auto; /* Allow height to adjust to maintain aspect ratio */
+        ::-webkit-scrollbar-track {
+            background: #e2e8f0; /* Tailwind: bg-slate-200 */
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #94a3b8; /* Tailwind: bg-slate-400 */
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #64748b; /* Tailwind: bg-slate-500 */
+        }
+
+        /* Custom styles for the slider */
+        .slider-container {
+            position: relative;
+            overflow: hidden;
+        }
+        .slider-track {
+            display: flex;
+            transition: transform 0.5s ease-in-out;
+        }
+        .slide-item {
+            flex-shrink: 0;
+            width: 100%; /* Each slide takes full width of its container */
+        }
+
+        /* Navigation button styles */
+        .slider-button {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background-color: rgba(0, 0, 0, 0.5);
+            color: white;
+            border: none;
+            padding: 10px;
+            cursor: pointer;
+            z-index: 10;
+            border-radius: 9999px; /* Tailwind: rounded-full */
+            transition: background-color 0.3s ease;
+        }
+        .slider-button:hover {
+            background-color: rgba(0, 0, 0, 0.7);
+        }
+        .slider-button.prev {
+            left: 10px;
+        }
+        .slider-button.next {
+            right: 10px;
+        }
+
+        /* Pagination dots styles */
+        .slider-pagination {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+            gap: 8px;
+        }
+        .pagination-dot {
+            width: 12px;
+            height: 12px;
+            background-color: #cbd5e1; /* Tailwind: bg-slate-300 */
+            border-radius: 9999px; /* Tailwind: rounded-full */
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+        }
+        .pagination-dot.active {
+            background-color: #4f46e5; /* Tailwind: bg-indigo-600 */
+            transform: scale(1.2);
+        }
+
+        /* Background icons styling */
+        .bg-icon {
+            position: absolute;
+            z-index: 1; /* Ensure icons are above the main background but behind text */
+            pointer-events: none; /* Ensure no interaction */
+        }
+        /* Specific opacity for general background icons */
+        .bg-icon.general {
+            opacity: 0.1; /* Very subtle */
+        }
+        /* Specific opacity for icons near feature boxes */
+        .bg-icon.feature-related {
+            opacity: 0.2; /* Subtle for description areas */
+        }
+
+        /* Explicitly ensure SVGs within the circular icon containers are centered */
+        .p-3.rounded-full svg {
+            display: block; /* Ensure it behaves like a block element */
+            margin: auto;   /* Center it horizontally within its parent */
         }
     </style>
+</head>
+<body class="antialiased">
 
-  </head>
+    <!-- Header/Navbar -->
+    <header class="bg-gradient-to-r from-indigo-100 to-purple-100 shadow-sm py-4">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center">
+            <!-- Logo, Title, and Motto -->
+            <div class="flex items-center space-x-3">
+                <img src="img/statmania_logo.png" alt="Stat Mania Logo" class="w-10 h-10 rounded-full" onerror="this.onerror=null;this.src='https://placehold.co/40x40/4f46e5/ffffff?text=Logo';">
+                <div>
+                    <div class="text-2xl font-bold text-indigo-600">Stat Mania</div>
+                    <p class="text-sm text-slate-500">Making sense of statistics</p>
+                </div>
+            </div>
 
-<body>
-
-  <!-- ***** Preloader Start ***** -->
-  <div id="js-preloader" class="js-preloader">
-    <div class="preloader-inner">
-      <span class="dot"></span>
-      <div class="dots">
-        <span></span>
-        <span></span>
-        <span></span>
-      </div>
-    </div>
-  </div>
-  <!-- ***** Preloader End ***** -->
-
-  <!-- ***** Header Area Start ***** -->
-  <header class="header-area header-sticky wow slideInDown" data-wow-duration="0.75s" data-wow-delay="0s">
-    <div class="container">
-      <div class="row">
-        <div class="col-12">
-          <nav class="main-nav">
-            <!-- ***** Logo Start ***** -->
-            <a href="index.html" class="logo">
-              <img src="assets/images/logo.png" alt="Stat Mania Logo">
-            </a>
-            <!-- ***** Logo End ***** -->
-            <!-- ***** Menu Start ***** -->
-            <ul class="nav">
+            <!-- Desktop Navigation -->
+            <nav class="hidden md:block">
+                <ul class="flex space-x-6">
                     <li><a href="index.html" class="text-slate-600 hover:text-indigo-600 transition duration-300">Home</a></li>
-              <li class="scroll-to-section"><a href="#data-science-tools">Data Science</a></li>
-              <li class="scroll-to-section"><a href="#general-tools">Utility Tools</a></li>
-              <li><a href="#cta" class="text-slate-600 hover:text-indigo-600 transition duration-300">Contact</a></li>
-              <li><div class="gradient-button"><a id="modal_trigger" href="features.html"><i class="fa fa-sign-in-alt"></i> Explore Features</a></div></li>
-            </ul>
-            <a class='menu-trigger'>
-                <span>Menu</span>
-            </a>
-            <!-- ***** Menu End ***** -->
-          </nav>
-        </div>
-      </div>
-    </div>
-  </header>
-  <!-- ***** Header Area End ***** -->
+                    <li><a href="features.html" class="text-slate-600 hover:text-indigo-600 transition duration-300">Features</a></li>
+                    <li><a href="#cta" class="text-slate-600 hover:text-indigo-600 transition duration-300">Contact</a></li>
+                </ul>
+            </nav>
 
-  <div id="modal" class="popupContainer" style="display:none;">
-    <div class="popupHeader">
-        <span class="header_title">Login</span>
-        <span class="modal_close"><i class="fa fa-times"></i></span>
-    </div>
-
-    <section class="popupBody">
-        <!-- Social Login -->
-        <div class="social_login">
-            <div class="">
-                <a href="#" class="social_box fb">
-                    <span class="icon"><i class="fab fa-facebook"></i></span>
-                    <span class="icon_title">Connect with Facebook</span>
-
-                </a>
-
-                <a href="#" class="social_box google">
-                    <span class="icon"><i class="fab fa-google-plus"></i></span>
-                    <span class="icon_title">Connect with Google</span>
-                </a>
-            </div>
-
-            <div class="centeredText">
-                <span>Or use your Email address</span>
-            </div>
-
-            <div class="action_btns">
-                <div class="one_half"><a href="#" id="login_form" class="btn">Login</a></div>
-                <div class="one_half last"><a href="#" id="register_form" class="btn">Sign up</a></div>
-            </div>
-        </div>
-
-        <!-- Username & Password Login form -->
-        <div class="user_login">
-            <form>
-                <label>Email / Username</label>
-                <input type="text" />
-                <br />
-
-                <label>Password</label>
-                <input type="password" />
-                <br />
-
-                <div class="checkbox">
-                    <input id="remember" type="checkbox" />
-                    <label for="remember">Remember me on this computer</label>
-                </div>
-
-                <div class="action_btns">
-                    <div class="one_half"><a href="#" class="btn back_btn"><i class="fa fa-angle-double-left"></i> Back</a></div>
-                    <div class="one_half last"><a href="#" class="btn btn_red">Login</a></div>
-                </div>
-            </form>
-
-            <a href="#" class="forgot_password">Forgot password?</a>
-        </div>
-
-        <!-- Register Form -->
-        <div class="user_register">
-            <form>
-                <label>Full Name</label>
-                <input type="text" />
-                <br />
-
-                <label>Email Address</label>
-                <input type="email" />
-                <br />
-
-                <label>Password</label>
-                <input type="password" />
-                <br />
-
-                <div class="checkbox">
-                    <input id="send_updates" type="checkbox" />
-                    <label for="send_updates">Send me occasional email updates</label>
-                </div>
-
-                <div class="action_btns">
-                    <div class="one_half"><a href="#" class="btn back_btn"><i class="fa fa-angle-double-left"></i> Back</a></div>
-                    <div class="one_half last"><a href="#" class="btn btn_red">Register</a></div>
-                </div>
-            </form>
-        </div>
-    </section>
-</div>
-
-  <div class="main-banner wow fadeIn" id="top" data-wow-duration="1s" data-wow-delay="0.5s">
-    <div class="container">
-      <div class="row">
-        <div class="col-lg-12">
-          <div class="row">
-            <div class="col-lg-6 align-self-center">
-              <div class="left-content show-up header-text wow fadeInLeft" data-wow-duration="1s" data-wow-delay="1s">
-                <div class="row">
-                  <div class="col-lg-12">
-                    <h2>Unlock Your Power!</h2>
-                    <p> Be More Productive with Our Tools. Learn and Interact with Statistics and Data Science. Check Out Our Productivity Tools.</p>
-                  </div>
-                  <div class="col-lg-12">
-                    <div class="white-button first-button scroll-to-section">
-                      <a href="#contact">Learn<i class="fab fa-apple"></i></a>
-                    </div>
-                    <div class="white-button scroll-to-section">
-                      <a href="#contact">Data Science<i class="fab fa-google-play"></i></a>
-                    </div>
-                    <div class="white-button scroll-to-section">
-                      <a href="#contact">Productivity<i class="fab fa-google-play"></i></a>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="col-lg-6">
-              <div class="right-image wow fadeInRight" data-wow-duration="1s" data-wow-delay="0.5s">
-                <img src="assets/images/slider-dec.png" alt="">
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div id="services" class="services section">
-    <div class="container">
-      <div class="row">
-        <div class="col-lg-8 offset-lg-2">
-          <div class="section-heading  wow fadeInDown" data-wow-duration="1s" data-wow-delay="0.5s">
-            <h4>Amazing <em>Statistics Tools</em> for you</h4>
-            <img src="assets/images/heading-line-dec.png" alt="">
-            <p>If you need the greatest collection of statistical tools, you've come to the right place!</p>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="container">
-      <div class="row">
-        <div class="col-lg-3">
-          <div class="service-item first-service">
-            <div class="icon"><i class="fa fa-calculator"></i></div>
-            <h4>Distribution Calculator</h4>
-            <p>Calculate probabilities for Binomial, Poisson, Normal, Uniform, and Exponential distributions.</p>
-            <div class="text-button">
-              <a href="ds/analysis/prob-dist.html">See in Action <i class="fa fa-arrow-right"></i></a>
-            </div>
-          </div>
-        </div>
-        <div class="col-lg-3">
-          <div class="service-item second-service">
-            <div class="icon"><i class="fa fa-chart-line"></i></div>
-            <h4>Distribution Visualizer</h4>
-            <p>Explore how probability distributions change with parameters.</p>
-            <div class="text-button">
-              <a href="ds/analysis/viz-dist.html">See in Action <i class="fa fa-arrow-right"></i></a>
-            </div>
-          </div>
-        </div>
-        <div class="col-lg-3">
-          <div class="service-item third-service">
-            <div class="icon">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M3 3v18h18" />
-                    <!-- 10 smaller, more scattered points -->
-                    <circle cx="6" cy="18" r="1.5" />
-                    <circle cx="8" cy="15" r="1.5" />
-                    <circle cx="10" cy="19" r="1.5" />
-                    <circle cx="12" cy="12" r="1.5" />
-                    <circle cx="14" cy="16" r="1.5" />
-                    <circle cx="16" cy="10" r="1.5" />
-                    <circle cx="18" cy="14" r="1.5" />
-                    <circle cx="20" cy="8" r="1.5" />
-                    <circle cx="7" cy="11" r="1.5" />
-                    <circle cx="11" cy="7" r="1.5" />
+            <!-- Mobile Menu Button (Hamburger Icon) -->
+            <button id="mobile-menu-button" class="md:hidden p-2 rounded-md text-slate-600 hover:text-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path>
                 </svg>
-            </div>
-            <h4>Correlation Visualizer</h4>
-            <p>Generate data and explore Pearson correlation. <a rel="nofollow" href="https://paypal.me/templatemo" target="_blank">a little via PayPal</a>. Thank you.</p>
-            <div class="text-button">
-              <a href="ds/viz/viz-corr.html">See in Action <i class="fa fa-arrow-right"></i></a>
-            </div>
-          </div>
+            </button>
         </div>
-        <div class="col-lg-3">
-          <div class="service-item fourth-service">
-            <div class="icon"><i class="fa fa-chart-pie"></i></div>
-            <h4>Pie Chart Generator</h4>
-            <p>Generate a pie chart or donut chart based on your data.</p>
-            <div class="text-button">
-              <a href="#">See in Action <i class="fa fa-arrow-right"></i></a>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
 
-  <!-- Amazing Data Science Tools Section -->
-  <div id="data-science-tools" class="services section">
-    <div class="container">
-      <div class="row">
-        <div class="col-lg-8 offset-lg-2">
-          <div class="section-heading  wow fadeInDown" data-wow-duration="1s" data-wow-delay="0.5s">
-            <h4>Amazing <em>Data Science Tools</em> for you</h4>
-            <img src="assets/images/heading-line-dec.png" alt="">
-            <p>Dive deep into data with our powerful data science tools, designed for analysis, modeling, and prediction.</p>
-          </div>
+        <!-- Mobile Menu (Hidden by default) -->
+        <div id="mobile-menu" class="hidden md:hidden px-2 pt-2 pb-3 space-y-1 sm:px-3">
+            <a href="#features" class="block px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:bg-slate-100 hover:text-indigo-600">Features</a>
+            <a href="#cta" class="block px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:bg-slate-100 hover:text-indigo-600">Contact</a>
         </div>
-      </div>
-    </div>
-    <div class="container">
-      <div class="row">
-        <div class="col-lg-3">
-          <div class="service-item first-service">
-            <div class="icon"><i class="fa fa-brain"></i></div> <!-- Icon for Machine Learning -->
-            <h4>Machine Learning Models</h4>
-            <p>Build and test various machine learning models for classification, regression, and clustering.</p>
-            <div class="text-button">
-              <a href="#">See in Action <i class="fa fa-arrow-right"></i></a>
-            </div>
-          </div>
-        </div>
-        <div class="col-lg-3">
-          <div class="service-item second-service">
-            <div class="icon"><i class="fa fa-database"></i></div> <!-- Icon for Data Preprocessing -->
-            <h4>Data Preprocessing</h4>
-            <p>Clean, transform, and prepare your raw data for effective analysis and modeling.</p>
-            <div class="text-button">
-              <a href="#">See in Action <i class="fa fa-arrow-right"></i></a>
-            </div>
-          </div>
-        </div>
-        <div class="col-lg-3">
-          <div class="service-item third-service">
-            <div class="icon"><i class="fa fa-chart-network"></i></div> <!-- Icon for Network Analysis (or similar) -->
-            <h4>Network Analysis</h4>
-            <p>Visualize and analyze relationships and structures within complex networks.</p>
-            <div class="text-button">
-              <a href="#">See in Action <i class="fa fa-arrow-right"></i></a>
-            </div>
-          </div>
-        </div>
-        <div class="col-lg-3">
-          <div class="service-item fourth-service">
-            <div class="icon"><i class="fa fa-code"></i></div> <!-- Icon for Code Snippets/Notebooks -->
-            <h4>Code Snippets & Notebooks</h4>
-            <p>Access and run pre-built code snippets and interactive notebooks for common data science tasks.</p>
-            <div class="text-button">
-              <a href="#">See in Action <i class="fa fa-arrow-right"></i></a>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
+    </header>
 
-  <!-- Amazing General Tools Section -->
-  <div id="general-tools" class="services section">
-    <div class="container">
-      <div class="row">
-        <div class="col-lg-8 offset-lg-2">
-          <div class="section-heading  wow fadeInDown" data-wow-duration="1s" data-wow-delay="0.5s">
-            <h4>Amazing <em>Tools</em> for you</h4>
-            <img src="assets/images/heading-line-dec.png" alt="">
-            <p>A collection of useful general tools to enhance your productivity and daily tasks.</p>
-          </div>
+    <main>
+        <!-- Background Icons (General - Fewer and more subtle) -->
+        <div class="bg-icon general top-[5%] left-[5%] w-24 h-24 sm:w-32 sm:h-32 lg:w-48 lg:h-48 text-indigo-300">
+            <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-line-chart">
+                <path d="M3 3v18h18"/>
+                <path d="m18 10-4 4-2-2-3 3"/>
+            </svg>
         </div>
-      </div>
-    </div>
-    <div class="container">
-      <div class="row">
-        <div class="col-lg-3">
-          <div class="service-item first-service">
-            <div class="icon"><i class="fa fa-lock"></i></div> <!-- Icon for Password Generator -->
-            <h4>Password Generator</h4>
-            <p>Create strong, secure, and unique passwords for all your online accounts.</p>
-            <div class="text-button">
-              <a href="#">See in Action <i class="fa fa-arrow-right"></i></a>
-            </div>
-          </div>
+        <div class="bg-icon general top-[15%] right-[10%] w-28 h-28 sm:w-36 sm:h-36 lg:w-56 lg:h-56 text-purple-300">
+            <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pie-chart">
+                <path d="M21.21 15.89A10 10 0 1 1 8 2.83"/>
+                <path d="M22 12A10 10 0 0 0 12 2v10z"/>
+            </svg>
         </div>
-        <div class="col-lg-3">
-          <div class="service-item second-service">
-            <div class="icon"><i class="fa fa-weight-hanging"></i></div> <!-- Icon for BMI Calculator -->
-            <h4>BMI Calculator</h4>
-            <p>Calculate your Body Mass Index and understand your health status.</p>
-            <div class="text-button">
-              <a href="#">See in Action <i class="fa fa-arrow-right"></i></a>
-            </div>
-          </div>
+        <div class="bg-icon general bottom-[10%] left-[15%] w-24 h-24 sm:w-32 sm:h-32 lg:w-48 lg:h-48 text-teal-300">
+            <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-bar-chart-2">
+                <line x1="18" x2="18" y1="20" y2="10"/>
+                <line x1="12" x2="12" y1="20" y2="4"/>
+                <line x1="6" x2="6" y1="20" y2="14"/>
+            </svg>
         </div>
-        <div class="col-lg-3">
-          <div class="service-item third-service">
-            <div class="icon"><i class="fa fa-calendar-alt"></i></div> <!-- Icon for Date Calculator -->
-            <h4>Date Calculator</h4>
-            <p>Perform various date calculations, including finding the difference between dates.</p>
-            <div class="text-button">
-              <a href="#">See in Action <i class="fa fa-arrow-right"></i></a>
-            </div>
-          </div>
+        <div class="bg-icon general top-[60%] right-[5%] w-20 h-20 sm:w-28 sm:h-28 lg:w-40 lg:h-40 text-emerald-300">
+            <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-scatter-chart">
+                <circle cx="7.5" cy="7.5" r=".5" fill="currentColor"/>
+                <circle cx="17.5" cy="4.5" r=".5" fill="currentColor"/>
+                <circle cx="11.5" cy="13.5" r=".5" fill="currentColor"/>
+                <circle cx="16.5" cy="17.5" r=".5" fill="currentColor"/>
+                <circle cx="8.5" cy="12.5" r=".5" fill="currentColor"/>
+                <line x1="14" x2="20" y1="6" y2="12"/>
+                <line x1="17" x2="20" y1="15" y2="18"/>
+                <line x1="3" x2="9" y1="10" y2="16"/>
+                <line x1="7" x2="10" y1="14" y2="17"/>
+                <path d="M3 21v-4a4 4 0 0 1 4-4h.5"/>
+                <path d="M21 3h-4a4 4 0 0 0-4 4v.5"/>
+                <path d="M10 10v.5"/>
+            </svg>
         </div>
-        <div class="col-lg-3">
-          <div class="service-item fourth-service">
-            <div class="icon"><i class="fa fa-ruler-combined"></i></div> <!-- Icon for Unit Converter -->
-            <h4>Unit Converter</h4>
-            <p>Convert between different units of measurement quickly and accurately.</p>
-            <div class="text-button">
-              <a href="#">See in Action <i class="fa fa-arrow-right"></i></a>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
 
+        <!-- Content Slider Section -->
+        <section class="py-12 px-4 sm:px-6 lg:px-8">
+            <div class="container mx-auto max-w-4xl">
+                <!-- Wrapper for "All features" description and its icons -->
+                <div class="relative mb-10">
+                    <!-- Background Icons for "All features" description - Fewer and more subtle -->
+                    <div class="bg-icon feature-related top-[15%] left-[10%] w-20 h-20 sm:w-28 sm:h-28 text-indigo-400">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-columns-3">
+                            <rect width="18" height="18" x="3" y="3" rx="2"/>
+                            <path d="M9 3v18"/>
+                            <path d="M15 3v18"/>
+                        </svg>
+                    </div>
+                    <div class="bg-icon feature-related top-[20%] right-[10%] w-24 h-24 sm:w-32 sm:h-32 text-purple-400">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-line-chart">
+                            <path d="M3 3v18h18"/>
+                            <path d="m18 10-4 4-2-2-3 3"/>
+                        </svg>
+                    </div>
+                    <div class="bg-icon feature-related bottom-[10%] left-[30%] w-20 h-20 sm:w-28 sm:h-28 text-teal-400">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-scatter-chart">
+                            <circle cx="7.5" cy="7.5" r=".5" fill="currentColor"/>
+                            <circle cx="17.5" cy="4.5" r=".5" fill="currentColor"/>
+                            <circle cx="11.5" cy="13.5" r=".5" fill="currentColor"/>
+                            <circle cx="16.5" cy="17.5" r=".5" fill="currentColor"/>
+                            <circle cx="8.5" cy="12.5" r=".5" fill="currentColor"/>
+                            <line x1="14" x2="20" y1="6" y2="12"/>
+                            <line x1="17" x2="20" y1="15" y2="18"/>
+                            <line x1="3" x2="9" y1="10" y2="16"/>
+                            <line x1="7" x2="10" y1="14" y2="17"/>
+                            <path d="M3 21v-4a4 4 0 0 1 4-4h.5"/>
+                            <path d="M21 3h-4a4 4 0 0 0-4 4v.5"/>
+                            <path d="M10 10v.5"/>
+                        </svg>
+                    </div>
 
-  <div id="about" class="about-us section">
-    <div class="container">
-      <div class="row">
-        <div class="col-lg-6 align-self-center">
-          <div class="section-heading">
-            <h4>About <em>What We Do</em> &amp; Who We Are</h4>
-            <img src="assets/images/heading-line-dec.png" alt="">
-            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eismod tempor incididunt ut labore et dolore magna.</p>
-          </div>
-          <div class="row">
-            <div class="col-lg-6">
-              <div class="box-item">
-                <h4><a href="#">Maintance Problems</a></h4>
-                <p>Lorem Ipsum Text</p>
-              </div>
-            </div>
-            <div class="col-lg-6">
-              <div class="box-item">
-                <h4><a href="#">24/7 Support &amp; Help</a></h4>
-                <p>Lorem Ipsum Text</p>
-              </div>
-            </div>
-            <div class="col-lg-6">
-              <div class="box-item">
-                <h4><a href="#">Fixing Issues About</a></h4>
-                <p>Lorem Ipsum Text</p>
-              </div>
-            </div>
-            <div class="col-lg-6">
-              <div class="box-item">
-                <h4><a href="#">Co. Development</a></h4>
-                <p>Lorem Ipsum Text</p>
-              </div>
-            </div>
-            <div class="col-lg-12">
-              <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eismod tempor idunte ut labore et dolore adipiscing  magna.</p>
-              <div class="gradient-button">
-                <a href="#">Start 14-Day Free Trial</a>
-              </div>
-              <span>*No Credit Card Required</span>
-            </div>
-          </div>
-        </div>
-        <div class="col-lg-6">
-          <div class="right-image">
-            <img src="assets/images/about-right-dec.png" alt="">
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
+                    <h2 class="text-2xl font-bold text-slate-800 mb-8 text-center relative z-20">Data Science & Utility Tools</h2>
+                    <p class="text-center text-slate-600 max-w-2xl mx-auto relative z-20">
+                        At Stat Mania, we offer a comprehensive suite of tools designed to simplify complex data and boost your efficiency. Explore our advanced analytical models, stunning visualizations, and practical everyday utilities to gain deeper insights, solve challenging problems, and enhance your productivity.
+                    </p>
+                </div>
 
-  <footer id="newsletter">
-    <div class="container">
-      <div class="row">
-        <div class="col-lg-8 offset-lg-2">
-          <div class="section-heading">
-            <h4>Join our mailing list to receive the news &amp; latest trends</h4>
-          </div>
-        </div>
-        <div class="col-lg-6 offset-lg-3">
-          <form id="search" action="#" method="GET">
-            <div class="row">
-              <div class="col-lg-6 col-sm-6">
-                <fieldset>
-                  <input type="address" name="address" class="email" placeholder="Email Address..." autocomplete="on" required>
-                </fieldset>
-              </div>
-              <div class="col-lg-6 col-sm-6">
-                <fieldset>
-                  <button type="submit" class="main-button">Subscribe Now <i class="fa fa-angle-right"></i></button>
-                </fieldset>
-              </div>
-            </div>
-          </form>
-        </div>
-      </div>
-      <div class="row">
-        <div class="col-lg-3">
-          <div class="footer-widget">
-            <h4>Contact Us</h4>
-            <p>Rio de Janeiro - RJ, 22795-008, Brazil</p>
-            <p><a href="#">010-020-0340</a></p>
-            <p><a href="#">info@company.co</a></p>
-          </div>
-        </div>
-        <div class="col-lg-3">
-          <div class="footer-widget">
-            <h4>About Us</h4>
-            <ul>
-              <li><a href="#">Home</a></li>
-              <li><a href="#">Services</a></li>
-              <li><a href="#">About</a></li>
-              <li><a href="#">Testimonials</a></li>
-              <li><a href="#">Pricing</a></li>
-            </ul>
-            <ul>
-              <li><a href="#">About</a></li>
-              <li><a href="#">Testimonials</a></li>
-              <li><a href="#">Pricing</a></li>
-            </ul>
-          </div>
-        </div>
-        <div class="col-lg-3">
-          <div class="footer-widget">
-            <h4>Useful Links</h4>
-            <ul>
-              <li><a href="#">Free Apps</a></li>
-              <li><a href="#">App Engine</a></li>
-              <li><a href="#">Programming</a></li>
-              <li><a href="#">Development</a></li>
-              <li><a href="#">App News</a></li>
-            </ul>
-            <ul>
-              <li><a href="#">App Dev Team</a></li>
-              <li><a href="#">Digital Web</a></li>
-              <li><a href="#">Normal Apps</a></li>
-            </ul>
-          </div>
-        </div>
-        <div class="col-lg-3">
-          <div class="footer-widget">
-            <h4>About Our Company</h4>
-            <div class="logo">
-              <img width="30" src="" alt="">
-            </div>
-            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore.</p>
-          </div>
-        </div>
-        <div class="col-lg-12">
-          <div class="copyright-text">
-            <p>Copyright © 2025 Stat Mania. All Rights Reserved.
-          <br>Design: <a href="#" target="_blank" title="css templates">TemplateMo</a></p>
-          </div>
-        </div>
-      </div>
-    </div>
-  </footer>
+                <div id="content-slider" class="slider-container bg-gradient-to-br from-blue-50 to-indigo-100 p-6 rounded-xl shadow-xl border border-slate-200">
+                    <div class="slider-track">
+                        <!-- Slide 1: Data Science (Analysis) - Central Limit Theorem -->
+                        <div class="slide-item p-4">
+                            <div class="bg-white rounded-xl shadow-lg p-6 flex flex-col items-center text-center border border-purple-100">
+                                <div class="p-3 bg-purple-100 rounded-full mb-4">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="72" height="72" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-line-chart text-purple-600">
+                                        <path d="M3 3v18h18"/>
+                                        <path d="m18 10-4 4-2-2-3 3"/>
+                                    </svg>
+                                </div>
+                                <a href="ds/analysis/clt.html" class="text-lg font-semibold text-purple-700 hover:text-purple-900 hover:underline mb-2">Central Limit Theorem (CLT)</a>
+                                <p class="text-sm text-slate-500">Explore the fundamental theorem of statistics.</p>
+                            </div>
+                        </div>
 
-  <!-- Scripts -->
-  <script src="vendor/jquery/jquery.min.js"></script>
-  <script src="vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
-  <script src="assets/js/owl-carousel.js"></script>
-  <script src="assets/js/animation.js"></script>
-  <script src="assets/js/imagesloaded.js"></script>
-  <script src="assets/js/popup.js"></script>
-  <script src="assets/js/custom.js"></script>
+                        <!-- Slide 2: Data Science (Visualization) - Aesthetic Equations -->
+                        <div class="slide-item p-4">
+                            <div class="bg-white rounded-xl shadow-lg p-6 flex flex-col items-center text-center border border-teal-100">
+                                <div class="p-3 bg-teal-100 rounded-full mb-4">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="72" height="72" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-heart text-teal-600">
+                                        <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/>
+                                    </svg>
+                                </div>
+                                <a href="ds/viz/aes.html" class="text-lg font-semibold text-teal-700 hover:text-teal-900 hover:underline mb-2">Aesthetic Equations</a>
+                                <p class="text-sm text-slate-500">Visualize beautiful equations like love and butterfly curves.</p>
+                            </div>
+                        </div>
+
+                        <!-- Slide 3: Everyday Utilities - Password Generator -->
+                        <div class="slide-item p-4">
+                            <div class="bg-white rounded-xl shadow-lg p-6 flex flex-col items-center text-center border border-indigo-100">
+                                <div class="p-3 bg-indigo-100 rounded-full mb-4">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="72" height="72" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-key text-indigo-600">
+                                        <path d="M21 2l-2 2m-7.4 7.4L3 21l2-2L14.6 9.4m-2.4-2.4L17 2l2 2m-7.4 7.4L9.4 14.6m2.4-2.4l-2-2"/>
+                                        <circle cx="12" cy="12" r="3"/>
+                                    </svg>
+                                </div>
+                                <a href="service/password.html" class="text-lg font-semibold text-indigo-700 hover:text-indigo-900 hover:underline mb-2">Password Generator</a>
+                                <p class="text-sm text-slate-500">Generate strong, secure passwords.</p>
+                            </div>
+                        </div>
+
+                        <!-- New Slide 4: Hypothesis Testing -->
+                        <div class="slide-item p-4">
+                            <div class="bg-white rounded-xl shadow-lg p-6 flex flex-col items-center text-center border border-yellow-100">
+                                <div class="p-3 bg-yellow-100 rounded-full mb-4">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="72" height="72" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-flask-conical text-yellow-600">
+                                        <path d="M10 2v6h4V2"/>
+                                        <path d="M12 18V8"/>
+                                        <path d="M14 22H10"/>
+                                        <path d="M19 8.6L15 22H9L5 8.6A2 2 0 0 1 7 7h10a2 2 0 0 1 2 1.6Z"/>
+                                    </svg>
+                                </div>
+                                <a href="ds/analysis/hypothesis-testing.html" class="text-lg font-semibold text-yellow-700 hover:text-yellow-900 hover:underline mb-2">Hypothesis Testing</a>
+                                <p class="text-sm text-slate-500">Perform Z-tests, T-tests, Chi-square, and ANOVA for robust conclusions.</p>
+                            </div>
+                        </div>
+
+                        <!-- New Slide 5: Regression Analysis -->
+                        <div class="slide-item p-4">
+                            <div class="bg-white rounded-xl shadow-lg p-6 flex flex-col items-center text-center border border-orange-100">
+                                <div class="p-3 bg-orange-100 rounded-full mb-4">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="72" height="72" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trending-up text-orange-600">
+                                        <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/>
+                                        <polyline points="16 7 22 7 22 13"/>
+                                    </svg>
+                                </div>
+                                <a href="ds/analysis/regression.html" class="text-lg font-semibold text-orange-700 hover:text-orange-900 hover:underline mb-2">Regression Analysis</a>
+                                <p class="text-sm text-slate-500">Model relationships and predict outcomes with linear, multiple, and logistic regression.</p>
+                            </div>
+                        </div>
+
+                        <!-- New Slide 6: BMI Calculator -->
+                        <div class="slide-item p-4">
+                            <div class="bg-white rounded-xl shadow-lg p-6 flex flex-col items-center text-center border border-red-100">
+                                <div class="p-3 bg-red-100 rounded-full mb-4">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="72" height="72" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-scale text-red-600">
+                                        <path d="m16 16 3-3a1 1 0 0 0 0-1.42l-2-2a1 1 0 0 0-1.42 0L12 12"/>
+                                        <path d="M12 12l-8.5-8.5a2.12 2.12 0 0 0-3 3L12 12Z"/>
+                                        <path d="M12 12l-3-3a1 1 0 0 0-1.42 0l-2 2a1 1 0 0 0 0 1.42L12 12Z"/>
+                                        <path d="M12 12l3 3a1 1 0 0 0 1.42 0l2-2a1 1 0 0 0 0-1.42L12 12Z"/>
+                                        <path d="M12 12l-3 3a1 1 0 0 0-1.42 0l-2-2a1 1 0 0 0 0-1.42L12 12Z"/>
+                                    </svg>
+                                </div>
+                                <a href="service/bmi.html" class="text-lg font-semibold text-red-700 hover:text-red-900 hover:underline mb-2">BMI Calculator</a>
+                                <p class="text-sm text-slate-500">Quickly calculate your Body Mass Index for health assessment.</p>
+                            </div>
+                        </div>
+
+                        <!-- New Slide 7: Tip Calculator -->
+                        <div class="slide-item p-4">
+                            <div class="bg-white rounded-xl shadow-lg p-6 flex flex-col items-center text-center border border-green-100">
+                                <div class="p-3 bg-green-100 rounded-full mb-4">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="72" height="72" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-wallet text-green-600">
+                                        <path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h12a2 2 0 0 1 0 4H5a2 2 0 0 0 0 4h12a2 2 0 0 0 0 4h1a1 1 0 0 0 1-1v-3"/>
+                                        <path d="M2 10h2"/>
+                                        <path d="M2 14h2"/>
+                                    </svg>
+                                </div>
+                                <a href="service/tip-calculator.html" class="text-lg font-semibold text-green-700 hover:text-green-900 hover:underline mb-2">Tip Calculator</a>
+                                <p class="text-sm text-slate-500">Easily calculate tips and split bills for dining out.</p>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- Slider Navigation Buttons -->
+                    <button class="slider-button prev" id="prev-slide">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-left">
+                            <path d="m15 18-6-6 6-6"/>
+                        </svg>
+                    </button>
+                    <button class="slider-button next" id="next-slide">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-right">
+                            <path d="m9 18 6-6-6-6"/>
+                        </svg>
+                    </button>
+
+                    <!-- Slider Pagination Dots -->
+                    <div class="slider-pagination" id="slider-pagination">
+                        <!-- Dots will be dynamically generated by JavaScript -->
+                    </div>
+                </div>
+
+                <!-- New "Explore All Features" Button -->
+                <div class="text-center mt-12">
+                    <a href="features.html" class="inline-block bg-indigo-600 text-white font-bold py-3 px-8 rounded-full shadow-lg hover:bg-indigo-700 transition duration-300 transform hover:scale-105">
+                        Explore All Features!
+                    </a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-slate-800 text-white py-8 px-4 sm:px-6 lg:px-8 text-center rounded-t-lg shadow-inner">
+        <div class="container mx-auto">
+            <p class="mb-4">&copy; 2024 Stat Mania. All rights reserved.</p>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 max-w-md mx-auto">
+                <a href="#" class="text-slate-300 hover:text-white transition duration-300 text-center py-1">Privacy Policy</a>
+                <a href="#" class="text-slate-300 hover:text-white transition duration-300 text-center py-1">Terms of Service</a>
+                <a href="#" class="text-slate-300 hover:text-white transition duration-300 text-center py-1">Sitemap</a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // JavaScript for mobile menu toggle
+        const mobileMenuButton = document.getElementById('mobile-menu-button');
+        const mobileMenu = document.getElementById('mobile-menu');
+
+        mobileMenuButton.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+
+        // Hide mobile menu when a link is clicked
+        const mobileMenuLinks = mobileMenu.querySelectorAll('a');
+        mobileMenuLinks.forEach(link => {
+            link.addEventListener('click', () => {
+                mobileMenu.classList.add('hidden');
+            });
+        });
+
+        // Content Slider JavaScript
+        const slider = document.getElementById('content-slider');
+        const sliderTrack = slider.querySelector('.slider-track');
+        const slides = Array.from(slider.querySelectorAll('.slide-item'));
+        const prevButton = document.getElementById('prev-slide');
+        const nextButton = document.getElementById('next-slide');
+        const paginationContainer = document.getElementById('slider-pagination');
+
+        let currentSlide = 0;
+        let slideInterval;
+
+        function updatePagination() {
+            paginationContainer.innerHTML = ''; // Clear existing dots
+            slides.forEach((_, index) => {
+                const dot = document.createElement('span');
+                dot.classList.add('pagination-dot');
+                if (index === currentSlide) {
+                    dot.classList.add('active');
+                }
+                dot.addEventListener('click', () => showSlide(index));
+                paginationContainer.appendChild(dot);
+            });
+        }
+
+        function showSlide(index) {
+            if (index >= slides.length) {
+                currentSlide = 0;
+            } else if (index < 0) {
+                currentSlide = slides.length - 1;
+            } else {
+                currentSlide = index;
+            }
+            sliderTrack.style.transform = `translateX(-${currentSlide * 100}%)`;
+            updatePagination(); // Update dots when slide changes
+        }
+
+        function nextSlide() {
+            showSlide(currentSlide + 1);
+        }
+
+        function prevSlide() {
+            showSlide(currentSlide - 1);
+        }
+
+        function startSlider() {
+            slideInterval = setInterval(nextSlide, 3000); // Change slide every 3 seconds
+        }
+
+        function pauseSlider() {
+            clearInterval(slideInterval);
+        }
+
+        // Event listeners for manual navigation
+        prevButton.addEventListener('click', prevSlide);
+        nextButton.addEventListener('click', nextSlide);
+
+        // Event listeners for pause on hover
+        slider.addEventListener('mouseover', pauseSlider);
+        slider.addEventListener('mouseout', startSlider);
+
+        // Initialize slider
+        document.addEventListener('DOMContentLoaded', () => {
+            showSlide(0); // Show the first slide and initialize pagination
+            startSlider();
+        });
+    </script>
+
 </body>
 </html>
