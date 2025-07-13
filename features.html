@@ -96,16 +96,16 @@
         /* Background icons styling */
         .bg-icon {
             position: absolute;
-            z-index: -1; /* Place behind content */
+            z-index: 1; /* Ensure icons are above the main background but behind text */
             pointer-events: none; /* Ensure no interaction */
         }
         /* Specific opacity for general background icons */
         .bg-icon.general {
-            opacity: 0.3; /* Increased opacity for general background */
+            opacity: 0.1; /* Very subtle */
         }
         /* Specific opacity for icons near feature boxes */
         .bg-icon.feature-related {
-            opacity: 0.6; /* Increased opacity for feature-related icons */
+            opacity: 0.2; /* Subtle for description areas */
         }
 
         /* Explicitly ensure SVGs within the circular icon containers are centered */
@@ -154,10 +154,11 @@
     </header>
 
     <main>
-        <!-- Background Icons (General) -->
+        <!-- Background Icons (General - Fewer and more subtle) -->
         <div class="bg-icon general top-[5%] left-[5%] w-24 h-24 sm:w-32 sm:h-32 lg:w-48 lg:h-48 text-indigo-300">
-            <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-sigma">
-                <path d="M18 4H6L14 12L6 20H18"/>
+            <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-line-chart">
+                <path d="M3 3v18h18"/>
+                <path d="m18 10-4 4-2-2-3 3"/>
             </svg>
         </div>
         <div class="bg-icon general top-[15%] right-[10%] w-28 h-28 sm:w-36 sm:h-36 lg:w-56 lg:h-56 text-purple-300">
@@ -173,90 +174,7 @@
                 <line x1="6" x2="6" y1="20" y2="14"/>
             </svg>
         </div>
-        <div class="bg-icon general top-[30%] left-[20%] w-20 h-20 sm:w-28 sm:h-28 lg:w-40 lg:h-40 text-blue-300">
-            <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-database">
-                <ellipse cx="12" cy="5" rx="9" ry="3"/>
-                <path d="M3 5V19A9 3 0 0 0 21 19V5"/>
-                <path d="M3 12A9 3 0 0 0 21 12"/>
-            </svg>
-        </div>
-        <div class="bg-icon general bottom-[20%] right-[5%] w-24 h-24 sm:w-32 sm:h-32 lg:w-48 lg:h-48 text-green-300">
-            <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-git-fork">
-                <circle cx="12" cy="18" r="3"/>
-                <circle cx="6" cy="6" r="3"/>
-                <circle cx="18" cy="6" r="3"/>
-                <path d="M6 9v3a6 6 0 0 0 12 0V9"/>
-            </svg>
-        </div>
-        <div class="bg-icon general top-[50%] left-[5%] w-24 h-24 sm:w-32 sm:h-32 lg:w-48 lg:h-48 text-red-300">
-            <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-square-root">
-                <path d="M10 12h8"/>
-                <path d="M3 12l3 6L9 6"/>
-                <path d="M18 4v16"/>
-            </svg>
-        </div>
-        <div class="bg-icon general bottom-[5%] left-[40%] w-32 h-32 sm:w-40 sm:h-40 lg:w-64 lg:h-64 text-yellow-300">
-            <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-function">
-                <path d="M20 10c0 6-8 12-8 12s-8-6-8-12s3-10 8-10s8 4 8 10"/>
-                <path d="M17.5 10.5h-11"/>
-            </svg>
-        </div>
-        <div class="bg-icon general top-[70%] right-[10%] w-20 h-20 sm:w-28 sm:h-28 lg:w-40 lg:h-40 text-pink-300">
-            <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-git-branch">
-                <line x1="6" x2="6" y1="3" y2="15"/>
-                <path d="M18 6V3"/>
-                <path d="M18 18v-3"/>
-                <path d="M6 18c0 2.2 1.8 4 4 4h2a4 4 0 0 0 4-4v-1.5"/>
-                <path d="M18 6a4 4 0 0 0-4-4H9.5"/>
-            </svg>
-        </div>
-        <div class="bg-icon general bottom-[5%] left-[10%] w-28 h-28 sm:w-36 sm:h-36 lg:w-56 lg:h-56 text-orange-300">
-            <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-columns-3">
-                <rect width="18" height="18" x="3" y="3" rx="2"/>
-                <path d="M9 3v18"/>
-                <path d="M15 3v18"/>
-            </svg>
-        </div>
-        <div class="bg-icon general top-[80%] left-[25%] w-24 h-24 sm:w-32 sm:h-32 lg:w-48 lg:h-48 text-cyan-300">
-            <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-code">
-                <polyline points="16 18 22 12 16 6"/>
-                <polyline points="8 6 2 12 8 18"/>
-            </svg>
-        </div>
-        <div class="bg-icon general top-[15%] left-[40%] w-28 h-28 sm:w-36 sm:h-36 lg:w-56 lg:h-56 text-lime-300">
-            <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-line-chart">
-                <path d="M3 3v18h18"/>
-                <path d="m18 10-4 4-2-2-3 3"/>
-            </svg>
-        </div>
-        <div class="bg-icon general bottom-[30%] right-[20%] w-32 h-32 sm:w-40 sm:h-40 lg:w-64 lg:h-64 text-fuchsia-300">
-            <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-brain">
-                <path d="M12 2a2 2 0 0 0-2 2v2a2 2 0 0 0 2 2h.1L12 10a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"/>
-                <path d="M14 12v4a2 2 0 0 1-2 2h-2a2 2 0 0 1-2-2v-4"/>
-                <path d="M16 12v4a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2v-4"/>
-                <path d="M8 12v4a2 2 0 0 0-2 2H4a2 2 0 0 0-2-2v-4"/>
-                <path d="M20 10c0 6-8 12-8 12s-8-6-8-12s3-10 8-10s8 4 8 10"/>
-            </svg>
-        </div>
-        <div class="bg-icon general top-[40%] right-[5%] w-20 h-20 sm:w-28 sm:h-28 lg:w-40 lg:h-40 text-emerald-300">
-            <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-activity">
-                <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
-            </svg>
-        </div>
-        <div class="bg-icon general top-[60%] left-[10%] w-24 h-24 sm:w-32 sm:h-32 lg:w-48 lg:h-48 text-rose-300">
-            <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-sliders">
-                <line x1="4" x2="4" y1="21" y2="14"/>
-                <line x1="4" x2="4" y1="10" y2="3"/>
-                <line x1="12" x2="12" y1="21" y2="12"/>
-                <line x1="12" x2="12" y1="8" y2="3"/>
-                <line x1="20" x2="20" y1="21" y2="16"/>
-                <line x1="20" x2="20" y1="12" y2="3"/>
-                <line x1="1" x2="7" y1="14" y2="14"/>
-                <line x1="9" x2="15" y1="8" y2="8"/>
-                <line x1="17" x2="23" y1="16" y2="16"/>
-            </svg>
-        </div>
-        <div class="bg-icon general bottom-[15%] right-[30%] w-28 h-28 sm:w-36 sm:h-36 lg:w-56 lg:h-56 text-sky-300">
+        <div class="bg-icon general top-[60%] right-[5%] w-20 h-20 sm:w-28 sm:h-28 lg:w-40 lg:h-40 text-emerald-300">
             <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-scatter-chart">
                 <circle cx="7.5" cy="7.5" r=".5" fill="currentColor"/>
                 <circle cx="17.5" cy="4.5" r=".5" fill="currentColor"/>
@@ -273,75 +191,44 @@
             </svg>
         </div>
 
-        <!-- Background Icons (Feature-Related) -->
-        <!-- Near Featured Tools Slider -->
-        <div class="bg-icon feature-related top-[35%] left-[50%] -translate-x-1/2 w-28 h-28 sm:w-36 sm:h-36 lg:w-56 lg:h-56 text-yellow-400">
-            <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-sparkles">
-                <path d="M9.9 10.8c-.4 1.4-.7 2.8-.7 4.2 0 1.4.3 2.8.7 4.2c.4 1.4.7 2.8.7 4.2 0 1.4-.3 2.8-.7 4.2"/>
-                <path d="M14.1 10.8c.4 1.4.7 2.8.7 4.2 0 1.4-.3 2.8-.7 4.2c-.4 1.4-.7 2.8-.7 4.2 0 1.4.3 2.8.7 4.2"/>
-                <path d="M12 2L12 22"/>
-            </svg>
-        </div>
-        <!-- Near Data Science (Visualization) -->
-        <div class="bg-icon feature-related top-[55%] left-[10%] w-24 h-24 sm:w-32 sm:h-32 lg:w-48 lg:h-48 text-red-400">
-            <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-flask">
-                <path d="M10 16.5V21a2 2 0 0 0 2 2c.7 0 1.4-.3 2-.7l3-3.5a2 2 0 0 0 .7-2V7.5"/>
-                <path d="M14 2H10a2 2 0 0 0-2 2v3.5l-3 3.5c-.6.4-1.3.7-2 .7a2 2 0 0 0-2 2v4.5"/>
-                <path d="M10 21c-1.4 0-2.8-.3-4.2-.7"/>
-                <path d="M14 21c1.4 0 2.8-.3 4.2-.7"/>
-            </svg>
-        </div>
-        <!-- Near Data Science (Analysis) -->
-        <div class="bg-icon feature-related top-[75%] right-[10%] w-24 h-24 sm:w-32 sm:h-32 lg:w-48 lg:h-48 text-blue-400">
-            <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-microscope">
-                <path d="M6 18h4a2 2 0 0 0 2-2v-3.5a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2V16a2 2 0 0 0 2 2z"/>
-                <path d="M12 2L12 22"/>
-                <path d="M14 12V3.5a2 2 0 0 0-2-2H10a2 2 0 0 0-2 2V12"/>
-                <path d="M16 12V3.5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2V12"/>
-                <path d="M12 22c-1.4 0-2.8-.3-4.2-.7"/>
-                <path d="M12 22c1.4 0 2.8-.3 4.2-.7"/>
-            </svg>
-        </div>
-        <!-- Near Everyday Utilities -->
-        <div class="bg-icon feature-related bottom-[10%] left-[30%] w-28 h-28 sm:w-36 sm:h-36 lg:w-56 lg:h-56 text-green-400">
-            <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-tool">
-                <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-2.06 2.06A4.99 4.99 0 0 1 2 17.5V19h1.5a1.5 1.5 0 0 1 1.5 1.5v1.5h1.5A1.5 1.5 0 0 1 8 21.5l.34-.34A10 10 0 0 0 14.7 6.3z"/>
-                <path d="M17.5 17.5h.01"/>
-            </svg>
-        </div>
-
         <!-- Content Slider Section -->
         <section class="py-12 px-4 sm:px-6 lg:px-8">
             <div class="container mx-auto max-w-4xl">
                 <!-- Wrapper for "All features" description and its icons -->
                 <div class="relative mb-10">
-                    <!-- Background Icons for "All features" description -->
-                    <div class="bg-icon feature-related top-[10%] left-[5%] w-20 h-20 sm:w-28 sm:h-28 text-indigo-400">
+                    <!-- Background Icons for "All features" description - Fewer and more subtle -->
+                    <div class="bg-icon feature-related top-[15%] left-[10%] w-20 h-20 sm:w-28 sm:h-28 text-indigo-400">
                         <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-columns-3">
                             <rect width="18" height="18" x="3" y="3" rx="2"/>
                             <path d="M9 3v18"/>
                             <path d="M15 3v18"/>
                         </svg>
                     </div>
-                    <div class="bg-icon feature-related top-[15%] right-[5%] w-24 h-24 sm:w-32 sm:h-32 text-purple-400">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-sigma">
-                            <path d="M18 4H6L14 12L6 20H18"/>
+                    <div class="bg-icon feature-related top-[20%] right-[10%] w-24 h-24 sm:w-32 sm:h-32 text-purple-400">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-line-chart">
+                            <path d="M3 3v18h18"/>
+                            <path d="m18 10-4 4-2-2-3 3"/>
                         </svg>
                     </div>
-                    <div class="bg-icon feature-related bottom-[10%] left-[20%] w-20 h-20 sm:w-28 sm:h-28 text-teal-400">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-activity">
-                            <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
-                        </svg>
-                    </div>
-                    <div class="bg-icon feature-related bottom-[15%] right-[25%] w-20 h-20 sm:w-28 sm:h-28 text-red-400">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-tool">
-                            <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-2.06 2.06A4.99 4.99 0 0 1 2 17.5V19h1.5a1.5 1.5 0 0 1 1.5 1.5v1.5h1.5A1.5 1.5 0 0 1 8 21.5l.34-.34A10 10 0 0 0 14.7 6.3z"/>
-                            <path d="M17.5 17.5h.01"/>
+                    <div class="bg-icon feature-related bottom-[10%] left-[30%] w-20 h-20 sm:w-28 sm:h-28 text-teal-400">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-scatter-chart">
+                            <circle cx="7.5" cy="7.5" r=".5" fill="currentColor"/>
+                            <circle cx="17.5" cy="4.5" r=".5" fill="currentColor"/>
+                            <circle cx="11.5" cy="13.5" r=".5" fill="currentColor"/>
+                            <circle cx="16.5" cy="17.5" r=".5" fill="currentColor"/>
+                            <circle cx="8.5" cy="12.5" r=".5" fill="currentColor"/>
+                            <line x1="14" x2="20" y1="6" y2="12"/>
+                            <line x1="17" x2="20" y1="15" y2="18"/>
+                            <line x1="3" x2="9" y1="10" y2="16"/>
+                            <line x1="7" x2="10" y1="14" y2="17"/>
+                            <path d="M3 21v-4a4 4 0 0 1 4-4h.5"/>
+                            <path d="M21 3h-4a4 4 0 0 0-4 4v.5"/>
+                            <path d="M10 10v.5"/>
                         </svg>
                     </div>
 
-                    <h2 class="text-2xl font-bold text-slate-800 mb-8 text-center relative z-10">All features</h2>
-                    <p class="text-center text-slate-600 max-w-2xl mx-auto relative z-10">
+                    <h2 class="text-2xl font-bold text-slate-800 mb-8 text-center relative z-20">All features</h2>
+                    <p class="text-center text-slate-600 max-w-2xl mx-auto relative z-20">
                         Discover the full range of tools and calculators available on Stat Mania. From in-depth data visualization and statistical analysis to practical everyday utilities, our platform is designed to simplify complex tasks and empower your data-driven decisions.
                     </p>
                 </div>
@@ -422,7 +309,7 @@
         <section class="py-12 px-4 sm:px-6 lg:px-8">
             <div class="container mx-auto max-w-6xl">
                 <div class="bg-slate-50 p-8 rounded-xl shadow-md border border-slate-200 text-slate-700 relative overflow-hidden">
-                    <!-- Wrapper for "Data Science" description and its icons -->
+                    <!-- Wrapper for "Data Science" description and its icons - Fewer and more subtle -->
                     <div class="relative mb-10">
                         <!-- Background Icons for Data Science Section Description -->
                         <div class="bg-icon feature-related top-[10%] left-[5%] w-20 h-20 sm:w-28 sm:h-28 text-blue-400">
@@ -445,18 +332,9 @@
                                 <path d="M3 12A9 3 0 0 0 21 12"/>
                             </svg>
                         </div>
-                        <div class="bg-icon feature-related bottom-[5%] right-[25%] w-20 h-20 sm:w-28 sm:h-28 text-fuchsia-400">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-brain">
-                                <path d="M12 2a2 2 0 0 0-2 2v2a2 2 0 0 0 2 2h.1L12 10a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"/>
-                                <path d="M14 12v4a2 2 0 0 1-2 2h-2a2 2 0 0 1-2-2v-4"/>
-                                <path d="M16 12v4a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2v-4"/>
-                                <path d="M8 12v4a2 2 0 0 0-2 2H4a2 2 0 0 0-2-2v-4"/>
-                                <path d="M20 10c0 6-8 12-8 12s-8-6-8-12s3-10 8-10s8 4 8 10"/>
-                            </svg>
-                        </div>
 
-                        <h2 class="text-2xl font-bold text-slate-800 mb-8 text-center relative z-10">Data Science</h2>
-                        <p class="text-center text-slate-600 mb-10 max-w-2xl mx-auto relative z-10">
+                        <h2 class="text-2xl font-bold text-slate-800 mb-8 text-center relative z-20">Data Science</h2>
+                        <p class="text-center text-slate-600 mb-10 max-w-2xl mx-auto relative z-20">
                             Dive into the world of data with our comprehensive suite of data science tools. From interactive visualizations that bring your data to life to powerful analytical calculators, we provide everything you need to extract insights and make informed decisions.
                         </p>
                     </div>
@@ -626,7 +504,7 @@
                         </div>
                     </div>
 
-                    <!-- Wrapper for "Everyday Utilities" description and its icons -->
+                    <!-- Wrapper for "Everyday Utilities" description and its icons - Fewer and more subtle -->
                     <div class="relative mb-10">
                         <!-- Background Icons for Everyday Utilities Section Description -->
                         <div class="bg-icon feature-related top-[10%] right-[10%] w-20 h-20 sm:w-28 sm:h-28 text-orange-400">
@@ -656,19 +534,9 @@
                                 <path d="M18 3h-6a4 4 0 0 0-4 4v14a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7a4 4 0 0 0-4-4Z"/>
                             </svg>
                         </div>
-                        <div class="bg-icon feature-related bottom-[10%] right-[15%] w-20 h-20 sm:w-28 sm:h-28 text-blue-400">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-alarm-clock">
-                                <circle cx="12" cy="12" r="10"/>
-                                <path d="M12 6v6l4 2"/>
-                                <path d="M10.25 5.25L9 2"/>
-                                <path d="M13.75 5.25L15 2"/>
-                                <path d="M6.25 10.25L3.5 9"/>
-                                <path d="M17.75 10.25L20.5 9"/>
-                            </svg>
-                        </div>
 
-                        <h2 class="text-2xl font-bold text-slate-800 mb-8 text-center relative z-10">Everyday Utilities</h2>
-                        <p class="text-center text-slate-600 mb-10 max-w-2xl mx-auto relative z-10">
+                        <h2 class="text-2xl font-bold text-slate-800 mb-8 text-center relative z-20">Everyday Utilities</h2>
+                        <p class="text-center text-slate-600 mb-10 max-w-2xl mx-auto relative z-20">
                             Simplify your daily tasks with our collection of practical utilities. From calculating your age or BMI to generating secure passwords and setting alarms, these tools are designed to make your life easier and more efficient.
                         </p>
                     </div>
