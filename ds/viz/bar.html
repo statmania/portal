@@ -243,6 +243,10 @@
                         <input type="radio" name="chartType" value="donut" class="form-radio">
                         <span class="ml-2 text-gray-700">Donut Chart</span>
                     </label>
+                    <label class="inline-flex items-center">
+                        <input type="radio" name="chartType" value="line" class="form-radio">
+                        <span class="ml-2 text-gray-700">Line Chart</span>
+                    </label>
                 </div>
                 <!-- Updated sort button with dynamic icon -->
                 <button id="sortAscendingBtn"><i class="fas fa-sort-amount-up-alt"></i> Sort Ascending</button>
@@ -779,6 +783,187 @@
             }
         }
 
+        /**
+         * Draws a line chart on the canvas.
+         * @param {HTMLCanvasElement} canvas - The canvas element to draw on.
+         * @param {CanvasRenderingContext2D} ctx - The 2D rendering context of the canvas.
+         * @param {{numericValue: number, originalString: string}[]} valuesData - Array of value objects for the points.
+         * @param {string[]} categories - Array of category labels for the X-axis.
+         * @param {string} plotTitle - Title of the plot.
+         * @param {string} xAxisLabel - Label for the X-axis.
+         * @param {string} yAxisLabel - Label for the Y-axis.
+         * @param {string[]} colors - Array of colors for the line and points.
+         * @param {boolean} shouldUseBanglaNumeralsForDisplay - True if Bangla numerals should be used for display.
+         */
+        function drawLineChart(canvas, ctx, valuesData, categories, plotTitle, xAxisLabel, yAxisLabel, colors, shouldUseBanglaNumeralsForDisplay) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            const numericValues = valuesData.map(d => d.numericValue);
+
+            const canvasWidth = canvas.width;
+            const canvasHeight = canvas.height;
+
+            const topPadding = 50;
+            const bottomPadding = 40;
+            const leftPadding = 60;
+            const rightPadding = 20;
+
+            const chartAreaWidth = canvasWidth - leftPadding - rightPadding;
+            const chartAreaHeight = canvasHeight - topPadding - bottomPadding;
+
+            const maxValue = numericValues.length > 0 ? Math.max(...numericValues) : 0;
+            const displayMaxValue = (maxValue > 0) ? maxValue * 1.1 : 100; // Add buffer
+
+            // If no values, clear canvas and return
+            if (numericValues.length === 0) {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                return;
+            }
+
+            // Draw Plot Area Background (ggplot2 style)
+            ctx.fillStyle = '#e6e6e6'; // Gray background
+            ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+
+            // Draw horizontal grid lines
+            ctx.strokeStyle = '#ffffff'; // White for grid lines
+            ctx.lineWidth = 1;
+            const numYGridLines = 10;
+            for (let i = 0; i <= numYGridLines; i++) {
+                const y = topPadding + (chartAreaHeight / numYGridLines) * i;
+                ctx.beginPath();
+                ctx.moveTo(leftPadding, y);
+                ctx.lineTo(leftPadding + chartAreaWidth, y);
+                ctx.stroke();
+            }
+
+            // Calculate horizontal spacing for categories
+            const categoryWidth = chartAreaWidth / categories.length;
+
+            // Draw vertical grid lines (aligned with category centers)
+            for (let i = 0; i < categories.length; i++) {
+                const xGrid = leftPadding + (i * categoryWidth) + (categoryWidth / 2); // Center of each category slot
+                ctx.beginPath();
+                ctx.moveTo(xGrid, topPadding);
+                ctx.lineTo(xGrid, canvasHeight - bottomPadding);
+                ctx.stroke();
+            }
+
+
+            // Draw Plot Title
+            ctx.fillStyle = '#1F2937';
+            ctx.font = 'bold 18px Inter';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'top';
+            ctx.fillText(plotTitle, canvasWidth / 2, 15);
+
+            // Draw Y-axis (values)
+            ctx.beginPath();
+            ctx.moveTo(leftPadding, topPadding);
+            ctx.lineTo(leftPadding, canvasHeight - bottomPadding);
+            ctx.strokeStyle = '#374151';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            // Draw X-axis (categories)
+            ctx.beginPath();
+            ctx.moveTo(leftPadding, canvasHeight - bottomPadding);
+            ctx.lineTo(canvasWidth - rightPadding, canvasHeight - bottomPadding);
+            ctx.strokeStyle = '#374151';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            // Draw Y-axis labels and tick marks
+            for (let i = 0; i <= numYGridLines; i++) {
+                const value = (displayMaxValue / numYGridLines) * i;
+                const y = canvasHeight - bottomPadding - (value / displayMaxValue) * chartAreaHeight;
+
+                ctx.fillStyle = '#4B5563';
+                ctx.font = '12px Inter';
+                ctx.textAlign = 'right';
+                ctx.textBaseline = 'middle';
+                const labelText = shouldUseBanglaNumeralsForDisplay ? convertEnglishToBanglaNumerals(Math.round(value).toString()) : Math.round(value).toString();
+                ctx.fillText(labelText, leftPadding - 5, y);
+
+                ctx.beginPath();
+                ctx.moveTo(leftPadding, y);
+                ctx.lineTo(leftPadding + 5, y);
+                ctx.strokeStyle = '#9CA3AF';
+                ctx.lineWidth = 1;
+                ctx.stroke();
+            }
+
+            // Draw Y-axis Label
+            ctx.save();
+            ctx.translate(leftPadding - 40, canvasHeight / 2);
+            ctx.rotate(-Math.PI / 2);
+            ctx.fillStyle = '#1F2937';
+            ctx.font = '14px Inter';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(yAxisLabel, 0, 0);
+            ctx.restore();
+
+            // Draw X-axis Label
+            ctx.fillStyle = '#1F2937';
+            ctx.font = '14px Inter';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'top';
+            ctx.fillText(xAxisLabel, leftPadding + chartAreaWidth / 2, canvasHeight - bottomPadding + 25);
+
+            // Draw the connecting line first
+            ctx.beginPath();
+            ctx.strokeStyle = colors[0] || defaultColors[0]; // Use first color for the line
+            ctx.lineWidth = 3;
+            ctx.lineJoin = 'round'; // Smooth corners
+            ctx.lineCap = 'round'; // Rounded line ends
+
+            for (let i = 0; i < numericValues.length; i++) {
+                const value = numericValues[i];
+                // Calculate x position: center of the category slot
+                const x = leftPadding + (i * categoryWidth) + (categoryWidth / 2);
+                const y = canvasHeight - bottomPadding - (value / displayMaxValue) * chartAreaHeight;
+
+                if (i === 0) {
+                    ctx.moveTo(x, y);
+                } else {
+                    ctx.lineTo(x, y);
+                }
+            }
+            ctx.stroke(); // Draw the main line path here, after all points are defined
+
+            // Now draw the points on top of the line
+            for (let i = 0; i < numericValues.length; i++) {
+                const value = numericValues[i];
+                const originalValueString = valuesData[i].originalString;
+                const category = categories[i] || `Point ${i + 1}`;
+                const x = leftPadding + (i * categoryWidth) + (categoryWidth / 2);
+                const y = canvasHeight - bottomPadding - (value / displayMaxValue) * chartAreaHeight;
+
+                // Draw point
+                ctx.fillStyle = colors[i] || defaultColors[i % defaultColors.length]; // Use individual colors for points
+                ctx.beginPath(); // Start new path for the point circle
+                ctx.arc(x, y, 5, 0, Math.PI * 2); // Circle point
+                ctx.fill();
+                ctx.strokeStyle = '#ffffff'; // White border for points
+                ctx.lineWidth = 2;
+                ctx.stroke(); // Stroke the point circle
+
+                // Draw category label below the point
+                ctx.fillStyle = '#4B5563';
+                ctx.font = '12px Inter';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'top';
+                ctx.fillText(category, x, canvasHeight - bottomPadding + 5);
+
+                // Draw value label above the point
+                ctx.fillStyle = '#1F2937';
+                ctx.font = '12px Inter';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'bottom';
+                ctx.fillText(originalValueString, x, y - 10);
+            }
+        }
+
 
         /**
          * Sorts the bar data (values, categories, colors, widths) in ascending order based on values.
@@ -1079,15 +1264,19 @@
             // Update visibility of the option fields (axis labels, widths, colors) in the left panel
             if (moreOptionsVisible) {
                 colorsInputContainer.classList.remove('hidden-options'); // Ensure colors are visible if More Options is open
-                if (selectedChartType === 'bar') {
+                if (selectedChartType === 'bar' || selectedChartType === 'line') { // Added 'line'
                     xAxisLabelDiv.classList.remove('hidden-options');
                     yAxisLabelDiv.classList.remove('hidden-options');
-                    widthsInputDiv.classList.remove('hidden-options');
                 } else {
                     // For pie/donut, these are always hidden even if More Options is visible
                     xAxisLabelDiv.classList.add('hidden-options');
                     yAxisLabelDiv.classList.add('hidden-options');
-                    widthsInputDiv.classList.add('hidden-options');
+                }
+
+                if (selectedChartType === 'bar') { // Only for bar chart
+                    widthsInputDiv.classList.remove('hidden-options');
+                } else {
+                    widthsInputDiv.classList.add('hidden-options'); // Hide for other chart types (including line)
                 }
             } else {
                 // If more options are hidden, all these should be hidden
@@ -1110,7 +1299,7 @@
                     }
                 }
                 if (tableHeaders[3]) { // Width header
-                    if (moreOptionsVisible && selectedChartType === 'bar') {
+                    if (moreOptionsVisible && selectedChartType === 'bar') { // Only for bar chart
                         tableHeaders[3].classList.remove('hidden-options');
                     } else {
                         tableHeaders[3].classList.add('hidden-options');
@@ -1129,7 +1318,7 @@
                         }
                     }
                     if (cells[3]) { // Width cell
-                        if (moreOptionsVisible && selectedChartType === 'bar') {
+                        if (moreOptionsVisible && selectedChartType === 'bar') { // Only for bar chart
                             cells[3].classList.remove('hidden-options');
                         } else {
                             cells[3].classList.add('hidden-options');
@@ -1277,7 +1466,7 @@
 
 
             // Ensure canvas size is set to its CSS size
-            // Use computed style to get accurate rendered dimensions
+            // Use computed style to get accurate rendered rendered dimensions
             const computedStyle = getComputedStyle(barChartCanvas);
             barChartCanvas.width = parseFloat(computedStyle.width);
             barChartCanvas.height = barChartCanvas.width; // Make it square based on width
@@ -1289,6 +1478,8 @@
                 drawPieChart(barChartCanvas, ctx, valuesData, categories, plotTitle, colors, shouldUseBanglaNumeralsForDisplay);
             } else if (selectedChartType === 'donut') {
                 drawDonutChart(barChartCanvas, ctx, valuesData, categories, plotTitle, colors, shouldUseBanglaNumeralsForDisplay);
+            } else if (selectedChartType === 'line') { // New line chart drawing
+                drawLineChart(barChartCanvas, ctx, valuesData, categories, plotTitle, xAxisLabel, yAxisLabel, colors, shouldUseBanglaNumeralsForDisplay);
             }
         }
 
