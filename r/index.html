@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>R-like JS Console</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="r/styles.css"> <!-- Link to external CSS -->
+</head>
+<body>
+    <div class="console-container">
+        <h1>R-like JS Console</h1>
+        <div class="console-output" id="consoleOutput">
+            <span style="color: #61dafb;">Welcome to R-like JS Console!</span><br>
+            <span style="color: #61dafb;">This is a JavaScript implementation of basic R functions.</span><br>
+            <span style="color: #61dafb;">Type 'help()' for available commands.</span><br><br>
+        </div>
+        <div class="console-input-line">
+            <span class="prompt">></span>
+            <input type="text" id="consoleInput" class="console-input" autofocus>
+        </div>
+    </div>
+
+    <script type="module">
+        // Import the mean function from its dedicated file
+        import { mean } from 'func/mean.js';
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const consoleInput = document.getElementById('consoleInput');
+            const consoleOutput = document.getElementById('consoleOutput');
+
+            // Simple environment to store variables
+            const rEnvironment = {};
+
+            /**
+             * Appends text to the console output area.
+             * @param {string} text - The text to append.
+             * @param {boolean} isError - True if the text is an error message.
+             */
+            function appendOutput(text, isError = false) {
+                const span = document.createElement('span');
+                span.textContent = text;
+                span.style.color = isError ? '#ff6b6b' : '#abb2bf'; // Red for errors, default for others
+                consoleOutput.appendChild(span);
+                consoleOutput.appendChild(document.createElement('br'));
+                // Scroll to the bottom
+                consoleOutput.scrollTop = consoleOutput.scrollHeight;
+            }
+
+            /**
+             * Simulates R's print/console output.
+             * Handles arrays (vectors) by prefixing with '[1]' and joining elements.
+             * @param {...any} args - Arguments to print.
+             */
+            function rPrint(...args) {
+                const formattedOutput = args.map(arg => {
+                    if (Array.isArray(arg)) {
+                        return `[1] ${arg.join(' ')}`;
+                    }
+                    return String(arg); // Ensure non-array args are converted to string
+                }).join(' ');
+                appendOutput(formattedOutput);
+            }
+
+            // --- R-like function implementations in JavaScript ---
+
+            /**
+             * Mimics R's 'c' (combine/concatenate) function.
+             * Simply returns its arguments as a JavaScript array.
+             * @param {...any} args - Elements to combine into a vector.
+             * @returns {Array} A new array containing all arguments.
+             */
+            function c(...args) {
+                return args;
+            }
+
+            /**
+             * Mimics R's 'sum' function.
+             * @param {number|Array<number>} input - A number or an array of numbers.
+             * @returns {number} The sum of the input elements.
+             * @throws {Error} If the input is not a number or an array of numbers.
+             */
+            function sum(input) {
+                if (typeof input === 'number') {
+                    return input;
+                }
+                if (!Array.isArray(input)) {
+                    throw new Error("Argument to 'sum' must be a number or a vector (array) of numbers.");
+                }
+                return input.reduce((acc, val) => {
+                    if (typeof val !== 'number') {
+                        throw new Error("All elements in 'sum' vector must be numbers.");
+                    }
+                    return acc + val;
+                }, 0);
+            }
+
+            /**
+             * Mimics R's 'prod' function (product of elements in a vector).
+             * @param {number|Array<number>} input - A number or an array of numbers.
+             * @returns {number} The product of the input elements.
+             * @throws {Error} If the input is not a number or an array of numbers.
+             */
+            function prod(input) {
+                if (typeof input === 'number') {
+                    return input;
+                }
+                if (!Array.isArray(input)) {
+                    throw new Error("Argument to 'prod' must be a number or a vector (array) of numbers.");
+                }
+                return input.reduce((acc, val) => {
+                    if (typeof val !== 'number') {
+                        throw new Error("All elements in 'prod' vector must be numbers.");
+                    }
+                    return acc * val;
+                }, 1); // Initial value for product is 1
+            }
+
+            /**
+             * Provides help information for available commands.
+             */
+            function help() {
+                appendOutput("Available R-like functions:");
+                appendOutput("  c(...) - Combine values into a vector.");
+                appendOutput("  sum(x) - Calculate the sum of elements in x.");
+                appendOutput("  prod(x) - Calculate the product of elements in x.");
+                appendOutput("  mean(x) - Calculate the mean of elements in x.");
+                appendOutput("  print(x) - Print the value of x.");
+                appendOutput("  You can assign variables using '<-' or '=' (e.g., 'my_var <- 10').");
+                appendOutput("  Comments start with '#'.");
+            }
+
+
+            /**
+             * Helper function to resolve an argument string to its actual value.
+             * It checks if the string is a number, a string literal, a variable in the environment,
+             * or a call to `c()`. It also now handles nested function calls.
+             * @param {string} argStr - The string representation of the argument.
+             * @returns {any} The resolved value of the argument.
+             * @throws {Error} If the argument cannot be resolved.
+             */
+            function resolveArgument(argStr) {
+                argStr = argStr.trim();
+
+                // Check for numbers
+                if (!isNaN(parseFloat(argStr)) && isFinite(argStr)) {
+                    return parseFloat(argStr);
+                }
+
+                // Check for string literals (single or double quotes)
+                if ((argStr.startsWith('"') && argStr.endsWith('"')) || (argStr.startsWith("'") && argStr.endsWith("'"))) {
+                    return argStr.substring(1, argStr.length - 1);
+                }
+
+                // Check for c() function call
+                if (argStr.startsWith('c(') && argStr.endsWith(')')) {
+                    const argsInCStr = argStr.substring(2, argStr.length - 1).trim();
+                    if (argsInCStr === '') {
+                        return [];
+                    }
+                    const cArgs = argsInCStr.split(',').map(subArg => resolveArgument(subArg.trim()));
+                    return c(...cArgs);
+                }
+
+                // Check for nested function calls (e.g., sum(my_vec) inside an assignment)
+                const funcCallMatch = argStr.match(/^([a-zA-Z_][a-zA-Z0-9_]*)\((.*)\)$/);
+                if (funcCallMatch) {
+                    const funcName = funcCallMatch[1];
+                    const innerArgStr = funcCallMatch[2].trim();
+                    const innerArgValue = resolveArgument(innerArgStr);
+
+                    switch (funcName) {
+                        case 'sum':
+                            return sum(innerArgValue);
+                        case 'prod':
+                            return prod(innerArgValue);
+                        case 'mean':
+                            return mean(innerArgValue);
+                        case 'c':
+                            return c(innerArgValue);
+                        default:
+                            throw new Error(`Unknown function in expression: ${funcName}`);
+                    }
+                }
+
+                // Check for variable in environment
+                if (rEnvironment.hasOwnProperty(argStr)) {
+                    return rEnvironment[argStr];
+                }
+
+                // If none of the above, it's an unresolvable argument for this simple parser
+                throw new Error(`Cannot resolve argument or expression: '${argStr}'`);
+            }
+
+
+            /**
+             * Evaluates a single line of R-like code.
+             * @param {string} codeLine - The R-like code string to evaluate.
+             */
+            function evaluateRlikeCodeLine(codeLine) {
+                let trimmedLine = codeLine.trim();
+
+                // Handle inline comments
+                const commentIndex = trimmedLine.indexOf('#');
+                if (commentIndex !== -1) {
+                    trimmedLine = trimmedLine.substring(0, commentIndex).trim();
+                }
+
+                if (trimmedLine === '') {
+                    return; // Do nothing for empty lines or lines that are only comments
+                }
+
+                // Assignment: variable_name <- value OR variable_name = value
+                const assignmentMatch = trimmedLine.match(/^([a-zA-Z_][a-zA-Z0-9_]*)\s*(?:<-|=)\s*(.*)$/);
+                if (assignmentMatch) {
+                    const varName = assignmentMatch[1];
+                    const expressionStr = assignmentMatch[2];
+                    if (expressionStr.trim() === '') {
+                        throw new Error(`Assignment requires an expression: '${trimmedLine}'`);
+                    }
+                    rEnvironment[varName] = resolveArgument(expressionStr);
+                    return;
+                }
+
+                // Function calls (e.g., function_name(arg))
+                const funcCallMatch = trimmedLine.match(/^([a-zA-Z_][a-zA-Z0-9_]*)\((.*)\)$/);
+                if (funcCallMatch) {
+                    const funcName = funcCallMatch[1];
+                    const argStr = funcCallMatch[2].trim();
+
+                    // Handle special cases for built-in functions
+                    if (funcName === 'help' && argStr === '') {
+                        help();
+                        return;
+                    }
+
+                    // Specific checks for functions that require arguments if argStr is empty
+                    if (argStr === '' && ['sum', 'prod', 'mean', 'print'].includes(funcName)) {
+                        throw new Error(`Function '${funcName}' requires an argument.`);
+                    }
+
+                    const argValue = resolveArgument(argStr);
+
+                    switch (funcName) {
+                        case 'print':
+                            rPrint(argValue);
+                            break;
+                        case 'sum':
+                            rPrint(sum(argValue));
+                            break;
+                        case 'prod':
+                            rPrint(prod(argValue));
+                            break;
+                        case 'mean':
+                            rPrint(mean(argValue));
+                            break;
+                        case 'c':
+                            rPrint(argValue);
+                            break;
+                        default:
+                            throw new Error(`Unknown function: ${funcName}`);
+                    }
+                    return;
+                }
+
+                // If it's a lone variable name, print its value
+                if (rEnvironment.hasOwnProperty(trimmedLine)) {
+                    rPrint(rEnvironment[trimmedLine]);
+                    return;
+                }
+
+                // If nothing matched, it's an unhandled statement or error
+                throw new Error(`Syntax Error or Unhandled statement: '${trimmedLine}'`);
+            }
+
+            // Event listener for Enter key in the input field
+            consoleInput.addEventListener('keydown', (event) => {
+                if (event.key === 'Enter') {
+                    const command = consoleInput.value;
+                    appendOutput(`> ${command}`, false); // Echo the command
+                    consoleInput.value = ''; // Clear input field
+
+                    try {
+                        evaluateRlikeCodeLine(command);
+                    } catch (error) {
+                        appendOutput(`Error: ${error.message}`, true); // Display errors in red
+                        console.error(error);
+                    }
+                }
+            });
+
+            // Focus the input field on load
+            consoleInput.focus();
+        });
+    </script>
+</body>
+</html>

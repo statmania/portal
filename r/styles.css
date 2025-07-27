@@ -1,0 +1,93 @@
+/* r/styles.css */
+body {
+    font-family: 'Inter', sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background-color: #f0f2f5;
+    margin: 0;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.console-container {
+    background-color: #1e1e1e; /* Dark background for console */
+    color: #f8f8f2; /* Light text color */
+    padding: 24px;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    width: 100%;
+    max-width: 800px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-height: 400px; /* Minimum height for the console */
+}
+
+h1 {
+    color: #61dafb; /* A light blue for the title */
+    font-size: 1.875rem;
+    font-weight: 700;
+    margin-bottom: 16px;
+    text-align: center;
+}
+
+.console-output {
+    flex-grow: 1; /* Allows output area to take available space */
+    background-color: #282c34; /* Slightly lighter dark for output background */
+    padding: 15px;
+    border-radius: 8px;
+    overflow-y: auto; /* Scroll for long output */
+    white-space: pre-wrap;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 0.95rem;
+    line-height: 1.4;
+    color: #abb2bf; /* Greyish text for output */
+    border: 1px solid #3c3f47;
+}
+
+.console-input-line {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.prompt {
+    color: #a9b7c6; /* Prompt color */
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 1rem;
+    white-space: nowrap; /* Prevent prompt from wrapping */
+}
+
+.console-input {
+    flex-grow: 1; /* Input takes remaining space */
+    background-color: #3c3f47; /* Darker input background */
+    color: #f8f8f2;
+    padding: 10px 12px;
+    border: 1px solid #5a5e6b;
+    border-radius: 8px;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 1rem;
+    outline: none; /* Remove default outline */
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.console-input:focus {
+    border-color: #61dafb; /* Highlight on focus */
+    box-shadow: 0 0 0 2px rgba(97, 218, 251, 0.3); /* Soft glow */
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .console-container {
+        padding: 16px;
+        margin: 10px;
+    }
+    h1 {
+        font-size: 1.5rem;
+    }
+    .console-output, .console-input {
+        font-size: 0.9rem;
+    }
+}

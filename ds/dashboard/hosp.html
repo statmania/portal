@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hospital Data Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+  <script src="https://cdn.plot.ly/plotly-2.30.0.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #f8f9fa;
+      color: #333;
+    }
+    header {
+      background-color: #00796b;
+      color: white;
+      padding: 1rem;
+      text-align: center;
+    }
+    h1, h2 {
+      margin: 0.5rem;
+    }
+    .container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 1rem;
+    }
+    table {
+      border-collapse: collapse;
+      width: 90%;
+      max-width: 600px;
+      margin: 1rem 0;
+      background: white;
+      box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+    }
+    th, td {
+      padding: 10px;
+      border: 1px solid #ddd;
+      text-align: center;
+      font-size: 0.9rem;
+    }
+    #plot1, #plot2 {
+      width: 100%;
+      max-width: 900px;
+      margin: 20px auto;
+    }
+    @media (max-width: 768px) {
+      table {
+        width: 100%;
+      }
+      th, td {
+        padding: 6px;
+        font-size: 0.8rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Hospital Data Dashboard</h1>
+  </header>
+
+  <div class="container">
+    <h2>Summary Statistics</h2>
+    <div id="summary"></div>
+
+    <h2>Financial Class & DocType Distribution</h2>
+    <div id="plot1"></div>
+
+    <h2>Revenue Over Time</h2>
+    <div id="plot2"></div>
+  </div>
+
+  <script>
+    const csvUrl = "https://raw.githubusercontent.com/mahmudstat/open-analysis/refs/heads/main/data/hospital.csv";
+
+    function median(arr) {
+      const sorted = arr.filter(v => !isNaN(v)).sort((a,b) => a-b);
+      const mid = Math.floor(sorted.length / 2);
+      return sorted.length % 2 !== 0 ? sorted[mid] : (sorted[mid-1] + sorted[mid]) / 2;
+    }
+
+    function mode(arr) {
+      const freq = {};
+      arr.forEach(v => { if(v) freq[v] = (freq[v] || 0) + 1; });
+      const maxFreq = Math.max(...Object.values(freq));
+      return Object.keys(freq).filter(k => freq[k] === maxFreq).join(", ");
+    }
+
+    fetch(csvUrl)
+      .then(r => r.text())
+      .then(txt => {
+        const parsed = Papa.parse(txt, { header: true, dynamicTyping: true });
+        let data = parsed.data.filter(row => row.Date && row.Revenue !== undefined);
+
+        // Sort by Date
+        data.sort((a, b) => new Date(a.Date) - new Date(b.Date));
+
+        const size = data.length;
+        const financialClass = data.map(d => d.Financial_Class);
+        const docType = data.map(d => d.DocType);
+        const revenue = data.map(d => +d.Revenue);
+        const dates = data.map(d => new Date(d.Date));
+
+        const finMode = mode(financialClass);
+        const docMode = mode(docType);
+        const finMedian = finMode;
+        const docMedian = docMode;
+        const revenueMean = (revenue.reduce((a, b) => a + b, 0) / revenue.length).toFixed(2);
+        const revenueMedian = median(revenue).toFixed(2);
+
+        document.getElementById("summary").innerHTML = `
+          <table>
+            <tr><th>Data Size</th><td>${size}</td></tr>
+            <tr><th>Financial Class (Mode)</th><td>${finMode}</td></tr>
+            <tr><th>Financial Class (Median)</th><td>${finMedian}</td></tr>
+            <tr><th>DocType (Mode)</th><td>${docMode}</td></tr>
+            <tr><th>DocType (Median)</th><td>${docMedian}</td></tr>
+            <tr><th>Revenue Mean</th><td>${revenueMean}</td></tr>
+            <tr><th>Revenue Median</th><td>${revenueMedian}</td></tr>
+          </table>
+        `;
+
+        // Bar chart for Financial_Class and DocType
+        const finCounts = {};
+        financialClass.forEach(fc => { if(fc) finCounts[fc] = (finCounts[fc] || 0) + 1; });
+
+        const docCounts = {};
+        docType.forEach(dc => { if(dc) docCounts[dc] = (docCounts[dc] || 0) + 1; });
+
+        Plotly.newPlot("plot1", [
+          {
+            x: Object.keys(finCounts),
+            y: Object.values(finCounts),
+            type: "bar",
+            name: "Financial Class",
+            marker: { color: "#009688" }
+          },
+          {
+            x: Object.keys(docCounts),
+            y: Object.values(docCounts),
+            type: "bar",
+            name: "DocType",
+            marker: { color: "#ff9800" }
+          }
+        ], { barmode: "group", title: "Financial Class & DocType Distribution", responsive: true });
+
+        // Line Chart - Date vs Revenue
+        Plotly.newPlot("plot2", [{
+          x: dates,
+          y: revenue,
+          type: "scatter",
+          mode: "lines+markers",
+          line: { color: "#2196f3" }
+        }], { title: "Revenue Over Time", responsive: true });
+      });
+  </script>
+</body>
+</html>

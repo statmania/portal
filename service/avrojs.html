@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>English to Bangla Phonetic Converter</title>
+    <!-- Load Google Fonts for Inter (general UI) and a common Bengali font like Noto Sans Bengali -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Noto+Sans+Bengali:wght@400;500;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .container {
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            width: 100%;
+            max-width: 768px;
+            box-sizing: border-box;
+        }
+        h1 {
+            font-family: 'Noto Sans Bengali', 'Inter', sans-serif;
+            color: #1a202c;
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 2.25rem; /* text-4xl */
+            font-weight: 700; /* font-bold */
+        }
+        p {
+            color: #4a5568;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 1.125rem; /* text-lg */
+        }
+        textarea {
+            width: 100%;
+            padding: 15px;
+            margin-bottom: 20px;
+            border: 1px solid #cbd5e0;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            line-height: 1.5;
+            resize: vertical;
+            min-height: 150px;
+            box-sizing: border-box;
+            transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        }
+        textarea:focus {
+            outline: none;
+            border-color: #4299e1;
+            box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.5);
+        }
+        #englishInput {
+            font-family: 'Inter', monospace; /* Keep English input monospaced for clarity */
+        }
+        #banglaOutput {
+            font-family: 'Noto Sans Bengali', sans-serif; /* Crucial for correct Bangla rendering */
+            background-color: #edf2f7;
+            cursor: default;
+            color: #2d3748;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 0.875rem; /* text-sm */
+            color: #718096;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 640px) {
+            .container {
+                padding: 20px;
+            }
+            h1 {
+                font-size: 1.75rem; /* text-3xl */
+            }
+            p {
+                font-size: 1rem; /* text-base */
+            }
+            textarea {
+                font-size: 1rem;
+                min-height: 120px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>ইংলিশ থেকে বাংলা ফনেটিক কনভার্টার</h1>
+        <p>Type English in the box below, and see the Bangla output instantly.</p>
+
+        <textarea id="englishInput" placeholder="ami banglay gan gai. (আমি বাংলায় গান গাই।)" oninput="convertText()"></textarea>
+        <textarea id="banglaOutput" placeholder="বাংলা আউটপুট এখানে দেখা যাবে..." readonly></textarea>
+
+        <div class="footer">
+            Simplified phonetic transliteration. For full Avro features, dedicated software or libraries are recommended.
+        </div>
+    </div>
+
+    <script>
+        // This map stores the core English to Bangla phonetic mappings.
+        // Keys are English phonetic sequences, values are their Bangla Unicode characters.
+        // Entries are ordered by the length of the English key (descending)
+        // to ensure longer, more specific matches are attempted first (e.g., "kh" before "k").
+        // This is crucial for correct phonetic transliteration.
+        const avroPhoneticMap = {
+            // Conjuncts and special cases (prioritize these)
+            "kk": "ক্ক", "kt": "ক্ত", "ksh": "ক্ষ", "ngk": "ঙ্ক", "ngg": "ঙ্গ", "chch": "চ্ছ", "jj": "জ্জ",
+            "gy": "জ্ঞ", "gny": "জ্ঞ", // "gyan" -> "জ্ঞান"
+            "nt": "ন্ত", "nd": "ন্দ", "nn": "ন্ন", "mm": "ম্ম", "bb": "ব্ব",
+            "tr": "ত্র", "dr": "দ্র", "dhw": "ধ্ব", "shch": "শ্চ", "shm": "শ্ম", "shl": "শ্ল", "sr": "স্র",
+            "hM": "হ্ম", // For "brahmon" -> "ব্রাহ্মণ"
+            "rj": "র্‍য", // for reph+j-fola, e.g., "karyo" -> "কার্য" (simplified)
+            "rr": "ড়", "Rh": "ঢ়", "yy": "য়", "tT": "ৎ", // Additional consonants
+
+            // Multi-character Vowels (Independent & Dependent Forms)
+            "aa": "আ", "ee": "ঈ", "ii": "ঈ", "uu": "ঊ", "oo": "ঊ",
+            "rri": "ঋ", // "rri" for ঋ
+            "OI": "ঐ", "Oi": "ঐ", // "oi" or "ai" for ঐ
+            "OU": "ঔ", "au": "ঔ", // "ou" or "au" for ঔ
+            "o": "ও", // Independent O (will also be used for okar)
+
+            // Multi-character Consonants
+            "kh": "খ", "gh": "ঘ", "Ng": "ঙ", // for "shongho" -> "সংঘ"
+            "ch": "ছ", "C": "ছ", // "ch" or "C" for ছ
+            "jh": "ঝ", "Ny": "ঞ", // "Ny" for ঞ
+            "Th": "ঠ", "Dh": "ঢ",
+            "ph": "ফ", "bh": "ভ", "sh": "শ", "Sh": "ষ",
+
+            // Single-character Vowels (as independent vowels, or to be converted to kar)
+            "a": "অ", "i": "ই", "u": "উ", "e": "এ",
+
+            // Single-character Consonants
+            "k": "ক", "g": "গ", "c": "চ", "j": "জ", "t": "ত", "d": "দ", "n": "ন",
+            "p": "প", "f": "ফ", "b": "ব", "m": "ম", "r": "র", "l": "ল", "s": "স", "h": "হ",
+            "y": "য়", // for j-fola (often handled by appending 'y' after consonant)
+
+            // Digits
+            "0": "০", "1": "১", "2": "২", "3": "৩", "4": "৪", "5": "৫", "6": "৬", "7": "৭", "8": "৮", "9": "৯",
+
+            // Punctuation and special symbols
+            ".": "।", ",": ",", "?": "?", "!": "!", "-": "-", "'": "'", " ": " ",
+            "_": "্", // User can type underscore to force halant
+            "`": "ঁ", // Chandrabindu (example)
+            ":": "ঃ", // Bisorgo
+            ";": ";", // Semicolon
+            "(": "(", ")": ")", "[": "[", "]" : "]", "{": "{", "}": "}",
+            "/": "/", "\\": "\\", "|": "|", "=": "=", "+": "+",
+            "<": "<", ">": ">", "@": "@", "#": "#", "$": "$", "%": "%",
+            "^": "^", "&": "&", "*": "*", "~": "~"
+        };
+
+        // Map for vowel signs (kar) to be applied to preceding consonants
+        // These are the English inputs that, when following a consonant,
+        // should become a vowel sign (kar) instead of an independent vowel.
+        const vowelSignInputs = {
+            "a": "া",
+            "i": "ি",
+            "ee": "ী", "ii": "ী",
+            "u": "ু",
+            "uu": "ূ", "oo": "ূ",
+            "rri": "ৃ",
+            "e": "ে",
+            "Oi": "ৈ", "OI": "ৈ",
+            "o": "ো", // Two-part, handled specially
+            "au": "ৌ", "OU": "ৌ", // Two-part, handled specially
+        };
+
+        // List of Bangla consonants (for checking if a char is a consonant)
+        const banglaConsonants = "কখগঘঙচছজঝঞটঠডঢণতথদধনপফবভমযরলশষসহড়ঢ়য়ৎ";
+
+        // Main conversion function
+        function convertPhoneticToBangla(englishText) {
+            let result = "";
+            let i = 0;
+
+            // Sort keys by length descending to ensure longest matches are tried first
+            const sortedKeys = Object.keys(avroPhoneticMap).sort((a, b) => b.length - a.length);
+
+            while (i < englishText.length) {
+                let matchedKey = null;
+                let banglaChar = null;
+
+                // Try to find the longest matching English sequence
+                for (const key of sortedKeys) {
+                    if (englishText.substring(i, i + key.length) === key) {
+                        matchedKey = key;
+                        banglaChar = avroPhoneticMap[key];
+                        break; // Found the longest match, exit inner loop
+                    }
+                }
+
+                if (matchedKey) {
+                    // Check for vowel sign attachment (the tricky part)
+                    const isVowelSignCandidate = Object.keys(vowelSignInputs).includes(matchedKey);
+                    const lastCharInResult = result.slice(-1); // Get the last character added to result
+
+                    if (isVowelSignCandidate && banglaConsonants.includes(lastCharInResult)) {
+                        // If the last character was a consonant and current is a vowel sign candidate,
+                        // we need to replace the implicit 'অ' or attach the kar.
+                        // This is a simplification:
+                        // For 'o' and 'au' (ো, ৌ), they are two-part.
+                        if (matchedKey === "o") {
+                            result += "ো"; // Simplified: just append
+                        } else if (matchedKey === "au" || matchedKey === "OU") {
+                            result += "ৌ"; // Simplified: just append
+                        } else {
+                            // Append the kar. A more advanced Avro would modify the *previous* character
+                            // to remove its implicit 'অ' before adding the kar. This is a known simplification.
+                            result += vowelSignInputs[matchedKey];
+                        }
+                    } else if (matchedKey === "a" && banglaConsonants.includes(lastCharInResult)) {
+                        // Special handling for 'a' after a consonant to become 'া' (akar)
+                        result += "া"; // Append 'া'
+                    }
+                    else {
+                        // Default: just append the converted character
+                        result += banglaChar;
+                    }
+                    i += matchedKey.length; // Move index past the matched key
+                } else {
+                    // No phonetic match found, append the English character as is
+                    result += englishText[i];
+                    i++;
+                }
+            }
+            return result;
+        }
+
+        // Function to update the output area in real-time
+        function convertText() {
+            const englishInput = document.getElementById('englishInput').value;
+            const banglaOutputElement = document.getElementById('banglaOutput');
+            banglaOutputElement.value = convertPhoneticToBangla(englishInput);
+        }
+    </script>
+</body>
+</html>

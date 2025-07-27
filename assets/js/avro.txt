@@ -1,0 +1,62 @@
+       const avroPhoneticMap = {
+            // Conjuncts and special cases (prioritize these)
+            "kk": "ক্ক", "kt": "ক্ত", "ksh": "ক্ষ", "ngk": "ঙ্ক", "ngg": "ঙ্গ", "chch": "চ্ছ", "jj": "জ্জ",
+            "gy": "জ্ঞ", "gny": "জ্ঞ", // "gyan" -> "জ্ঞান"
+            "nt": "ন্ত", "nd": "ন্দ", "nn": "ন্ন", "mm": "ম্ম", "bb": "ব্ব",
+            "tr": "ত্র", "dr": "দ্র", "dhw": "ধ্ব", "shch": "শ্চ", "shm": "শ্ম", "shl": "শ্ল", "sr": "স্র",
+            "hM": "হ্ম", // For "brahmon" -> "ব্রাহ্মণ"
+            "rj": "র্‍য", // for reph+j-fola, e.g., "karyo" -> "কার্য" (simplified)
+            "rr": "ড়", "Rh": "ঢ়", "yy": "য়", "tT": "ৎ", // Additional consonants
+
+            // Multi-character Vowels (Independent & Dependent Forms)
+            "aa": "আ", "ee": "ঈ", "ii": "ঈ", "uu": "ঊ", "oo": "ঊ",
+            "rri": "ঋ", // "rri" for ঋ
+            "OI": "ঐ", "oi": "ঐ", // "oi" or "ai" for ঐ
+            "OU": "ঔ", "au": "ঔ", // "ou" or "au" for ঔ
+            "o": "ও", // Independent O (will also be used for okar)
+
+            // Multi-character Consonants
+            "kh": "খ", "gh": "ঘ", "Ng": "ঙ", // for "shongho" -> "সংঘ"
+            "ch": "ছ", "C": "ছ", // "ch" or "C" for ছ
+            "jh": "ঝ", "Ny": "ঞ", // "Ny" for ঞ
+            "Th": "ঠ", "Dh": "ঢ",
+            "ph": "ফ", "bh": "ভ", "sh": "শ", "Sh": "ষ",
+
+            // Single-character Vowels (as independent vowels, or to be converted to kar)
+            "a": "অ", "i": "ই", "u": "উ", "e": "এ",
+
+            // Single-character Consonants
+            "k": "ক", "g": "গ", "c": "চ", "j": "জ", "t": "ত", "d": "দ", "n": "ন",
+            "p": "প", "f": "ফ", "b": "ব", "m": "ম", "r": "র", "l": "ল", "s": "স", "h": "হ",
+            "y": "য়", // for j-fola (often handled by appending 'y' after consonant)
+
+            // Digits
+            "0": "০", "1": "১", "2": "২", "3": "৩", "4": "৪", "5": "৫", "6": "৬", "7": "৭", "8": "৮", "9": "৯",
+
+            // Punctuation and special symbols
+            ".": "।", ",": ",", "?": "?", "!": "!", "-": "-", "'": "'", " ": " ",
+            "_": "্", // User can type underscore to force halant
+            "`": "ঁ", // Chandrabindu (example)
+            ":": "ঃ", // Bisorgo
+            ";": ";", // Semicolon
+            "(": "(", ")": ")", "[": "[", "]" : "]", "{": "{", "}": "}",
+            "/": "/", "\\": "\\", "|": "|", "=": "=", "+": "+",
+            "<": "<", ">": ">", "@": "@", "#": "#", "$": "$", "%": "%",
+            "^": "^", "&": "&", "*": "*", "~": "~"
+        };
+
+        // Map for vowel signs (kar) to be applied to preceding consonants
+        // These are the English inputs that, when following a consonant,
+        // should become a vowel sign (kar) instead of an independent vowel.
+        const vowelSignInputs = {
+            "a": "া",
+            "i": "ি",
+            "ee": "ী", "ii": "ী",
+            "u": "ু",
+            "uu": "ূ", "oo": "ূ",
+            "rri": "ৃ",
+            "e": "ে",
+            "oi": "ৈ", "OI": "ৈ",
+            "o": "ো", // Two-part, handled specially
+            "au": "ৌ", "OU": "ৌ", // Two-part, handled specially
+        };
