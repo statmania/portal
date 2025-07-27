@@ -4,13 +4,15 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>Drawing Board – Full Controls</title>
+<!-- Corrected Font Awesome CDN link to version 6.0.0-beta3 -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 <style>
   :root {
     --panel-width: 10vw;
     --panel-width-mobile: 15vw;
-    --panel-bg: #1f2937;
-    --panel-fg: #e5e7eb;
-    --accent: #3b82f6;
+    --panel-bg: #1f2937; /* Dark background for the panel */
+    --panel-fg: #e5e7eb; /* Light foreground for text/icons on panel */
+    --accent: #3b82f6; /* Blue accent color */
     --gap: 0.75rem;
     --btn-size: 48px;
     --font-size: 28px;
@@ -24,7 +26,15 @@
   }
   #overlay { pointer-events: none; }
   #penCursor {
-    position: absolute; width: 40px; height: 40px; pointer-events: none; transform: rotate(135deg); display: none;
+    position: absolute;
+    pointer-events: none; /* Important: allows drawing events to pass through */
+    z-index: 200; /* Ensure it's above canvas */
+    display: none; /* Hidden by default */
+    /* Color will be set dynamically by JavaScript */
+    font-size: var(--font-size); /* Use the defined font size */
+    text-shadow: 0 0 2px rgba(0,0,0,0.5); /* Subtle shadow for better contrast */
+    /* Adjust transform to position the tip at the cursor */
+    transform: translate(-10%, -90%); /* Fine-tuned for fa-pencil-alt */
   }
   #eraserCursor {
     position: absolute; border: 2px solid #ff4d4d; border-radius: 50%; pointer-events: none; display: none; box-sizing: border-box; background: transparent;
@@ -48,35 +58,100 @@
     overflow-y: auto;
   }
   .section { display: flex; flex-direction: column; gap: 0.5rem; }
-  button.tool, button.action {
-    background: rgba(255,255,255,0.06); border: 1px solid transparent;
-    border-radius: 0.5rem; padding: 0.5rem; cursor: pointer; color: inherit;
-    display: flex; align-items: center; justify-content: center;
-    height: var(--btn-size); font-size: var(--font-size);
-    user-select: none; transition: background-color 0.2s, border-color 0.2s;
+
+  /* Base button styling for all tool, action, and shape buttons */
+  button.tool, button.action, button.shape-dropdown-trigger, button.shape-dropdown-item {
+    background-color: #374151; /* A solid dark gray background */
+    border: 1px solid transparent; /* No visible border by default */
+    border-radius: 0.5rem;
+    padding: 0.5rem;
+    cursor: pointer;
+    color: #FFD700; /* Yellow icon/text color */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: var(--btn-size);
+    font-size: var(--font-size);
+    user-select: none;
+    transition: background-color 0.2s, border-color 0.2s;
   }
-  button.tool.active { border-color: var(--accent); background: rgba(59,130,246,0.15); }
-  .pen-icon { filter: drop-shadow(0 0 2px yellow) drop-shadow(0 0 5px yellow); }
+  button.tool:hover, button.action:hover, button.shape-dropdown-trigger:hover, button.shape-dropdown-item:hover {
+    background-color: #4b5563; /* Slightly lighter gray on hover */
+  }
+
+  /* Active state for tools and shape items */
+  button.tool.active, button.shape-dropdown-trigger.active, button.shape-dropdown-item.active {
+    border-color: var(--accent); /* Blue border for active */
+    background-color: rgba(59,130,246,0.25); /* Lighter blue background for active */
+  }
+
+  /* Pen icon styling (for the button) */
+  .pen-icon { filter: drop-shadow(0 0 2px rgba(0,0,0,0.5)); /* Subtle shadow for better contrast */ }
   .color-control {
     display: flex; align-items: center; gap: 0.25rem;
   }
   .color-control label { font-size: 20px; }
-  input[type="color"], input[type="range"], select {
+  input[type="color"], input[type="range"] {
     height: 36px; border-radius: 0.35rem; background: rgba(255,255,255,0.06);
     border: none; color: inherit; padding: 0 0.5rem; margin-top: 0.25rem;
   }
   @media (max-width: 768px) {
     :root { --panel-width: var(--panel-width-mobile); --btn-size: 56px; --font-size: 32px; --gap: 1rem; }
-    input[type="color"], input[type="range"], select { height: 44px; }
+    input[type="color"], input[type="range"] { height: 44px; }
     #controls { right: 0.25rem; padding: 0.75rem; }
   }
+
+  /* Custom Shape Selector Styles */
+  .shape-selector {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    width: 100%;
+  }
+
+  .shape-dropdown-trigger {
+    width: var(--btn-size); /* Make it square like other buttons */
+  }
+
+  .shape-dropdown-menu {
+    position: absolute;
+    top: calc(var(--btn-size) + 0.5rem);
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--panel-bg);
+    border-radius: 0.4rem;
+    box-shadow: 0 4px 16px rgba(0,0,0,.35);
+    display: none;
+    flex-direction: column;
+    gap: 0.25rem;
+    padding: 0.5rem;
+    z-index: 101;
+  }
+  .shape-dropdown-menu.open {
+    display: flex;
+  }
+
+  .shape-dropdown-item {
+    width: var(--btn-size); /* Make it square */
+  }
+
+  /* Explicit styling for Font Awesome icons within buttons */
+  button.tool i, button.action i, button.shape-dropdown-trigger i, button.shape-dropdown-item i, #penCursor {
+    /* color: inherit;  Removed from here as #penCursor color is set directly */
+    font-size: var(--font-size); /* Ensure font size is applied */
+    text-shadow: 0 0 2px rgba(0,0,0,0.5); /* Subtle shadow for better contrast */
+    font-family: "Font Awesome 6 Free"; /* Explicitly set Font Awesome font family */
+    font-weight: 900; /* For solid icons (fas) */
+  }
+
 </style>
 </head>
 <body>
 <canvas id="board"></canvas>
 <canvas id="overlay"></canvas>
 
-<img id="penCursor" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23FFD60A'><path d='M2 21l1-4 12-12 4 4-12 12-4 1z'/></svg>" alt="Pen cursor" />
+<!-- Pen Cursor now an i tag -->
+<i id="penCursor" class="fas fa-pencil-alt"></i>
 <div id="eraserCursor"></div>
 
 <button id="toggleControls" aria-label="Toggle controls">☰</button>
@@ -84,15 +159,22 @@
 <aside id="controls" aria-label="Drawing controls">
   <div class="section">
     <button class="tool active" data-tool="pen" title="Pen">
-      <img class="pen-icon" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23FFD60A'><path d='M2 21l1-4 12-12 4 4-12 12-4 1z'/></svg>" width="24" height="24" />
+      <img class="pen-icon" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='currentColor'><path d='M2 21l1-4 12-12 4 4-12 12-4 1z'/></svg>" width="24" height="24" />
     </button>
-    <select id="shapeSelect" title="Shape">
-      <option value="freehand" selected>Freehand</option>
-      <option value="line">Line</option>
-      <option value="rect">Rectangle</option>
-      <option value="circle">Circle</option>
-      <option value="pentagon">Pentagon</option>
-    </select>
+
+    <div class="shape-selector">
+      <button id="shapeDropdownTrigger" class="shape-dropdown-trigger active" title="Select Shape">
+        <i class="fas fa-signature"></i> <!-- Changed to signature icon for curved line -->
+      </button>
+      <div id="shapeDropdownMenu" class="shape-dropdown-menu">
+        <button class="shape-dropdown-item active" data-shape="freehand" title="Freehand"><i class="fas fa-signature"></i></button>
+        <button class="shape-dropdown-item" data-shape="line" title="Line"><i class="fas fa-minus"></i></button>
+        <button class="shape-dropdown-item" data-shape="rect" title="Rectangle"><i class="fas fa-square"></i></button>
+        <button class="shape-dropdown-item" data-shape="circle" title="Circle"><i class="fas fa-circle"></i></button>
+        <button class="shape-dropdown-item" data-shape="pentagon" title="Pentagon"><i class="fas fa-star"></i></button>
+      </div>
+    </div>
+
     <input id="penSize" type="range" min="1" max="10" value="3" title="Pen Size" />
     <button class="tool" data-tool="eraser" title="Eraser">🩹</button>
     <input id="eraserSize" type="range" min="5" max="200" value="40" title="Eraser Size" />
@@ -113,7 +195,7 @@
 (() => {
   const board = document.getElementById('board');
   const overlay = document.getElementById('overlay');
-  const penCursor = document.getElementById('penCursor');
+  const penCursor = document.getElementById('penCursor'); // Now an <i> element
   const eraserCursor = document.getElementById('eraserCursor');
   const toggleBtn = document.getElementById('toggleControls');
   const controls = document.getElementById('controls');
@@ -125,7 +207,7 @@
   let tool = 'pen'; // 'pen' or 'eraser'
   let penColor = '#000000';
   let bgColor = '#cccccc';
-  let penSize = 3; // Default pen size set to 3
+  let penSize = 3;
   let eraserSize = 40;
   let shape = 'freehand';
 
@@ -135,8 +217,12 @@
   let history = [];
   let historyStep = -1;
 
+  // New elements for custom shape dropdown
+  const shapeDropdownTrigger = document.getElementById('shapeDropdownTrigger');
+  const shapeDropdownMenu = document.getElementById('shapeDropdownMenu');
+  const shapeDropdownItems = document.querySelectorAll('.shape-dropdown-item');
+
   function resize() {
-    // Save current canvas content as a data URL before resizing
     let currentContentDataURL = board.toDataURL();
 
     board.width = window.innerWidth;
@@ -144,7 +230,6 @@
     overlay.width = window.innerWidth;
     overlay.height = window.innerHeight;
 
-    // Restore the saved content onto the newly sized canvas
     if (currentContentDataURL && currentContentDataURL !== 'data:,') {
       let img = new Image();
       img.onload = () => {
@@ -157,7 +242,7 @@
     }
   }
   window.addEventListener('resize', resize);
-  resize(); // Call resize initially to set dimensions
+  resize();
 
   function pushHistory() {
     if(historyStep < history.length - 1) {
@@ -252,10 +337,12 @@
     const y = e.clientY - rect.top;
 
     if(tool === 'pen') {
-      penCursor.style.left = (x - 20) + 'px';
-      penCursor.style.top = (y - 20) + 'px';
+      penCursor.style.left = x + 'px'; // Position top-left at cursor
+      penCursor.style.top = y + 'px'; // Position top-left at cursor
       penCursor.style.display = 'block';
       eraserCursor.style.display = 'none';
+      penCursor.className = 'fas fa-pencil-alt'; // Set the icon class for the pen cursor
+      penCursor.style.color = penColor; // Set pen cursor color to current pen color
     } else {
       eraserCursor.style.width = eraserSize + 'px';
       eraserCursor.style.height = eraserSize + 'px';
@@ -461,28 +548,58 @@
     else controls.style.display = 'flex';
   });
 
+  // Tool selection (Pen/Eraser)
   document.querySelectorAll('button.tool').forEach(btn => {
     btn.addEventListener('click', () => {
       document.querySelectorAll('button.tool').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       tool = btn.dataset.tool;
       if(tool === 'eraser') {
-        // Eraser always freehand shape
-        shape = 'freehand';
-        document.getElementById('shapeSelect').value = 'freehand'; // Set select to freehand
-        document.getElementById('shapeSelect').disabled = true;
+        shape = 'freehand'; // Eraser always freehand
+        shapeDropdownTrigger.classList.remove('active'); // Deactivate trigger button
+        document.querySelectorAll('.shape-dropdown-item').forEach(b => b.classList.remove('active')); // Deactivate shape buttons
+        shapeDropdownMenu.classList.remove('open'); // Close dropdown if open
+        shapeDropdownTrigger.style.display = 'none'; // Hide shape selection trigger
       } else {
-        document.getElementById('shapeSelect').disabled = false;
+        shapeDropdownTrigger.style.display = 'flex'; // Show shape selection trigger
+        // Reactivate the current shape button
+        shapeDropdownTrigger.classList.add('active');
+        document.querySelector(`.shape-dropdown-item[data-shape="${shape}"]`).classList.add('active');
       }
     });
   });
 
-  document.getElementById('shapeSelect').addEventListener('change', e => {
-    shape = e.target.value;
+  // Shape selector dropdown functionality
+  shapeDropdownTrigger.addEventListener('click', (e) => {
+    e.stopPropagation(); // Prevent click from bubbling to document and closing immediately
+    shapeDropdownMenu.classList.toggle('open');
   });
+
+  shapeDropdownItems.forEach(item => {
+    item.addEventListener('click', () => {
+      shapeDropdownItems.forEach(b => b.classList.remove('active'));
+      item.classList.add('active');
+      shape = item.dataset.shape;
+      // Update the trigger button's icon to match the selected shape
+      shapeDropdownTrigger.querySelector('i').className = item.querySelector('i').className;
+      shapeDropdownMenu.classList.remove('open'); // Close dropdown
+    });
+  });
+
+  // Close dropdown when clicking outside
+  document.addEventListener('click', (e) => {
+    if (!shapeDropdownMenu.contains(e.target) && !shapeDropdownTrigger.contains(e.target)) {
+      shapeDropdownMenu.classList.remove('open');
+    }
+  });
+
 
   document.getElementById('penColor').addEventListener('change', e => {
     penColor = e.target.value;
+    // Update pen cursor color immediately when color changes
+    if (tool === 'pen') {
+      penCursor.style.color = penColor;
+    }
   });
 
   document.getElementById('bgColorPicker').addEventListener('change', e => {
