@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Drawing Board – Full</title>
+<title>Drawing Board – Full Controls</title>
 <style>
   :root {
     --panel-width: 10vw;
@@ -23,14 +23,12 @@
     position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; touch-action: none;
   }
   #overlay { pointer-events: none; }
-
   #penCursor {
     position: absolute; width: 40px; height: 40px; pointer-events: none; transform: rotate(135deg); display: none;
   }
   #eraserCursor {
     position: absolute; border: 2px solid #ff4d4d; border-radius: 50%; pointer-events: none; display: none; box-sizing: border-box; background: transparent;
   }
-
   #toggleControls {
     position: fixed; top: 0.5rem; right: 0.5rem;
     width: var(--btn-size); height: var(--btn-size);
@@ -39,7 +37,6 @@
     font-size: 24px; z-index: 10; display: grid; place-items: center;
     box-shadow: 0 2px 8px rgba(0,0,0,.4);
   }
-
   #controls {
     position: fixed; top: calc(var(--btn-size) + 1rem); right: 0.5rem;
     width: var(--panel-width);
@@ -60,6 +57,10 @@
   }
   button.tool.active { border-color: var(--accent); background: rgba(59,130,246,0.15); }
   .pen-icon { filter: drop-shadow(0 0 2px yellow) drop-shadow(0 0 5px yellow); }
+  .color-control {
+    display: flex; align-items: center; gap: 0.25rem;
+  }
+  .color-control label { font-size: 20px; }
   input[type="color"], input[type="range"], select {
     height: 36px; border-radius: 0.35rem; background: rgba(255,255,255,0.06);
     border: none; color: inherit; padding: 0 0.5rem; margin-top: 0.25rem;
@@ -74,6 +75,7 @@
 <body>
 <canvas id="board"></canvas>
 <canvas id="overlay"></canvas>
+
 <img id="penCursor" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23FFD60A'><path d='M2 21l1-4 12-12 4 4-12 12-4 1z'/></svg>" alt="Pen cursor" />
 <div id="eraserCursor"></div>
 
@@ -81,7 +83,9 @@
 
 <aside id="controls" aria-label="Drawing controls">
   <div class="section">
-    <button class="tool active" data-tool="pen" title="Pen"><img class="pen-icon" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23FFD60A'><path d='M2 21l1-4 12-12 4 4-12 12-4 1z'/></svg>" width="24" height="24" /></button>
+    <button class="tool active" data-tool="pen" title="Pen">
+      <img class="pen-icon" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23FFD60A'><path d='M2 21l1-4 12-12 4 4-12 12-4 1z'/></svg>" width="24" height="24" />
+    </button>
     <select id="shapeSelect" title="Shape">
       <option value="freehand" selected>Freehand</option>
       <option value="line">Line</option>
@@ -89,13 +93,16 @@
       <option value="circle">Circle</option>
       <option value="pentagon">Pentagon</option>
     </select>
-    <input id="sizeSlider" type="range" min="1" max="200" value="4" title="Size" />
+    <input id="penSize" type="range" min="1" max="10" value="3" title="Pen Size" />
     <button class="tool" data-tool="eraser" title="Eraser">🩹</button>
+    <input id="eraserSize" type="range" min="5" max="200" value="40" title="Eraser Size" />
   </div>
+
   <div class="section">
-    <input id="penColor" type="color" value="#000000" title="Pen color" />
-    <input id="bgColorPicker" type="color" value="#cccccc" title="Background color" />
+    <div class="color-control"><label for="penColor">🎨</label><input id="penColor" type="color" value="#000000" title="Pen color" /></div>
+    <div class="color-control"><label for="bgColorPicker">🖼️</label><input id="bgColorPicker" type="color" value="#cccccc" title="Background color" /></div>
   </div>
+
   <div class="section">
     <button class="action" id="undoBtn" title="Undo">↶</button>
     <button class="action" id="clearBtn" title="Delete All">🗑️</button>
@@ -106,164 +113,400 @@
 (() => {
   const board = document.getElementById('board');
   const overlay = document.getElementById('overlay');
-  const ctx = board.getContext('2d');
-  const octx = overlay.getContext('2d');
   const penCursor = document.getElementById('penCursor');
   const eraserCursor = document.getElementById('eraserCursor');
-  const controls = document.getElementById('controls');
   const toggleBtn = document.getElementById('toggleControls');
-  const toolBtns = Array.from(document.querySelectorAll('button.tool'));
-  const shapeSelect = document.getElementById('shapeSelect');
-  const sizeSlider = document.getElementById('sizeSlider');
-  const penColorEl = document.getElementById('penColor');
-  const bgColorPicker = document.getElementById('bgColorPicker');
-  const undoBtn = document.getElementById('undoBtn');
-  const clearBtn = document.getElementById('clearBtn');
+  const controls = document.getElementById('controls');
 
-  let currentTool = 'pen';
-  let currentShape = 'freehand';
+  let ctx = board.getContext('2d');
+  let overlayCtx = overlay.getContext('2d');
+
   let drawing = false;
-  let startX = 0, startY = 0, lastX = 0, lastY = 0;
-  let undoStack = [];
-  const MAX_UNDO = 50;
-  let penSize = 4;
-  let eraserSize = 20;
-  const state = { penColor: penColorEl.value };
+  let tool = 'pen'; // 'pen' or 'eraser'
+  let penColor = '#000000';
+  let bgColor = '#cccccc';
+  let penSize = 3; // Default pen size set to 3
+  let eraserSize = 40;
+  let shape = 'freehand';
 
-  controls.style.display = 'none';
-  toggleBtn.addEventListener('click', () => {
-    controls.style.display = (controls.style.display === 'none') ? 'flex' : 'none';
-  });
+  let startX, startY;
+  let lastX, lastY;
 
-  function resizeCanvas() {
-    const w = window.innerWidth, h = window.innerHeight;
-    const temp = document.createElement('canvas');
-    temp.width = board.width; temp.height = board.height;
-    temp.getContext('2d').drawImage(board, 0, 0);
-    board.width = w; board.height = h;
-    overlay.width = w; overlay.height = h;
-    ctx.drawImage(temp, 0, 0);
-  }
-  window.addEventListener('resize', resizeCanvas);
-  resizeCanvas();
+  let history = [];
+  let historyStep = -1;
 
-  function pushUndo() {
-    if (undoStack.length >= MAX_UNDO) undoStack.shift();
-    undoStack.push(ctx.getImageData(0, 0, board.width, board.height));
-  }
-  function restore(img) { ctx.putImageData(img, 0, 0); }
-  function clearOverlay() { octx.clearRect(0, 0, overlay.width, overlay.height); }
-  function currentSize() { return currentTool === 'eraser' ? eraserSize : penSize; }
-  function applySliderToTool() { if (currentTool === 'eraser') eraserSize = +sizeSlider.value; else penSize = +sizeSlider.value; updateEraserCursorSize(); }
-  function syncSliderToTool() { sizeSlider.value = currentTool === 'eraser' ? eraserSize : penSize; updateEraserCursorSize(); }
-  function updateEraserCursorSize() { eraserCursor.style.width = eraserSize + 'px'; eraserCursor.style.height = eraserSize + 'px'; }
+  function resize() {
+    // Save current canvas content as a data URL before resizing
+    let currentContentDataURL = board.toDataURL();
 
-  function drawFreehand(fromX, fromY, toX, toY) {
-    ctx.globalCompositeOperation = currentTool === 'eraser' ? 'destination-out' : 'source-over';
-    ctx.lineWidth = currentSize();
-    ctx.strokeStyle = currentTool === 'eraser' ? 'rgba(0,0,0,1)' : state.penColor;
-    ctx.lineCap = 'round'; ctx.lineJoin = 'round';
-    ctx.beginPath(); ctx.moveTo(fromX, fromY); ctx.lineTo(toX, toY); ctx.stroke(); ctx.closePath();
-  }
+    board.width = window.innerWidth;
+    board.height = window.innerHeight;
+    overlay.width = window.innerWidth;
+    overlay.height = window.innerHeight;
 
-  function previewShape(x1, y1, x2, y2) {
-    if (currentTool === 'eraser') return;
-    clearOverlay();
-    octx.globalCompositeOperation = 'source-over';
-    octx.lineWidth = currentSize();
-    octx.strokeStyle = state.penColor;
-    octx.setLineDash([4,3]);
-    if (currentShape === 'line') { octx.beginPath(); octx.moveTo(x1, y1); octx.lineTo(x2, y2); octx.stroke(); }
-    else if (currentShape === 'rect') { octx.strokeRect(x1, y1, x2 - x1, y2 - y1); }
-    else if (currentShape === 'circle') { const r = Math.hypot(x2 - x1, y2 - y1); octx.beginPath(); octx.arc(x1, y1, r, 0, Math.PI * 2); octx.stroke(); }
-    else if (currentShape === 'pentagon') { const r = Math.hypot(x2 - x1, y2 - y1); drawPolygon(octx, x1, y1, 5, r); }
-    octx.setLineDash([]);
-  }
-  function commitShape(x1, y1, x2, y2) {
-    if (currentTool === 'eraser') return;
-    ctx.globalCompositeOperation = 'source-over';
-    ctx.lineWidth = currentSize();
-    ctx.strokeStyle = state.penColor;
-    if (currentShape === 'line') { ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke(); }
-    else if (currentShape === 'rect') { ctx.strokeRect(x1, y1, x2 - x1, y2 - y1); }
-    else if (currentShape === 'circle') { const r = Math.hypot(x2 - x1, y2 - y1); ctx.beginPath(); ctx.arc(x1, y1, r, 0, Math.PI * 2); ctx.stroke(); }
-    else if (currentShape === 'pentagon') { const r = Math.hypot(x2 - x1, y2 - y1); drawPolygon(ctx, x1, y1, 5, r); }
-  }
-  function drawPolygon(context, cx, cy, sides, r) {
-    context.beginPath();
-    for (let i = 0; i < sides; i++) {
-      const angle = (-Math.PI / 2) + i * (2 * Math.PI / sides);
-      const x = cx + r * Math.cos(angle);
-      const y = cy + r * Math.sin(angle);
-      if (i === 0) context.moveTo(x, y); else context.lineTo(x, y);
+    // Restore the saved content onto the newly sized canvas
+    if (currentContentDataURL && currentContentDataURL !== 'data:,') {
+      let img = new Image();
+      img.onload = () => {
+        ctx.clearRect(0, 0, board.width, board.height);
+        ctx.drawImage(img, 0, 0, board.width, board.height);
+      };
+      img.src = currentContentDataURL;
+    } else {
+      ctx.clearRect(0, 0, board.width, board.height);
     }
-    context.closePath();
-    context.stroke();
+  }
+  window.addEventListener('resize', resize);
+  resize(); // Call resize initially to set dimensions
+
+  function pushHistory() {
+    if(historyStep < history.length - 1) {
+      history = history.slice(0, historyStep + 1);
+    }
+    history.push(board.toDataURL());
+    historyStep++;
   }
 
-  function getPos(e) {
-    const rect = board.getBoundingClientRect();
-    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-    return { x: clientX - rect.left, y: clientY - rect.top };
+  function undo() {
+    if(historyStep > 0) {
+      historyStep--;
+      let img = new Image();
+      img.onload = () => {
+        ctx.clearRect(0, 0, board.width, board.height);
+        ctx.drawImage(img, 0, 0);
+      }
+      img.src = history[historyStep];
+    } else if(historyStep === 0) {
+      ctx.clearRect(0, 0, board.width, board.height);
+      historyStep = -1;
+    }
   }
+
+  function clearAll() {
+    ctx.clearRect(0, 0, board.width, board.height);
+    pushHistory();
+  }
+
+  function drawFreehand(x1, y1, x2, y2, color, size) {
+    ctx.strokeStyle = color;
+    ctx.lineWidth = size;
+    ctx.lineCap = 'round';
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x2, y2);
+    ctx.stroke();
+  }
+
+  function drawLine(x1, y1, x2, y2, color, size) {
+    ctx.strokeStyle = color;
+    ctx.lineWidth = size;
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x2, y2);
+    ctx.stroke();
+  }
+
+  function drawRect(x1, y1, x2, y2, color, size) {
+    ctx.strokeStyle = color;
+    ctx.lineWidth = size;
+    let left = Math.min(x1, x2);
+    let top = Math.min(y1, y2);
+    let width = Math.abs(x2 - x1);
+    let height = Math.abs(y2 - y1);
+    ctx.strokeRect(left, top, width, height);
+  }
+
+  function drawCircle(x1, y1, x2, y2, color, size) {
+    ctx.strokeStyle = color;
+    ctx.lineWidth = size;
+    let centerX = (x1 + x2) / 2;
+    let centerY = (y1 + y2) / 2;
+    let radius = Math.hypot(x2 - x1, y2 - y1) / 2;
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+    ctx.stroke();
+  }
+
+  function drawPentagon(x1, y1, x2, y2, color, size) {
+    ctx.strokeStyle = color;
+    ctx.lineWidth = size;
+    let centerX = (x1 + x2) / 2;
+    let centerY = (y1 + y2) / 2;
+    let radius = Math.hypot(x2 - x1, y2 - y1) / 2;
+    let sides = 5;
+    ctx.beginPath();
+    for(let i=0; i<sides; i++){
+      let angle = (Math.PI * 2 / sides) * i - Math.PI / 2;
+      let x = centerX + radius * Math.cos(angle);
+      let y = centerY + radius * Math.sin(angle);
+      if(i === 0) ctx.moveTo(x,y);
+      else ctx.lineTo(x,y);
+    }
+    ctx.closePath();
+    ctx.stroke();
+  }
+
+  function updateCursor(e) {
+    const rect = board.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    if(tool === 'pen') {
+      penCursor.style.left = (x - 20) + 'px';
+      penCursor.style.top = (y - 20) + 'px';
+      penCursor.style.display = 'block';
+      eraserCursor.style.display = 'none';
+    } else {
+      eraserCursor.style.width = eraserSize + 'px';
+      eraserCursor.style.height = eraserSize + 'px';
+      eraserCursor.style.left = (x - eraserSize / 2) + 'px';
+      eraserCursor.style.top = (y - eraserSize / 2) + 'px';
+      eraserCursor.style.display = 'block';
+      penCursor.style.display = 'none';
+    }
+  }
+
   function startDraw(e) {
     drawing = true;
-    updateCursorDisplay(true);
-    const { x, y } = getPos(e); startX = lastX = x; startY = lastY = y;
-    pushUndo();
-    if (currentShape === 'freehand' || currentTool === 'eraser') drawFreehand(x, y, x, y);
-    else previewShape(startX, startY, x, y);
-    moveCursor(x, y);
-  }
-  function moveDraw(e) {
-    const { x, y } = getPos(e);
-    moveCursor(x, y);
-    if (!drawing) return;
-    if (currentShape === 'freehand' || currentTool === 'eraser') { drawFreehand(lastX, lastY, x, y); lastX = x; lastY = y; }
-    else previewShape(startX, startY, x, y);
-  }
-  function endDraw(e) {
-    if (!drawing) return; drawing = false;
-    const { x, y } = getPos(e);
-    if (currentShape !== 'freehand' && currentTool !== 'eraser') { clearOverlay(); commitShape(startX, startY, x, y); }
-    ctx.globalCompositeOperation = 'source-over'; updateCursorDisplay(false);
-  }
+    const rect = board.getBoundingClientRect();
+    startX = e.clientX - rect.left;
+    startY = e.clientY - rect.top;
+    lastX = startX;
+    lastY = startY;
 
-  function moveCursor(x, y) {
-    if (currentTool === 'pen') {
-      penCursor.style.left = (x - 5) + 'px'; penCursor.style.top = (y - 35) + 'px';
-    } else if (currentTool === 'eraser') {
-      eraserCursor.style.left = (x - eraserSize/2) + 'px'; eraserCursor.style.top = (y - eraserSize/2) + 'px';
+    if(tool === 'pen' && shape === 'freehand') {
+      ctx.strokeStyle = penColor;
+      ctx.lineWidth = penSize;
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.moveTo(startX, startY);
     }
   }
-  function updateCursorDisplay(active) {
-    penCursor.style.display = (currentTool === 'pen' && active) ? 'block' : 'none';
-    eraserCursor.style.display = (currentTool === 'eraser' && active) ? 'block' : 'none';
+
+  function draw(e) {
+    if(!drawing) return;
+
+    const rect = board.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    if(tool === 'pen') {
+      if(shape === 'freehand') {
+        ctx.lineTo(x, y);
+        ctx.stroke();
+      } else {
+        overlayCtx.clearRect(0, 0, overlay.width, overlay.height);
+        switch(shape) {
+          case 'line':
+            overlayCtx.strokeStyle = penColor;
+            overlayCtx.lineWidth = penSize;
+            overlayCtx.beginPath();
+            overlayCtx.moveTo(startX, startY);
+            overlayCtx.lineTo(x, y);
+            overlayCtx.stroke();
+            break;
+          case 'rect':
+            overlayCtx.strokeStyle = penColor;
+            overlayCtx.lineWidth = penSize;
+            let left = Math.min(startX, x);
+            let top = Math.min(startY, y);
+            let width = Math.abs(x - startX);
+            let height = Math.abs(y - startY);
+            overlayCtx.strokeRect(left, top, width, height);
+            break;
+          case 'circle':
+            overlayCtx.strokeStyle = penColor;
+            overlayCtx.lineWidth = penSize;
+            let centerX = (startX + x) / 2;
+            let centerY = (startY + y) / 2;
+            let radius = Math.hypot(x - startX, y - startY) / 2;
+            overlayCtx.beginPath();
+            overlayCtx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+            overlayCtx.stroke();
+            break;
+          case 'pentagon':
+            overlayCtx.strokeStyle = penColor;
+            overlayCtx.lineWidth = penSize;
+            let cx = (startX + x) / 2;
+            let cy = (startY + y) / 2;
+            let r = Math.hypot(x - startX, y - startY) / 2;
+            let sides = 5;
+            overlayCtx.beginPath();
+            for(let i=0; i<sides; i++){
+              let angle = (Math.PI * 2 / sides) * i - Math.PI / 2;
+              let px = cx + r * Math.cos(angle);
+              let py = cy + r * Math.sin(angle);
+              if(i === 0) overlayCtx.moveTo(px, py);
+              else overlayCtx.lineTo(px, py);
+            }
+            overlayCtx.closePath();
+            overlayCtx.stroke();
+            break;
+        }
+      }
+    } else if(tool === 'eraser') {
+      ctx.clearRect(x - eraserSize/2, y - eraserSize/2, eraserSize, eraserSize);
+    }
+
+    lastX = x;
+    lastY = y;
   }
 
-  board.addEventListener('mousedown', startDraw);
-  board.addEventListener('mousemove', moveDraw);
-  window.addEventListener('mouseup', endDraw);
-  board.addEventListener('touchstart', e => { e.preventDefault(); startDraw(e); }, { passive: false });
-  board.addEventListener('touchmove', e => { e.preventDefault(); moveDraw(e); }, { passive: false });
-  board.addEventListener('touchend', e => { e.preventDefault(); endDraw(e); }, { passive: false });
+  function endDraw(e) {
+    if(!drawing) return;
+    drawing = false;
+    const rect = board.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
 
-  toolBtns.forEach(btn => {
+    if(tool === 'pen' && shape !== 'freehand') {
+      overlayCtx.clearRect(0, 0, overlay.width, overlay.height);
+      // draw final shape on main canvas
+      switch(shape) {
+        case 'line': drawLine(startX, startY, x, y, penColor, penSize); break;
+        case 'rect': drawRect(startX, startY, x, y, penColor, penSize); break;
+        case 'circle': drawCircle(startX, startY, x, y, penColor, penSize); break;
+        case 'pentagon': drawPentagon(startX, startY, x, y, penColor, penSize); break;
+      }
+    }
+    pushHistory();
+  }
+
+  // Drawing functions on main canvas
+  function drawLine(x1, y1, x2, y2, color, size) {
+    ctx.strokeStyle = color;
+    ctx.lineWidth = size;
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x2, y2);
+    ctx.stroke();
+  }
+  function drawRect(x1, y1, x2, y2, color, size) {
+    ctx.strokeStyle = color;
+    ctx.lineWidth = size;
+    let left = Math.min(x1, x2);
+    let top = Math.min(y1, y2);
+    let width = Math.abs(x2 - x1);
+    let height = Math.abs(y2 - y1);
+    ctx.strokeRect(left, top, width, height);
+  }
+  function drawCircle(x1, y1, x2, y2, color, size) {
+    ctx.strokeStyle = color;
+    ctx.lineWidth = size;
+    let centerX = (x1 + x2) / 2;
+    let centerY = (y1 + y2) / 2;
+    let radius = Math.hypot(x2 - x1, y2 - y1) / 2;
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+    ctx.stroke();
+  }
+  function drawPentagon(x1, y1, x2, y2, color, size) {
+    ctx.strokeStyle = color;
+    ctx.lineWidth = size;
+    let centerX = (x1 + x2) / 2;
+    let centerY = (y1 + y2) / 2;
+    let radius = Math.hypot(x2 - x1, y2 - y1) / 2;
+    let sides = 5;
+    ctx.beginPath();
+    for(let i=0; i<sides; i++){
+      let angle = (Math.PI * 2 / sides) * i - Math.PI / 2;
+      let x = centerX + radius * Math.cos(angle);
+      let y = centerY + radius * Math.sin(angle);
+      if(i === 0) ctx.moveTo(x,y);
+      else ctx.lineTo(x,y);
+    }
+    ctx.closePath();
+    ctx.stroke();
+  }
+
+  // History (undo) support
+  function pushHistory() {
+    if(historyStep < history.length - 1) {
+      history = history.slice(0, historyStep + 1);
+    }
+    history.push(board.toDataURL());
+    historyStep++;
+  }
+  function undo() {
+    if(historyStep > 0) {
+      historyStep--;
+      let img = new Image();
+      img.onload = () => {
+        ctx.clearRect(0, 0, board.width, board.height);
+        ctx.drawImage(img, 0, 0);
+      }
+      img.src = history[historyStep];
+    } else if(historyStep === 0) {
+      ctx.clearRect(0, 0, board.width, board.height);
+      historyStep = -1;
+    }
+  }
+  function clearAll() {
+    ctx.clearRect(0, 0, board.width, board.height);
+    pushHistory();
+  }
+
+  // Event listeners
+  board.addEventListener('pointerdown', e => { startDraw(e); updateCursor(e); });
+  board.addEventListener('pointermove', e => { draw(e); updateCursor(e); });
+  board.addEventListener('pointerup', e => { endDraw(e); });
+  board.addEventListener('pointerleave', e => { endDraw(e); });
+
+  // Cursor update on move also outside drawing (for eraser/pen)
+  window.addEventListener('pointermove', updateCursor);
+
+  // Controls
+  toggleBtn.addEventListener('click', () => {
+    if(controls.style.display === 'flex') controls.style.display = 'none';
+    else controls.style.display = 'flex';
+  });
+
+  document.querySelectorAll('button.tool').forEach(btn => {
     btn.addEventListener('click', () => {
-      toolBtns.forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('button.tool').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
-      currentTool = btn.dataset.tool; syncSliderToTool();
-      penCursor.style.display = 'none'; eraserCursor.style.display = 'none';
+      tool = btn.dataset.tool;
+      if(tool === 'eraser') {
+        // Eraser always freehand shape
+        shape = 'freehand';
+        document.getElementById('shapeSelect').value = 'freehand'; // Set select to freehand
+        document.getElementById('shapeSelect').disabled = true;
+      } else {
+        document.getElementById('shapeSelect').disabled = false;
+      }
     });
   });
-  sizeSlider.addEventListener('input', applySliderToTool);
-  penColorEl.addEventListener('input', e => state.penColor = e.target.value);
-  shapeSelect.addEventListener('change', e => currentShape = e.target.value);
-  bgColorPicker.addEventListener('input', e => document.body.style.background = e.target.value);
-  undoBtn.addEventListener('click', () => { if (undoStack.length) restore(undoStack.pop()); });
-  clearBtn.addEventListener('click', () => { pushUndo(); ctx.clearRect(0, 0, board.width, board.height); });
-  syncSliderToTool();
+
+  document.getElementById('shapeSelect').addEventListener('change', e => {
+    shape = e.target.value;
+  });
+
+  document.getElementById('penColor').addEventListener('change', e => {
+    penColor = e.target.value;
+  });
+
+  document.getElementById('bgColorPicker').addEventListener('change', e => {
+    bgColor = e.target.value;
+    board.style.backgroundColor = bgColor;
+  });
+
+  document.getElementById('penSize').addEventListener('input', e => {
+    penSize = e.target.value;
+  });
+
+  document.getElementById('eraserSize').addEventListener('input', e => {
+    eraserSize = e.target.value;
+  });
+
+  document.getElementById('undoBtn').addEventListener('click', undo);
+  document.getElementById('clearBtn').addEventListener('click', () => {
+    clearAll();
+  });
+
+  // Initialize defaults
+  board.style.backgroundColor = bgColor;
+  pushHistory();
+
 })();
 </script>
 </body>
