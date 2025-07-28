@@ -66,7 +66,8 @@
     border-radius: 0.5rem;
     padding: 0.5rem;
     cursor: pointer;
-    color: #FFD700; /* Yellow icon/text color */
+    /* color will be set dynamically for pen/shapes, default white for others */
+    color: #ffffff; /* Default white icon/text color for action buttons and unselected shapes */
     display: flex;
     align-items: center;
     justify-content: center;
@@ -137,11 +138,10 @@
 
   /* Explicit styling for Font Awesome icons within buttons */
   button.tool i, button.action i, button.shape-dropdown-trigger i, button.shape-dropdown-item i, #penCursor {
-    /* color: inherit;  Removed from here as #penCursor color is set directly */
     font-size: var(--font-size); /* Ensure font size is applied */
     text-shadow: 0 0 2px rgba(0,0,0,0.5); /* Subtle shadow for better contrast */
     font-family: "Font Awesome 6 Free"; /* Explicitly set Font Awesome font family */
-    font-weight: 900; /* For solid icons (fas) */
+    /* Removed explicit font-weight: 900; to allow Font Awesome's own CSS to handle fas/far weights */
   }
 
 </style>
@@ -169,9 +169,9 @@
       <div id="shapeDropdownMenu" class="shape-dropdown-menu">
         <button class="shape-dropdown-item active" data-shape="freehand" title="Freehand"><i class="fas fa-signature"></i></button>
         <button class="shape-dropdown-item" data-shape="line" title="Line"><i class="fas fa-minus"></i></button>
-        <button class="shape-dropdown-item" data-shape="rect" title="Rectangle"><i class="fas fa-square"></i></button>
-        <button class="shape-dropdown-item" data-shape="circle" title="Circle"><i class="fas fa-circle"></i></button>
-        <button class="shape-dropdown-item" data-shape="pentagon" title="Pentagon"><i class="fas fa-star"></i></button>
+        <button class="shape-dropdown-item" data-shape="rect" title="Rectangle"><i class="far fa-square"></i></button> <!-- Changed to far -->
+        <button class="shape-dropdown-item" data-shape="circle" title="Circle"><i class="far fa-circle"></i></button> <!-- Changed to far -->
+        <button class="shape-dropdown-item" data-shape="pentagon" title="Pentagon"><i class="far fa-star"></i></button> <!-- Changed to far -->
       </div>
     </div>
 
@@ -199,6 +199,10 @@
   const eraserCursor = document.getElementById('eraserCursor');
   const toggleBtn = document.getElementById('toggleControls');
   const controls = document.getElementById('controls');
+
+  // Get specific references for dynamic coloring
+  const controlPenToolButton = document.querySelector('button.tool[data-tool="pen"]');
+  const controlPenIcon = controlPenToolButton.querySelector('.pen-icon'); // The img tag for the pen icon
 
   let ctx = board.getContext('2d');
   let overlayCtx = overlay.getContext('2d');
@@ -266,12 +270,13 @@
       historyStep = -1;
     }
   }
-
+  // Function to clear all drawings from the canvas
   function clearAll() {
     ctx.clearRect(0, 0, board.width, board.height);
     pushHistory();
   }
 
+  // Function to draw a freehand line on the canvas
   function drawFreehand(x1, y1, x2, y2, color, size) {
     ctx.strokeStyle = color;
     ctx.lineWidth = size;
@@ -282,15 +287,17 @@
     ctx.stroke();
   }
 
+  // Function to draw a line on the canvas
   function drawLine(x1, y1, x2, y2, color, size) {
     ctx.strokeStyle = color;
     ctx.lineWidth = size;
     ctx.beginPath();
     ctx.moveTo(x1, y1);
     ctx.lineTo(x2, y2);
-    ctx.stroke();
+    ctx.stroke(); // Draws an outline
   }
 
+  // Function to draw a rectangle outline on the canvas
   function drawRect(x1, y1, x2, y2, color, size) {
     ctx.strokeStyle = color;
     ctx.lineWidth = size;
@@ -298,9 +305,10 @@
     let top = Math.min(y1, y2);
     let width = Math.abs(x2 - x1);
     let height = Math.abs(y2 - y1);
-    ctx.strokeRect(left, top, width, height);
+    ctx.strokeRect(left, top, width, height); // Draws an outline
   }
 
+  // Function to draw a circle outline on the canvas
   function drawCircle(x1, y1, x2, y2, color, size) {
     ctx.strokeStyle = color;
     ctx.lineWidth = size;
@@ -309,9 +317,10 @@
     let radius = Math.hypot(x2 - x1, y2 - y1) / 2;
     ctx.beginPath();
     ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
-    ctx.stroke();
+    ctx.stroke(); // Draws an outline
   }
 
+  // Function to draw a pentagon outline on the canvas
   function drawPentagon(x1, y1, x2, y2, color, size) {
     ctx.strokeStyle = color;
     ctx.lineWidth = size;
@@ -328,7 +337,7 @@
       else ctx.lineTo(x,y);
     }
     ctx.closePath();
-    ctx.stroke();
+    ctx.stroke(); // Draws an outline
   }
 
   function updateCursor(e) {
@@ -459,80 +468,6 @@
     pushHistory();
   }
 
-  // Drawing functions on main canvas
-  function drawLine(x1, y1, x2, y2, color, size) {
-    ctx.strokeStyle = color;
-    ctx.lineWidth = size;
-    ctx.beginPath();
-    ctx.moveTo(x1, y1);
-    ctx.lineTo(x2, y2);
-    ctx.stroke();
-  }
-  function drawRect(x1, y1, x2, y2, color, size) {
-    ctx.strokeStyle = color;
-    ctx.lineWidth = size;
-    let left = Math.min(x1, x2);
-    let top = Math.min(y1, y2);
-    let width = Math.abs(x2 - x1);
-    let height = Math.abs(y2 - y1);
-    ctx.strokeRect(left, top, width, height);
-  }
-  function drawCircle(x1, y1, x2, y2, color, size) {
-    ctx.strokeStyle = color;
-    ctx.lineWidth = size;
-    let centerX = (x1 + x2) / 2;
-    let centerY = (y1 + y2) / 2;
-    let radius = Math.hypot(x2 - x1, y2 - y1) / 2;
-    ctx.beginPath();
-    ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
-    ctx.stroke();
-  }
-  function drawPentagon(x1, y1, x2, y2, color, size) {
-    ctx.strokeStyle = color;
-    ctx.lineWidth = size;
-    let centerX = (x1 + x2) / 2;
-    let centerY = (y1 + y2) / 2;
-    let radius = Math.hypot(x2 - x1, y2 - y1) / 2;
-    let sides = 5;
-    ctx.beginPath();
-    for(let i=0; i<sides; i++){
-      let angle = (Math.PI * 2 / sides) * i - Math.PI / 2;
-      let x = centerX + radius * Math.cos(angle);
-      let y = centerY + radius * Math.sin(angle);
-      if(i === 0) ctx.moveTo(x,y);
-      else ctx.lineTo(x,y);
-    }
-    ctx.closePath();
-    ctx.stroke();
-  }
-
-  // History (undo) support
-  function pushHistory() {
-    if(historyStep < history.length - 1) {
-      history = history.slice(0, historyStep + 1);
-    }
-    history.push(board.toDataURL());
-    historyStep++;
-  }
-  function undo() {
-    if(historyStep > 0) {
-      historyStep--;
-      let img = new Image();
-      img.onload = () => {
-        ctx.clearRect(0, 0, board.width, board.height);
-        ctx.drawImage(img, 0, 0);
-      }
-      img.src = history[historyStep];
-    } else if(historyStep === 0) {
-      ctx.clearRect(0, 0, board.width, board.height);
-      historyStep = -1;
-    }
-  }
-  function clearAll() {
-    ctx.clearRect(0, 0, board.width, board.height);
-    pushHistory();
-  }
-
   // Event listeners
   board.addEventListener('pointerdown', e => { startDraw(e); updateCursor(e); });
   board.addEventListener('pointermove', e => { draw(e); updateCursor(e); });
@@ -554,6 +489,24 @@
       document.querySelectorAll('button.tool').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
       tool = btn.dataset.tool;
+
+      // Update pen tool icon color based on selection
+      if (tool === 'pen') {
+        controlPenIcon.style.color = penColor;
+        // Also update the active shape's icon color
+        const currentActiveShapeItem = document.querySelector(`.shape-dropdown-item.active`);
+        if (currentActiveShapeItem) {
+            currentActiveShapeItem.style.color = penColor;
+        }
+      } else {
+        controlPenIcon.style.color = '#ffffff'; // Revert pen icon to white if eraser is selected
+        // Revert all shape icons to white when eraser is selected
+        shapeDropdownItems.forEach(item => {
+            item.style.color = '#ffffff';
+        });
+      }
+
+
       if(tool === 'eraser') {
         shape = 'freehand'; // Eraser always freehand
         shapeDropdownTrigger.classList.remove('active'); // Deactivate trigger button
@@ -577,11 +530,21 @@
 
   shapeDropdownItems.forEach(item => {
     item.addEventListener('click', () => {
+      // Revert previously active shape's icon to white
+      const prevActiveShapeItem = document.querySelector('.shape-dropdown-item.active');
+      if (prevActiveShapeItem) {
+          prevActiveShapeItem.style.color = '#ffffff';
+      }
+
       shapeDropdownItems.forEach(b => b.classList.remove('active'));
       item.classList.add('active');
       shape = item.dataset.shape;
-      // Update the trigger button's icon to match the selected shape
+      // Set newly active shape's icon color to penColor
+      item.style.color = penColor;
+
+      // Update the trigger button's icon to match the selected shape and its color
       shapeDropdownTrigger.querySelector('i').className = item.querySelector('i').className;
+      shapeDropdownTrigger.style.color = penColor; // Keep trigger icon color in sync
       shapeDropdownMenu.classList.remove('open'); // Close dropdown
     });
   });
@@ -599,6 +562,12 @@
     // Update pen cursor color immediately when color changes
     if (tool === 'pen') {
       penCursor.style.color = penColor;
+      controlPenIcon.style.color = penColor; // Update control pen icon color
+      // Update active shape icon color
+      const currentActiveShapeItem = document.querySelector(`.shape-dropdown-item.active`);
+      if (currentActiveShapeItem) {
+          currentActiveShapeItem.style.color = penColor;
+      }
     }
   });
 
@@ -623,6 +592,18 @@
   // Initialize defaults
   board.style.backgroundColor = bgColor;
   pushHistory();
+
+  // Initial color setup for controls and shapes
+  controlPenIcon.style.color = penColor; // Set initial pen icon color
+  shapeDropdownItems.forEach(item => {
+      if (item.dataset.shape === shape) { // If it's the default active shape
+          item.style.color = penColor;
+          shapeDropdownTrigger.style.color = penColor; // Also set trigger color
+      } else {
+          item.style.color = '#ffffff'; // All others white
+      }
+  });
+
 
 })();
 </script>
