@@ -1,0 +1,26 @@
+Make a js-based dashboard using the following csv data.
+
+https://raw.githubusercontent.com/mahmudstat/open-analysis/refs/heads/main/data/bd_daily_rainfall_2024.csv
+
+sample csv
+St_name,Month,D_01,D_02,
+Dhaka,1,0.2,0.2,0.8
+Mymensingh,1,0,0.1,0
+
+Where St_name is station name, and Month takes values 1-12, representing months serially and D_01 stands for day 01.
+
+On top, make three boxes, covering 100% area.
+Box1: Monthly Lowest amount of rainfall in __ station in the month of __
+Box2: Monthly Highest amount of rainfall in __ station in the month of __
+Box3: Monthly average rainfall across stations:
+
+Place the figure below the title in a bigger font-size and good looks.
+
+Below this, create another set of boxes with 4 columns with 3 rows, each serially by month showing monthly minimum and maximum rainfall and station name.
+
+Below this, another set of 12 boxes layout similarly showing Total amount rainfall and station name in each month (again 3 rows, 4 columns).
+
+Add stylish border, color, font, animation and colored rainfall icon to each box in top row. For months, icons can be sunshine (mild in Nov to Feb and strong in other months). Make the icons vertically centered. Use bigger and colorful font for numbers.
+
+
+Add a footer below that, writing "Dashboard craeted by Abdullah Al Mahmud with AI"

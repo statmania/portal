@@ -1,0 +1,37 @@
+[
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "Welcome to Stat Mania",
+    "section": "",
+    "text": "Explore essential tools and visualizations for your data journey."
+  },
+  {
+    "objectID": "index.html#data-science-tools",
+    "href": "index.html#data-science-tools",
+    "title": "Welcome to Stat Mania",
+    "section": " Data Science Tools",
+    "text": "Data Science Tools\n\n\n\n\nMake a Bar Chart\n\n\nVisualize categorical data\n\nLearn More …\n\n\n\n\nGenerate Data\n\n\nTrack trends over time\n\nLearn More …\n\n\n\n\nHistogram Maker\n\n\nShow proportions clearly\n\nLearn More …\n\n\n\n\nPie Chart Maker\n\n\nUpload your own CSV\n\nLearn More …\n\n\n\n\nScatter Plot Maker\n\n\nUse regression or trees\n\nLearn More …\n\n\n\n\nAesthetic Equations\n\n\nEmbed code with output\n\nLearn More …"
+  },
+  {
+    "objectID": "index.html#utility-tools",
+    "href": "index.html#utility-tools",
+    "title": "Stat Mania",
+    "section": "Utility Tools",
+    "text": "Utility Tools\n\n\n\n\nMake a Bar Chart\n\n\nVisualize categorical data\n\n\nCompare across groups\n\n\n\n\n\nPlot a Line Chart\n\n\nTrack trends over time\n\n\nInteractive options available\n\n\n\n\n\nCreate a Pie Chart\n\n\nShow proportions clearly\n\n\nCustomize colors and labels\n\n\n\n\n\nExplore a Dataset\n\n\nUpload your own CSV\n\n\nClean and filter with ease"
+  },
+  {
+    "objectID": "index.html#featured-tools",
+    "href": "index.html#featured-tools",
+    "title": "Stat Mania",
+    "section": "Featured Tools",
+    "text": "Featured Tools\n\n  \n\n&lt;div class=\"slide\"&gt;\n  &lt;i class=\"fas fa-chart-column fa-3x\"&gt;&lt;/i&gt;\n  &lt;h3&gt;Make a Bar Chart&lt;/h3&gt;\n  &lt;p&gt;Visualize categorical data&lt;/p&gt;\n  &lt;p&gt;Compare across groups&lt;/p&gt;\n&lt;/div&gt;\n&lt;div class=\"slide\"&gt;\n  &lt;i class=\"fas fa-database fa-3x\"&gt;&lt;/i&gt;\n  &lt;h3&gt;Explore a Dataset&lt;/h3&gt;\n  &lt;p&gt;Upload your own CSV&lt;/p&gt;\n  &lt;p&gt;Clean and filter with ease&lt;/p&gt;\n&lt;/div&gt;\n&lt;div class=\"slide\"&gt;\n  &lt;i class=\"fas fa-code fa-3x\"&gt;&lt;/i&gt;\n  &lt;h3&gt;Write R or Python&lt;/h3&gt;\n  &lt;p&gt;Embed code with output&lt;/p&gt;\n  &lt;p&gt;Learn by doing&lt;/p&gt;\n&lt;/div&gt;\n\n\n&lt;label for=\"slide1\"&gt;&lt;/label&gt;\n&lt;label for=\"slide2\"&gt;&lt;/label&gt;\n&lt;label for=\"slide3\"&gt;&lt;/label&gt;"
+  },
+  {
+    "objectID": "index.html#all-tools",
+    "href": "index.html#all-tools",
+    "title": "Welcome to Stat Mania",
+    "section": " All Tools",
+    "text": "All Tools\n\n\n\n\nMake a Bar Chart\n\n\nVisualize categorical data\n\nLearn More …\n\n\n\n\nGenerate Data\n\n\nTrack trends over time\n\nLearn More …\n\n\n\n\nHistogram Maker\n\n\nShow proportions clearly\n\nLearn More …\n\n\n\n\nPie Chart Maker\n\n\nUpload your own CSV\n\nLearn More …\n\n\n\n\nScatter Plot Maker\n\n\nUse regression or trees\n\nLearn More …\n\n\n\n\nAesthetic Equations\n\n\nEmbed code with output\n\nLearn More …"
+  }
+]
